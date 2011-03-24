@@ -78,12 +78,14 @@
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Julian.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Tle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Coord.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Julian.h" />
+    <ClInclude Include="Tle.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
