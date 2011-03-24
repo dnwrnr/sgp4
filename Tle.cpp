@@ -119,6 +119,13 @@ std::string Tle::ExpToDecimal(const std::string& str) {
  * extract all variables
  */
 void Tle::Initialize() {
+    TrimLeft(name_);
+    TrimRight(name_);
+    TrimLeft(line_one_);
+    TrimRight(line_one_);
+    TrimLeft(line_two_);
+    TrimRight(line_two_);
+    
     assert(!name_.empty());
     assert(!line_one_.empty());
     assert(!line_two_.empty());
