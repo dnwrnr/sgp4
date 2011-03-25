@@ -10,7 +10,7 @@ public:
 
     void Initialize(const Tle& tle);
 
-    void SGDP4::FindPosition(double tsince);
+    void FindPosition(double tsince);
 
     struct TleData {
         double bstar;
@@ -26,7 +26,7 @@ public:
 private:
     bool first_run_;
 
-    struct TleData tle_data_;
+    struct TleData tle_data_0_;
 
     double cosio_;
     double sinio_;
