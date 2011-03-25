@@ -78,6 +78,7 @@
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Julian.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SGDP4.cpp" />
     <ClCompile Include="Tle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
@@ -85,6 +86,8 @@
     <ClInclude Include="Coord.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Julian.h" />
+    <ClInclude Include="SatelliteException.h" />
+    <ClInclude Include="SGDP4.h" />
     <ClInclude Include="Tle.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>

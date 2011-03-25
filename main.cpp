@@ -1,5 +1,6 @@
 #include "Julian.h"
 #include "Tle.h"
+#include "SGDP4.h"
 
 #include <stdio.h>
 #include <list>
@@ -40,12 +41,14 @@ int main() {
             "1 35683U 09041C   11083.19129526  .00000128  00000-0  29890-4 0  8539",
             "2 35683  98.0774 342.2478 0001262 104.0560 256.0776 14.69410764 88426"));
 
-        Julian julian_now;
-    int year = 0;
-    int month = 0;
-    double day = 0.0;
-    julian_now.GetComponent(year, month, day);
-    printf("year: %i\nmonth: %i\nday: %lf\n", year, month, day);
+
+    std::list<Tle>::iterator itr;
+        Julian jul;
+
+        for (itr = tles.begin(); itr != tles.end(); itr++) {
+          SGDP4 model;
+          model.Initialize(*itr);
+        }
     
     return 0;
 }
