@@ -235,6 +235,7 @@ void SGDP4::FindPosition(double tsince) {
     tle_data_tsince_.epoch = tle_data_0_.epoch;
 
     double xl = 0.0;
+    double a = 0.0;
 
     /*
      * update for secular gravity and atmospheric drag
@@ -253,15 +254,14 @@ void SGDP4::FindPosition(double tsince) {
 
     if (use_deep_space_) {
         double xn = xnodp_;
-        double em = 0.0;
 #if 0
-        CALL DPSEC(xmdf, tle_data_tsince_.omega, XNODE, EM, tle_data_tsince_.xincl, xn, tsince);
+        CALL DPSEC(xmdf, tle_data_tsince_.omega, XNODE, tle_data_tsince_.eo, tle_data_tsince_.xincl, xn, tsince);
 #endif
         a = pow(Globals::XKE() / xn, Globals::TOTHRD()) * pow(tempa, 2.0);
-        e = em - tempe;
+        tle_data_tsince_.eo -= tempe;
         double xmam = xmdf + xnodp_ * templ;
 #if 0
-        CALL DPPER(E, tle_data_tsince_.xincl, tle_data_tsince_.omega, tle_data_tsince_.xnodeo, xmam);
+        CALL DPPER(tle_data_tsince_.eo, tle_data_tsince_.xincl, tle_data_tsince_.omega, tle_data_tsince_.xnodeo, xmam);
 #endif
         xl = xmam + tle_data_tsince_.omega + xnode;
 
@@ -299,21 +299,21 @@ void SGDP4::FindPosition(double tsince) {
             templ += t3cof_ * tcube + tfour * (t4cof_ + tsince * t5cof_);
         }
         a = aodp_ * pow(tempa, 2.0);
-        e = eo - tempe;
+        tle_data_tsince_.eo = tle_data_0_.eo - tempe;
         xl = xmp + tle_data_tsince_.omega + xnode + xnodp_ * templ;
     }
 
-    double beta = sqrt(1.0 - e * e);
+    double beta = sqrt(1.0 - tle_data_tsince_.eo * tle_data_tsince_.eo);
     double xn = Globals::XKE() / pow(a, 1.5);
     /*
      * long period periodics
      */
-    double axn = e * cos(tle_data_tsince_.omega);
+    double axn = tle_data_tsince_.eo * cos(tle_data_tsince_.omega);
     double temp = 1.0 / (a * beta * beta);
     double xll = temp * xlcof_ * axn;
     double aynl = temp * aycof_;
     double xlt = xl + xll;
-    double ayn = e * sin(tle_data_tsince_.omega) + aynl;
+    double ayn = tle_data_tsince_.eo * sin(tle_data_tsince_.omega) + aynl;
     /*
      * solve keplers equation
      */
