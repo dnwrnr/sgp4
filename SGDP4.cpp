@@ -402,12 +402,12 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * position and velocity
      */
-    double x = rk * ux;
-    double y = rk * uy;
-    double z = rk * uz;
-    double xdot = rdotk * ux + rfdotk * vx;
-    double ydot = rdotk * uy + rfdotk * vy;
-    double zdot = rdotk * uz + rfdotk * vz;
+    double x = rk * ux * Globals::XKMPER();
+    double y = rk * uy * Globals::XKMPER();
+    double z = rk * uz * Globals::XKMPER();
+    double xdot = (rdotk * ux + rfdotk * vx) * Globals::XKMPER() * Globals::XKE() / 60.0;
+    double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() * Globals::XKE() / 60.0;
+    double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() * Globals::XKE() / 60.0;
 }
 
 #if 0

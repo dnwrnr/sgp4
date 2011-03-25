@@ -41,7 +41,7 @@ private:
     double x1mth2_;
     double c4_;
     double c5_;
-    
+
     double xmdot_;
     double omgdot_;
     double xnodot_;
