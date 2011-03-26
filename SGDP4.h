@@ -224,6 +224,26 @@ private:
     double d_xh2_;
     double d_xh3_;
 
+    double d_d2201_;
+    double d_d2211_;
+    double d_d3210_;
+    double d_d3222_;
+    double d_d4410_;
+    double d_d4422_;
+    double d_d5220_;
+    double d_d5232_;
+    double d_d5421_;
+    double d_d5433_;
+
+    double d_del1_;
+    double d_del2_;
+    double d_del3_;
+    double d_fasx2_;
+    double d_fasx4_;
+    double d_fasx6_;
+
+    double d_xfact_;
+
     double d_xlamo_;
     double d_xli_;
     double d_xni_;

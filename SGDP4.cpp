@@ -433,6 +433,22 @@ void SGDP4::FindPosition(double tsince) {
  */
 void SGDP4::DeepSpaceInitialize() {
 
+    double omgdt = 0.0;
+    double cosiq = 0.0;
+    double siniq = 0.0;
+    double cosomo = 0.0;
+    double sinomo = 0.0;
+    double eqsq = 0.0;
+    double bsq = 0.0;
+    double shdq = 0.0;
+    double cosq2 = 0.0;
+    double rteqsq = 0.0;
+    double xlldot = 0.0;
+    double xnodot = 0.0;
+
+
+
+
     double a1;
     double a2;
     double a3;
@@ -482,6 +498,8 @@ void SGDP4::DeepSpaceInitialize() {
     double sl;
     double sgh;
 
+    double bfact;
+
     double ZNS = 1.19459E-5;
     double C1SS = 2.9864797E-6;
     double ZES = 0.01675;
@@ -502,24 +520,13 @@ void SGDP4::DeepSpaceInitialize() {
     double ROOT54 = 2.1765803E-9;
     double THDT = 4.3752691E-3;
 
-    double ZCOSHS = 1.0;
-    double ZSINHS = 0.0;
-    double G22 = 5.7686396;
-    double G32 = 0.95240898;
-    double G44 = 1.8014998;
-    double G52 = 1.0508330;
-    double G54 = 4.4108898;
-
-
-
-
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
     double xpidot = omgdt + xnodot_;
     double sinq = sin(AscendingNode());
     double cosq = cos(AscendingNode());
 
     /*
-     * initialize lunar solar terms
+     * initialize lunar / solar terms
      */
     d_day_ = Epoch().FromJan1_12h_1900();
 
@@ -532,15 +539,19 @@ void SGDP4::DeepSpaceInitialize() {
     double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
     double c = 4.7199672 + 0.22997150 * d_day_;
     double gam = 5.8351514 + 0.0019443680 * d_day_;
-    double zmol = fmod2p(c - gam);
+    double zmol = Globals::Fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
+    /*
+     * todo: check
+     */
     zx = atan2(zx, zy);
-    zx = gam + zx - xnodce;
+    zx = fmod(gam + zx - xnodce, Globals::TWOPI());
+
     double zcosgl = cos(zx);
     double zsingl = sin(zx);
     double zmos = 6.2565837 + 0.017201977 * d_day_;
-    zmos = fmod2p(zmos);
+    zmos = Globals::Fmod2p(zmos);
 
     /*
      * do solar terms
@@ -750,30 +761,33 @@ void SGDP4::DeepSpaceInitialize() {
                     (-12.0 + 8.0 * cosiq + 10.0 * cosq2));
             double f543 = 29.53125 * siniq * (-2.0 - 8.0 * cosiq + cosq2 *
                     (12.0 + 8.0 * cosiq - 10.0 * cosq2));
-            xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
-            ainv2 = aqnv * aqnv;
-            temp1 = 3.0 * xno2 * ainv2;
-            temp = temp1 * ROOT22;
-            d2201 = temp * f220 * g201;
-            d2211 = temp * f221 * g211;
+
+            double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
+            double ainv2 = aqnv * aqnv;
+
+            double temp1 = 3.0 * xno2 * ainv2;
+            double temp = temp1 * ROOT22;
+            d_d2201_ = temp * f220 * g201;
+            d_d2211_ = temp * f221 * g211;
             temp1 = temp1 * aqnv;
             temp = temp1 * ROOT32;
-            d3210 = temp * f321 * g310;
-            d3222 = temp * f322 * g322;
+            d_d3210_ = temp * f321 * g310;
+            d_d3222_ = temp * f322 * g322;
             temp1 = temp1 * aqnv;
             temp = 2.0 * temp1 * ROOT44;
-            d4410 = temp * f441 * g410;
-            d4422 = temp * f442 * g422;
+            d_d4410_ = temp * f441 * g410;
+            d_d4422_ = temp * f442 * g422;
             temp1 = temp1 * aqnv;
             temp = temp1 * ROOT52;
-            d5220 = temp * f522 * g520;
-            d5232 = temp * f523 * g532;
+            d_d5220_ = temp * f522 * g520;
+            d_d5232_ = temp * f523 * g532;
             temp = 2.0 * temp1 * ROOT54;
-            d5421 = temp * f542 * g521;
-            d5433 = temp * f543 * g533;
-            xlamo = MeanAnomoly() + AscendingNode() + AscendingNode() - gsto_ - gsto_;
+            d_d5421_ = temp * f542 * g521;
+            d_d5433_ = temp * f543 * g533;
+
+            d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - gsto_ - gsto_;
             bfact = xlldot + xnodot + xnodot - THDT - THDT;
-            bfact = bfact + ssl + ssh + ssh;
+            bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
         }
     } else {
         /*
@@ -790,19 +804,20 @@ void SGDP4::DeepSpaceInitialize() {
         double f330 = 1.0 + cosiq;
         f330 = 1.875 * f330 * f330 * f330;
         d_del1_ = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
-        d_del2_ = 2.0 * del1 * f220 * g200 * Q22;
-        d_del3_ = 3.0 * del1 * f330 * g300 * Q33 * aqnv;
-        d_del1_ = del1 * f311 * g310 * Q31 * aqnv;
+        d_del2_ = 2.0 * d_del1_ * f220 * g200 * Q22;
+        d_del3_ = 3.0 * d_del1_ * f330 * g300 * Q33 * aqnv;
+        d_del1_ = d_del1_ * f311 * g310 * Q31 * aqnv;
         d_fasx2_ = 0.13130908;
         d_fasx4_ = 2.8843198;
         d_fasx6_ = 0.37448087;
+
         d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
-        d_bfact_ = xlldot + xpidot - THDT;
-        d_bfact_ = bfact + ssl + ssg + ssh;
-        d_xfact_ = bfact - RecoveredMeanMotion();
+        bfact = xlldot + xpidot - THDT;
+        bfact = bfact + d_ssl_ + d_ssg_ + d_ssh_;
     }
 
     if (initialize_integrator) {
+        d_xfact_ = bfact - RecoveredMeanMotion();
         /*
          * initialize integrator
          */
