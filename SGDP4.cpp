@@ -201,6 +201,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         gsto_ = Epoch().ToGMST();
         double sing = sin(ArgumentPerigee());
         double cosg = cos(ArgumentPerigee());
+        //DeepSpaceInitialize(eosq, sinio, cosio, betao);
         //CALL DPINIT(EOSQ,SINIO,COSIO,BETAO,AODP,THETA2,
         // SING,COSG,BETAO2,XMDOT,OMGDOT,XNODOT,XNODP)
     }
@@ -422,6 +423,305 @@ void SGDP4::FindPosition(double tsince) {
     double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
 }
 
+/*
+ * entry dpinit(const double& eqsq, const double& siniq, const double& cosiq,
+ * const double& rteqsq, cosq2, sinomo, cosomo, bsq, xlldot, omgdt, xnodot, xnodp)
+ */
+
+/*
+ * deep space initialization
+ */
+void SGDP4::DeepSpaceInitialize() {
+
+    double aqnv = 1.0 / RecoveredSemiMajorAxis();
+    double xpidot = omgdt_ + xnodot_;
+    double sinq = sin(AscendingNode());
+    double cosq = cos(AscendingNode());
+
+    /*
+     * initialize lunar solar terms
+     */
+    double day = Epoch().FromJan1_12h_1900();
+
+    double xnodce = 4.5236020 - 9.2422029e-4 * day;
+    double stem = dsin(xnodce);
+    double ctem = dcos(xnodce);
+    double zcosil = 0.91375164 - 0.03568096 * ctem;
+    double zsinil = sqrt(1.0 - zcosil * zcosil);
+    double zsinhl = 0.089683511 * stem / zsinil;
+    double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
+    double c = 4.7199672 + 0.22997150 * day;
+    double gam = 5.8351514 + 0.0019443680 * day;
+    double zmol = fmod2p(c - gam);
+    double zx = 0.39785416 * stem / zsinil;
+    double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
+    double zx = actan(zx, zy);
+    double zx = gam + zx - xnodce;
+    double zcosgl = cos(zx);
+    double zsingl = sin(zx);
+    double zmos = 6.2565837 + 0.017201977 * day;
+    double zmos = fmod2p(zmos);
+
+    /*
+     * do solar terms
+     */
+    double savtsn = 1e20;
+    double zcosg = zcosgs;
+    double zsing = zsings;
+    double zcosi = zcosis;
+    double zsini = zsinis;
+    double zcosh = cosq;
+    double zsinh = sinq;
+    double cc = c1ss;
+    double zn = zns;
+    double ze = zes;
+    double zmo = zmos;
+    double xnoi = 1.0 / RecoveredMeanMotion();
+
+    for (int cnt = 0; cnt < 2; cnt++) {
+        /*
+         * solar terms are done a second time after lunar terms are done
+         */
+        a1 = zcosg * zcosh + zsing * zcosi * zsinh;
+        a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
+        a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
+        a8 = zsing * zsini;
+        a9 = zsing * zsinh + zcosg * zcosi*zcosh;
+        a10 = zcosg * zsini;
+        a2 = cosiq * a7 + siniq * a8;
+        a4 = cosiq * a9 + siniq * a10;
+        a5 = -siniq * a7 + cosiq * a8;
+        a6 = -siniq * a9 + cosiq * a10;
+        x1 = a1 * cosomo + a2 * sinomo;
+        x2 = a3 * cosomo + a4 * sinomo;
+        x3 = -a1 * sinomo + a2 * cosomo;
+        x4 = -a3 * sinomo + a4 * cosomo;
+        x5 = a5 * sinomo;
+        x6 = a6 * sinomo;
+        x7 = a5 * cosomo;
+        x8 = a6 * cosomo;
+        z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
+        z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
+        z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
+        z1 = 3.0 * (a1 * a1 + a2 * a2) + z31 * eqsq;
+        z2 = 6.0 * (a1 * a3 + a2 * a4) + z32 * eqsq;
+        z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * eqsq;
+        z11 = -6.0 * a1 * a5 + eqsq * (-24. * x1 * x7 - 6. * x3 * x5);
+        z12 = -6.0 * (a1 * a6 + a3 * a5) + eqsq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
+        z13 = -6.0 * a3 * a6 + eqsq * (-24. * x2 * x8 - 6. * x4 * x6);
+        z21 = 6.0 * a2 * a5 + eqsq * (24. * x1 * x5 - 6. * x3 * x7);
+        z22 = 6.0 * (a4 * a5 + a2 * a6) + eqsq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
+        z23 = 6.0 * a4 * a6 + eqsq * (24. * x2 * x6 - 6. * x4 * x8);
+        z1 = z1 + z1 + bsq * z31;
+        z2 = z2 + z2 + bsq * z32;
+        z3 = z3 + z3 + bsq * z33;
+        s3 = cc * xnoi;
+        s2 = -0.5 * s3 / rteqsq;
+        s4 = s3 * rteqsq;
+        s1 = -15.0 * Eccentricity() * s4;
+        s5 = x1 * x3 + x2 * x4;
+        s6 = x2 * x3 + x1 * x4;
+        s7 = x2 * x4 - x1 * x3;
+        se = s1 * zn * s5;
+        si = s2 * zn * (z11 + z13);
+        sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eqsq);
+        sgh = s4 * zn * (z31 + z33 - 6.0);
+
+        /*
+         * replaced
+         * sh = -zn * s2 * (z21 + z23
+         * with
+         * shdq = (-zn * s2 * (z21 + z23)) / siniq
+         */
+        if (Inclination() < 5.2359877e-2 || Inclination() > Globals::PI() - 5.2359877e-2) {
+            shdq = 0.0;
+        } else {
+            shdq = (-zn * s2 * (z21 + z23)) / siniq;
+        }
+
+        ee2 = 2.0 * s1 * s6;
+        e3 = 2.0 * s1 * s7;
+        xi2 = 2.0 * s2 * z12;
+        xi3 = 2.0 * s2 * (z13 - z11);
+        xl2 = -2.0 * s3 * z2;
+        xl3 = -2.0 * s3 * (z3 - z1);
+        xl4 = -2.0 * s3 * (-21.0 - 9.0 * eqsq) * ze;
+        xgh2 = 2.0 * s4 * z32;
+        xgh3 = 2.0 * s4 * (z33 - z31);
+        xgh4 = -18.0 * s4 * ze;
+        xh2 = -2.0 * s2 * z22;
+        xh3 = -2.0 * s2 * (z23 - z21);
+
+        if (cnt == 1)
+            break;
+        /*
+         * do lunar terms
+         */
+        sse = se;
+        ssi = si;
+        ssl = sl;
+        ssh = shdq;
+        ssg = sgh - cosiq * ssh;
+        se2 = ee2;
+        si2 = xi2;
+        sl2 = xl2;
+        sgh2 = xgh2;
+        sh2 = xh2;
+        se3 = e3;
+        si3 = xi3;
+        sl3 = xl3;
+        sgh3 = xgh3;
+        sh3 = xh3;
+        sl4 = xl4;
+        sgh4 = xgh4;
+        zcosg = zcosgl;
+        zsing = zsingl;
+        zcosi = zcosil;
+        zsini = zsinil;
+        zcosh = zcoshl * cosq + zsinhl * sinq;
+        zsinh = sinq * zcoshl - cosq * zsinhl;
+        zn = znl;
+        cc = c1l;
+        ze = zel;
+        zmo = zmol;
+
+    }
+    sse += se;
+    ssi += si;
+    ssl += sl;
+    ssg += sgh - cosiq * shdq;
+    ssh += shdq;
+
+    /*
+     * geopotential resonance initialization for 12 hour orbits
+     */
+    bool resonance_flag = false;
+    bool synchronous_flag = false;
+    bool initialize_integrator = true;
+
+    if (RecoveredMeanMotion() < 0.0052359877 && RecoveredMeanMotion() > 0.0034906585) {
+
+        if (RecoveredMeanMotion() < 8.26e-3 || RecoveredMeanMotion() > 9.24e-3 || Eccentricity() < 0.5) {
+            initialize_integrator = false;
+        } else {
+            /*
+             * geopotential resonance initialization for 12 hour orbits
+             */
+            resonance_flag = true;
+
+            double eoc = Eccentricity() * eqsq;
+            g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
+
+            if (Eccentricity() <= 0.65) {
+                g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eqsq;
+                g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eqsq + 156.591 * eoc;
+                g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eqsq + 146.5816 * eoc;
+                g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eqsq + 313.953 * eoc;
+                g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eqsq + 1083.435 * eoc;
+                g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eqsq + 3708.276 * eoc;
+            } else {
+                g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eqsq + 266.724 * eoc;
+                g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eqsq + 1246.113 * eoc;
+                g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eqsq + 1215.972 * eoc;
+                g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eqsq + 3651.957 * eoc;
+                g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eqsq + 12422.52 * eoc;
+
+                if (Eccentricity() <= 0.715) {
+                    g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eqsq;
+                } else {
+                    g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eqsq + 31324.56 * eoc;
+                }
+            }
+
+            if (Eccentricity() < 0.7) {
+                g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eqsq + 5542.21 * eoc;
+                g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eqsq + 5337.524 * eoc;
+                g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eqsq + 5341.4 * eoc;
+            } else {
+                g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eqsq + 109377.94 * eoc;
+                g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eqsq + 146349.42 * eoc;
+                g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eqsq + 115605.82 * eoc;
+            }
+            sini2 = siniq * siniq;
+            f220 = 0.75 * (1.0 + 2.0 * cosiq + cosq2);
+            f221 = 1.5 * sini2;
+            f321 = 1.875 * siniq * (1.0 - 2.0 * cosiq - 3.0 * cosq2);
+            f322 = -1.875 * siniq * (1.0 + 2.0 * cosiq - 3.0 * cosq2);
+            f441 = 35.0 * sini2 * f220;
+            f442 = 39.3750 * sini2 * sini2;
+            f522 = 9.84375 * siniq * (sini2 * (1.0 - 2.0 * cosiq - 5.0 * cosq2)
+                    + 0.33333333 * (-2.0 + 4.0 * cosiq + 6.0 * cosq2));
+            f523 = siniq * (4.92187512 * sini2 * (-2.0 - 4.0 * cosiq + 10.0 * cosq2)
+                    + 6.56250012 * (1.0 + 2.0 * cosiq - 3.0 * cosq2));
+            f542 = 29.53125 * siniq * (2.0 - 8.0 * cosiq + cosq2 *
+                    (-12.0 + 8.0 * cosiq + 10.0 * cosq2));
+            f543 = 29.53125 * siniq * (-2.0 - 8.0 * cosiq + cosq2 *
+                    (12.0 + 8.0 * cosiq - 10.0 * cosq2));
+            xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
+            ainv2 = aqnv * aqnv;
+            temp1 = 3.0 * xno2 * ainv2;
+            temp = temp1 * root22;
+            d2201 = temp * f220 * g201;
+            d2211 = temp * f221 * g211;
+            temp1 = temp1 * aqnv;
+            temp = temp1 * root32;
+            d3210 = temp * f321 * g310;
+            d3222 = temp * f322 * g322;
+            temp1 = temp1 * aqnv;
+            temp = 2.0 * temp1 * root44;
+            d4410 = temp * f441 * g410;
+            d4422 = temp * f442 * g422;
+            temp1 = temp1 * aqnv;
+            temp = temp1 * root52;
+            d5220 = temp * f522 * g520;
+            d5232 = temp * f523 * g532;
+            temp = 2.0 * temp1 * root54;
+            d5421 = temp * f542 * g521;
+            d5433 = temp * f543 * g533;
+            xlamo = MeanAnomoly() + AscendingNode() + AscendingNode() - gsto_ - gsto_;
+            bfact = xlldot + xnodot + xnodot - thdt - thdt;
+            bfact = bfact + ssl + ssh + ssh;
+        }
+    } else {
+        /*
+         * 24h synchronous resonance terms initialization
+         */
+        resonance_flag = true;
+        synchronous_flag = true;
+
+        g200 = 1.0 + eqsq * (-2.5 + 0.8125 * eqsq);
+        g310 = 1.0 + 2.0 * eqsq;
+        g300 = 1.0 + eqsq * (-6.0 + 6.60937 * eqsq);
+        f220 = 0.75 * (1.0 + cosiq) * (1.0 + cosiq);
+        f311 = 0.9375 * siniq * siniq * (1.0 + 3.0 * cosiq) - 0.75 * (1.0 + cosiq);
+        f330 = 1.0 + cosiq;
+        f330 = 1.875 * f330 * f330 * f330;
+        del1 = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
+        del2 = 2.0 * del1 * f220 * g200 * q22;
+        del3 = 3.0 * del1 * f330 * g300 * q33 * aqnv;
+        del1 = del1 * f311 * g310 * q31 * aqnv;
+        fasx2 = 0.13130908;
+        fasx4 = 2.8843198;
+        fasx6 = 0.37448087;
+        xlamo = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
+        bfact = xlldot + xpidot - thdt;
+        bfact = bfact + ssl + ssg + ssh;
+        xfact = bfact - RecoveredMeanMotion();
+    }
+
+    if (initialize_integrator) {
+        /*
+         * initialize integrator
+         */
+        xli = xlamo;
+        xni = RecoveredMeanMotion();
+        atime = 0.0;
+        stepp = 720.0;
+        stepn = -720.0;
+        step2 = 259200.0;
+    }
+}
+
 #if 0
 SUBROUTINE DEEP
 COMMON / E1 / XMO, XNODEO, OMEGAO, EO, XINCL, XNO, XNDT2O,
@@ -462,268 +762,6 @@ double THDT = 4.3752691E-3;
 
 
 
-/*
- * ENTRANCE FOR DEEP SPACE INITIALIZATION
- */
-ENTRY DPINIT(EQSQ, SINIQ, COSIQ, RTEQSQ, AO, COSQ2, SINOMO, COSOMO,
-        1 BSQ, XLLDOT, OMGDT, XNODOT, XNODP)
-THGR = THETAG(EPOCH)
-EQ = EO
-XNQ = XNODP
-AQNV = 1. / AO
-XQNCL = XINCL
-XMAO = XMO
-XPIDOT = OMGDT + XNODOT
-SINQ = SIN(XNODEO)
-COSQ = COS(XNODEO)
-OMEGAQ = OMEGAO
-* INITIALIZE LUNAR SOLAR TERMS
-5 DAY = DS50 + 18261.5D0
-IF(DAY.EQ.PREEP) GO TO 10
-PREEP = DAY
-XNODCE = 4.5236020 - 9.2422029E-4 * DAY
-59
-STEM = DSIN(XNODCE)
-CTEM = DCOS(XNODCE)
-ZCOSIL = .91375164 - .03568096 * CTEM
-ZSINIL = SQRT(1. - ZCOSIL*ZCOSIL)
-ZSINHL = .089683511 * STEM / ZSINIL
-ZCOSHL = SQRT(1. - ZSINHL*ZSINHL)
-C = 4.7199672 + .22997150 * DAY
-GAM = 5.8351514 + .0019443680 * DAY
-ZMOL = FMOD2P(C - GAM)
-ZX = .39785416 * STEM / ZSINIL
-ZY = ZCOSHL*CTEM + 0.91744867 * ZSINHL*STEM
-ZX = ACTAN(ZX, ZY)
-ZX = GAM + ZX - XNODCE
-ZCOSGL = COS(ZX)
-ZSINGL = SIN(ZX)
-ZMOS = 6.2565837D0 + .017201977D0*DAY
-ZMOS = FMOD2P(ZMOS)
-* DO SOLAR TERMS
-10 LS = 0
-SAVTSN = 1.D20
-ZCOSG = ZCOSGS
-ZSING = ZSINGS
-ZCOSI = ZCOSIS
-ZSINI = ZSINIS
-ZCOSH = COSQ
-ZSINH = SINQ
-CC = C1SS
-ZN = ZNS
-ZE = ZES
-ZMO = ZMOS
-XNOI = 1. / XNQ
-ASSIGN 30 TO LS
-20 A1 = ZCOSG*ZCOSH + ZSING*ZCOSI*ZSINH
-A3 = -ZSING*ZCOSH + ZCOSG*ZCOSI*ZSINH
-A7 = -ZCOSG*ZSINH + ZSING*ZCOSI*ZCOSH
-A8 = ZSING*ZSINI
-A9 = ZSING*ZSINH + ZCOSG*ZCOSI*ZCOSH
-A10 = ZCOSG*ZSINI
-A2 = COSIQ*A7 + SINIQ*A8
-A4 = COSIQ*A9 + SINIQ*A10
-A5 = -SINIQ*A7 + COSIQ*A8
-A6 = -SINIQ*A9 + COSIQ*A10
-C
-X1 = A1*COSOMO + A2*SINOMO
-X2 = A3*COSOMO + A4*SINOMO
-X3 = -A1*SINOMO + A2*COSOMO
-60
-X4 = -A3*SINOMO + A4*COSOMO
-X5 = A5*SINOMO
-X6 = A6*SINOMO
-X7 = A5*COSOMO
-X8 = A6*COSOMO
-C
-Z31 = 12. * X1*X1 - 3. * X3*X3
-Z32 = 24. * X1*X2 - 6. * X3*X4
-Z33 = 12. * X2*X2 - 3. * X4*X4
-Z1 = 3. * (A1*A1 + A2*A2) + Z31*EQSQ
-Z2 = 6. * (A1*A3 + A2*A4) + Z32*EQSQ
-Z3 = 3. * (A3*A3 + A4*A4) + Z33*EQSQ
-Z11 = -6. * A1*A5 + EQSQ *(-24. * X1*X7 - 6. * X3*X5)
-Z12 = -6. * (A1*A6 + A3*A5) + EQSQ *(-24. * (X2*X7 + X1*X8) - 6. * (X3*X6 + X4*X5))
-Z13 = -6. * A3*A6 + EQSQ *(-24. * X2*X8 - 6. * X4*X6)
-Z21 = 6. * A2*A5 + EQSQ *(24. * X1*X5 - 6. * X3*X7)
-Z22 = 6. * (A4*A5 + A2*A6) + EQSQ *(24. * (X2*X5 + X1*X6) - 6. * (X4*X7 + X3*X8))
-Z23 = 6. * A4*A6 + EQSQ *(24. * X2*X6 - 6. * X4*X8)
-Z1 = Z1 + Z1 + BSQ*Z31
-Z2 = Z2 + Z2 + BSQ*Z32
-Z3 = Z3 + Z3 + BSQ*Z33
-S3 = CC*XNOI
-S2 = -.5 * S3 / RTEQSQ
-S4 = S3*RTEQSQ
-S1 = -15. * EQ*S4
-S5 = X1*X3 + X2*X4
-S6 = X2*X3 + X1*X4
-S7 = X2*X4 - X1*X3
-SE = S1*ZN*S5
-SI = S2*ZN*(Z11 + Z13)
-SL = -ZN*S3*(Z1 + Z3 - 14. - 6. * EQSQ)
-SGH = S4*ZN*(Z31 + Z33 - 6.)
-SH = -ZN*S2*(Z21 + Z23)
-IF(XQNCL.LT.5.2359877E-2) SH = 0.0
-EE2 = 2. * S1*S6
-E3 = 2. * S1*S7
-XI2 = 2. * S2*Z12
-XI3 = 2. * S2*(Z13 - Z11)
-XL2 = -2. * S3*Z2
-XL3 = -2. * S3*(Z3 - Z1)
-XL4 = -2. * S3*(-21. - 9. * EQSQ) * ZE
-XGH2 = 2. * S4*Z32
-XGH3 = 2. * S4*(Z33 - Z31)
-XGH4 = -18. * S4*ZE
-XH2 = -2. * S2*Z22
-XH3 = -2. * S2*(Z23 - Z21)
-GO TO LS
-61
-* DO LUNAR TERMS
-30 SSE = SE
-SSI = SI
-SSL = SL
-SSH = SH / SINIQ
-SSG = SGH - COSIQ*SSH
-SE2 = EE2
-SI2 = XI2
-SL2 = XL2
-SGH2 = XGH2
-SH2 = XH2
-SE3 = E3
-SI3 = XI3
-SL3 = XL3
-SGH3 = XGH3
-SH3 = XH3
-SL4 = XL4
-SGH4 = XGH4
-LS = 1
-ZCOSG = ZCOSGL
-ZSING = ZSINGL
-ZCOSI = ZCOSIL
-ZSINI = ZSINIL
-ZCOSH = ZCOSHL*COSQ + ZSINHL*SINQ
-ZSINH = SINQ*ZCOSHL - COSQ*ZSINHL
-ZN = ZNL
-CC = C1L
-ZE = ZEL
-ZMO = ZMOL
-ASSIGN 40 TO LS
-GO TO 20
-40 SSE = SSE + SE
-SSI = SSI + SI
-SSL = SSL + SL
-SSG = SSG + SGH - COSIQ / SINIQ*SH
-SSH = SSH + SH / SINIQ
-* GEOPOTENTIAL RESONANCE INITIALIZATION FOR 12 HOUR ORBITS
-IRESFL = 0
-ISYNFL = 0
-IF(XNQ.LT.(.0052359877).AND.XNQ.GT.(.0034906585)) GO TO 70
-IF(XNQ.LT.(8.26E-3) .OR. XNQ.GT.(9.24E-3)) RETURN
-IF(EQ.LT.0.5) RETURN
-IRESFL = 1
-EOC = EQ*EQSQ
-G201 = -.306 - (EQ - .64)*.440
-62
-IF(EQ.GT.(.65)) GO TO 45
-G211 = 3.616 - 13.247 * EQ + 16.290 * EQSQ
-G310 = -19.302 + 117.390 * EQ - 228.419 * EQSQ + 156.591 * EOC
-G322 = -18.9068 + 109.7927 * EQ - 214.6334 * EQSQ + 146.5816 * EOC
-G410 = -41.122 + 242.694 * EQ - 471.094 * EQSQ + 313.953 * EOC
-G422 = -146.407 + 841.880 * EQ - 1629.014 * EQSQ + 1083.435 * EOC
-G520 = -532.114 + 3017.977 * EQ - 5740 * EQSQ + 3708.276 * EOC
-GO TO 55
-45 G211 = -72.099 + 331.819 * EQ - 508.738 * EQSQ + 266.724 * EOC
-G310 = -346.844 + 1582.851 * EQ - 2415.925 * EQSQ + 1246.113 * EOC
-G322 = -342.585 + 1554.908 * EQ - 2366.899 * EQSQ + 1215.972 * EOC
-G410 = -1052.797 + 4758.686 * EQ - 7193.992 * EQSQ + 3651.957 * EOC
-G422 = -3581.69 + 16178.11 * EQ - 24462.77 * EQSQ + 12422.52 * EOC
-IF(EQ.GT.(.715)) GO TO 50
-G520 = 1464.74 - 4664.75 * EQ + 3763.64 * EQSQ
-GO TO 55
-50 G520 = -5149.66 + 29936.92 * EQ - 54087.36 * EQSQ + 31324.56 * EOC
-55 IF(EQ.GE.(.7)) GO TO 60
-G533 = -919.2277 + 4988.61 * EQ - 9064.77 * EQSQ + 5542.21 * EOC
-G521 = -822.71072 + 4568.6173 * EQ - 8491.4146 * EQSQ + 5337.524 * EOC
-G532 = -853.666 + 4690.25 * EQ - 8624.77 * EQSQ + 5341.4 * EOC
-GO TO 65
-60 G533 = -37995.78 + 161616.52 * EQ - 229838.2 * EQSQ + 109377.94 * EOC
-G521 = -51752.104 + 218913.95 * EQ - 309468.16 * EQSQ + 146349.42 * EOC
-G532 = -40023.88 + 170470.89 * EQ - 242699.48 * EQSQ + 115605.82 * EOC
-65 SINI2 = SINIQ*SINIQ
-F220 = .75 * (1. + 2. * COSIQ + COSQ2)
-F221 = 1.5 * SINI2
-F321 = 1.875 * SINIQ*(1. - 2. * COSIQ - 3. * COSQ2)
-F322 = -1.875 * SINIQ*(1. + 2. * COSIQ - 3. * COSQ2)
-F441 = 35. * SINI2*F220
-F442 = 39.3750 * SINI2*SINI2
-F522 = 9.84375 * SINIQ*(SINI2*(1. - 2. * COSIQ - 5. * COSQ2)
-        1 + .33333333 * (-2. + 4. * COSIQ + 6. * COSQ2))
-F523 = SINIQ*(4.92187512 * SINI2*(-2. - 4. * COSIQ + 10. * COSQ2)
-        * +6.56250012 * (1. + 2. * COSIQ - 3. * COSQ2))
-F542 = 29.53125 * SINIQ*(2. - 8. * COSIQ + COSQ2*(-12. + 8. * COSIQ
-        * +10. * COSQ2))
-F543 = 29.53125 * SINIQ*(-2. - 8. * COSIQ + COSQ2*(12. + 8. * COSIQ - 10. * COSQ2))
-XNO2 = XNQ*XNQ
-AINV2 = AQNV*AQNV
-TEMP1 = 3. * XNO2*AINV2
-TEMP = TEMP1*ROOT22
-D2201 = TEMP*F220*G201
-D2211 = TEMP*F221*G211
-TEMP1 = TEMP1*AQNV
-TEMP = TEMP1*ROOT32
-D3210 = TEMP*F321*G310
-63
-D3222 = TEMP*F322*G322
-TEMP1 = TEMP1*AQNV
-TEMP = 2. * TEMP1*ROOT44
-D4410 = TEMP*F441*G410
-D4422 = TEMP*F442*G422
-TEMP1 = TEMP1*AQNV
-TEMP = TEMP1*ROOT52
-D5220 = TEMP*F522*G520
-D5232 = TEMP*F523*G532
-TEMP = 2. * TEMP1*ROOT54
-D5421 = TEMP*F542*G521
-D5433 = TEMP*F543*G533
-XLAMO = XMAO + XNODEO + XNODEO - THGR - THGR
-BFACT = XLLDOT + XNODOT + XNODOT - THDT - THDT
-BFACT = BFACT + SSL + SSH + SSH
-GO TO 80
-* SYNCHRONOUS RESONANCE TERMS INITIALIZATION
-70 IRESFL = 1
-ISYNFL = 1
-G200 = 1.0 + EQSQ*(-2.5 + .8125 * EQSQ)
-G310 = 1.0 + 2.0 * EQSQ
-G300 = 1.0 + EQSQ*(-6.0 + 6.60937 * EQSQ)
-F220 = .75 * (1. + COSIQ)*(1. + COSIQ)
-F311 = .9375 * SINIQ*SINIQ*(1. + 3. * COSIQ) - .75 * (1. + COSIQ)
-F330 = 1. + COSIQ
-F330 = 1.875 * F330*F330*F330
-DEL1 = 3. * XNQ*XNQ*AQNV*AQNV
-DEL2 = 2. * DEL1*F220*G200*Q22
-DEL3 = 3. * DEL1*F330*G300*Q33*AQNV
-DEL1 = DEL1*F311*G310*Q31*AQNV
-FASX2 = .13130908
-FASX4 = 2.8843198
-FASX6 = .37448087
-XLAMO = XMAO + XNODEO + OMEGAO - THGR
-BFACT = XLLDOT + XPIDOT - THDT
-BFACT = BFACT + SSL + SSG + SSH
-80 XFACT = BFACT - XNQ
-C
-C INITIALIZE INTEGRATOR
-C
-XLI = XLAMO
-XNI = XNQ
-ATIME = 0.D0
-STEPP = 720.D0
-STEPN = -720.D0
-STEP2 = 259200.D0
-64
-RETURN
-
-
-
 
 
 /*
@@ -734,7 +772,7 @@ XLL = XLL + SSL*T
 OMGASM = OMGASM + SSG*T
 XNODES = XNODES + SSH*T
 EM = EO + SSE*T
-XINC = XINCL + SSI*T
+XINC = XINCL + SSI * T
 IF(XINC .GE. 0.) GO TO 90
 XINC = -XINC
 XNODES = XNODES + PI
@@ -756,8 +794,8 @@ GO TO 160
 130 FT = T - ATIME
 ASSIGN 140 TO IRETN
 GO TO 150
-140 XN = XNI + XNDOT*FT + XNDDT*FT*FT * 0.5
-XL = XLI + XLDOT*FT + XNDOT*FT*FT * 0.5
+140 XN = XNI + XNDOT * FT + XNDDT * FT * FT * 0.5
+XL = XLI + XLDOT * FT + XNDOT * FT * FT * 0.5
 TEMP = -XNODES + THGR + T*THDT
 XLL = XL - OMGASM + TEMP
 IF(ISYNFL.EQ.0) XLL = XL + TEMP + TEMP
@@ -766,46 +804,46 @@ C
 C DOT TERMS CALCULATED
 C
 150 IF(ISYNFL.EQ.0) GO TO 152
-XNDOT = DEL1*SIN(XLI - FASX2) + DEL2*SIN(2. * (XLI - FASX4))
-1 + DEL3*SIN(3. * (XLI - FASX6))
-XNDDT = DEL1*COS(XLI - FASX2)
-* +2. * DEL2*COS(2. * (XLI - FASX4))
-* +3. * DEL3*COS(3. * (XLI - FASX6))
+XNDOT = DEL1 * SIN(XLI - FASX2) + DEL2 * SIN(2. * (XLI - FASX4))
+1 + DEL3 * SIN(3. * (XLI - FASX6))
+XNDDT = DEL1 * COS(XLI - FASX2)
+* +2. * DEL2 * COS(2. * (XLI - FASX4))
+* +3. * DEL3 * COS(3. * (XLI - FASX6))
 GO TO 154
-152 XOMI = OMEGAQ + OMGDT*ATIME
+152 XOMI = OMEGAQ + OMGDT * ATIME
 65
 X2OMI = XOMI + XOMI
 X2LI = XLI + XLI
-XNDOT = D2201*SIN(X2OMI + XLI - G22)
-* +D2211*SIN(XLI - G22)
-* +D3210*SIN(XOMI + XLI - G32)
-* +D3222*SIN(-XOMI + XLI - G32)
-* +D4410*SIN(X2OMI + X2LI - G44)
-* +D4422*SIN(X2LI - G44)
-* +D5220*SIN(XOMI + XLI - G52)
-* +D5232*SIN(-XOMI + XLI - G52)
-* +D5421*SIN(XOMI + X2LI - G54)
-* +D5433*SIN(-XOMI + X2LI - G54)
-XNDDT = D2201*COS(X2OMI + XLI - G22)
-* +D2211*COS(XLI - G22)
-* +D3210*COS(XOMI + XLI - G32)
-* +D3222*COS(-XOMI + XLI - G32)
-* +D5220*COS(XOMI + XLI - G52)
-* +D5232*COS(-XOMI + XLI - G52)
-* +2. * (D4410*COS(X2OMI + X2LI - G44)
-        * +D4422*COS(X2LI - G44)
-        * +D5421*COS(XOMI + X2LI - G54)
-        * +D5433*COS(-XOMI + X2LI - G54))
+XNDOT = D2201 * SIN(X2OMI + XLI - G22)
+* +D2211 * SIN(XLI - G22)
+* +D3210 * SIN(XOMI + XLI - G32)
+* +D3222 * SIN(-XOMI + XLI - G32)
+* +D4410 * SIN(X2OMI + X2LI - G44)
+* +D4422 * SIN(X2LI - G44)
+* +D5220 * SIN(XOMI + XLI - G52)
+* +D5232 * SIN(-XOMI + XLI - G52)
+* +D5421 * SIN(XOMI + X2LI - G54)
+* +D5433 * SIN(-XOMI + X2LI - G54)
+XNDDT = D2201 * COS(X2OMI + XLI - G22)
+* +D2211 * COS(XLI - G22)
+* +D3210 * COS(XOMI + XLI - G32)
+* +D3222 * COS(-XOMI + XLI - G32)
+* +D5220 * COS(XOMI + XLI - G52)
+* +D5232 * COS(-XOMI + XLI - G52)
+* +2. * (D4410 * COS(X2OMI + X2LI - G44)
+        * +D4422 * COS(X2LI - G44)
+        * +D5421 * COS(XOMI + X2LI - G54)
+        * +D5433 * COS(-XOMI + X2LI - G54))
 154 XLDOT = XNI + XFACT
-XNDDT = XNDDT*XLDOT
+XNDDT = XNDDT * XLDOT
 GO TO IRETN
 C
 C INTEGRATOR
 C
 160 ASSIGN 165 TO IRETN
 GO TO 150
-165 XLI = XLI + XLDOT*DELT + XNDOT*STEP2
-XNI = XNI + XNDOT*DELT + XNDDT*STEP2
+165 XLI = XLI + XLDOT * DELT + XNDOT*STEP2
+XNI = XNI + XNDOT * DELT + XNDDT*STEP2
 ATIME = ATIME + DELT
 GO TO IRET
 C
@@ -831,26 +869,26 @@ SINIS = SIN(XINC)
 COSIS = COS(XINC)
 IF(DABS(SAVTSN - T).LT.(30.D0)) GO TO 210
 SAVTSN = T
-ZM = ZMOS + ZNS*T
-205 ZF = ZM + 2. * ZES*SIN(ZM)
+ZM = ZMOS + ZNS * T
+205 ZF = ZM + 2. * ZES * SIN(ZM)
 SINZF = SIN(ZF)
-F2 = .5 * SINZF*SINZF - .25
-F3 = -.5 * SINZF*COS(ZF)
-SES = SE2*F2 + SE3*F3
-SIS = SI2*F2 + SI3*F3
-SLS = SL2*F2 + SL3*F3 + SL4*SINZF
-SGHS = SGH2*F2 + SGH3*F3 + SGH4*SINZF
-SHS = SH2*F2 + SH3*F3
+F2 = .5 * SINZF * SINZF - .25
+F3 = -.5 * SINZF * COS(ZF)
+SES = SE2 * F2 + SE3*F3
+SIS = SI2 * F2 + SI3*F3
+SLS = SL2 * F2 + SL3 * F3 + SL4*SINZF
+SGHS = SGH2 * F2 + SGH3 * F3 + SGH4*SINZF
+SHS = SH2 * F2 + SH3*F3
 ZM = ZMOL + ZNL*T
-ZF = ZM + 2. * ZEL*SIN(ZM)
+ZF = ZM + 2. * ZEL * SIN(ZM)
 SINZF = SIN(ZF)
-F2 = .5 * SINZF*SINZF - .25
-F3 = -.5 * SINZF*COS(ZF)
-SEL = EE2*F2 + E3*F3
-SIL = XI2*F2 + XI3*F3
-SLL = XL2*F2 + XL3*F3 + XL4*SINZF
-SGHL = XGH2*F2 + XGH3*F3 + XGH4*SINZF
-SHL = XH2*F2 + XH3*F3
+F2 = .5 * SINZF * SINZF - .25
+F3 = -.5 * SINZF * COS(ZF)
+SEL = EE2 * F2 + E3*F3
+SIL = XI2 * F2 + XI3*F3
+SLL = XL2 * F2 + XL3 * F3 + XL4*SINZF
+SGHL = XGH2 * F2 + XGH3 * F3 + XGH4*SINZF
+SHL = XH2 * F2 + XH3*F3
 PE = SES + SEL
 PINC = SIS + SIL
 PL = SLS + SLL
@@ -877,12 +915,12 @@ C
 COSOK = COS(XNODES)
 ALFDP = SINIS*SINOK
 BETDP = SINIS*COSOK
-DALF = PH*COSOK + PINC*COSIS*SINOK
-DBET = -PH*SINOK + PINC*COSIS*COSOK
+DALF = PH * COSOK + PINC * COSIS*SINOK
+DBET = -PH * SINOK + PINC * COSIS*COSOK
 ALFDP = ALFDP + DALF
 BETDP = BETDP + DBET
 XLS = XLL + OMGASM + COSIS*XNODES
-DLS = PL + PGH - PINC*XNODES*SINIS
+DLS = PL + PGH - PINC * XNODES*SINIS
 XLS = XLS + DLS
 XNODES = ACTAN(ALFDP, BETDP)
 XLL = XLL + PL

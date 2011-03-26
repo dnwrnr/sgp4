@@ -25,6 +25,7 @@ public:
 
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao);
+    void DeepSpaceInitialize();
 
     bool first_run_;
 
