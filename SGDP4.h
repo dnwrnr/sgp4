@@ -160,6 +160,78 @@ private:
     double period_;
     Julian epoch_;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    double d_day_;
+
+    double d_xnodce_;
+    double d_stem_;
+    double d_ctem_;
+    double d_zcosil_;
+    double d_zsinil_;
+    double d_zsinhl_;
+    double d_zcoshl_;
+    double d_c_;
+    double d_gam_;
+    double d_zx_;
+    double d_zy_;
+    double d_zcosgl_;
+    double d_zsingl_;
+    double d_zmol_;
+    double d_zmos_;
+
+    double d_savtsn_;
+
+    double d_sse_;
+    double d_ssi_;
+    double d_ssl_;
+    double d_ssg_;
+    double d_ssh_;
+    double d_se2_;
+    double d_si2_;
+    double d_sl2_;
+    double d_sgh2_;
+    double d_sh2_;
+    double d_se3_;
+    double d_si3_;
+    double d_sl3_;
+    double d_sgh3_;
+    double d_sh3_;
+    double d_sl4_;
+    double d_sgh4_;
+
+    double d_ee2_;
+    double d_e3_;
+    double d_xi2_;
+    double d_xi3_;
+    double d_xl2_;
+    double d_xl3_;
+    double d_xl4_;
+    double d_xgh2_;
+    double d_xgh3_;
+    double d_xgh4_;
+    double d_xh2_;
+    double d_xh3_;
+
+    double d_xlamo_;
+    double d_xli_;
+    double d_xni_;
+    double d_atime_;
+    double d_stepp_;
+    double d_stepn_;
+    double d_step2_;
+
 };
 
 #endif

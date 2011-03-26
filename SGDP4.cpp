@@ -477,6 +477,11 @@ void SGDP4::DeepSpaceInitialize() {
     double s6;
     double s7;
 
+    double se;
+    double si;
+    double sl;
+    double sgh;
+
     double ZNS = 1.19459E-5;
     double C1SS = 2.9864797E-6;
     double ZES = 0.01675;
@@ -509,38 +514,38 @@ void SGDP4::DeepSpaceInitialize() {
 
 
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
-    double xpidot = omgdt_ + xnodot_;
+    double xpidot = omgdt + xnodot_;
     double sinq = sin(AscendingNode());
     double cosq = cos(AscendingNode());
 
     /*
      * initialize lunar solar terms
      */
-    double day = Epoch().FromJan1_12h_1900();
+    d_day_ = Epoch().FromJan1_12h_1900();
 
-    double xnodce = 4.5236020 - 9.2422029e-4 * day;
+    double xnodce = 4.5236020 - 9.2422029e-4 * d_day_;
     double stem = sin(xnodce);
     double ctem = cos(xnodce);
     double zcosil = 0.91375164 - 0.03568096 * ctem;
     double zsinil = sqrt(1.0 - zcosil * zcosil);
     double zsinhl = 0.089683511 * stem / zsinil;
     double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
-    double c = 4.7199672 + 0.22997150 * day;
-    double gam = 5.8351514 + 0.0019443680 * day;
+    double c = 4.7199672 + 0.22997150 * d_day_;
+    double gam = 5.8351514 + 0.0019443680 * d_day_;
     double zmol = fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
-    double zx = atan2(zx, zy);
-    double zx = gam + zx - xnodce;
+    zx = atan2(zx, zy);
+    zx = gam + zx - xnodce;
     double zcosgl = cos(zx);
     double zsingl = sin(zx);
-    double zmos = 6.2565837 + 0.017201977 * day;
-    double zmos = fmod2p(zmos);
+    double zmos = 6.2565837 + 0.017201977 * d_day_;
+    zmos = fmod2p(zmos);
 
     /*
      * do solar terms
      */
-    double savtsn = 1e20;
+    d_savtsn_ = 1.0e20;
     double zcosg = ZCOSGS;
     double zsing = ZSINGS;
     double zcosi = ZCOSIS;
@@ -550,7 +555,7 @@ void SGDP4::DeepSpaceInitialize() {
     double cc = C1SS;
     double zn = ZNS;
     double ze = ZES;
-    double zmo = zmos;
+    double zmo = d_zmos_;
     double xnoi = 1.0 / RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++) {
@@ -614,41 +619,41 @@ void SGDP4::DeepSpaceInitialize() {
             shdq = (-zn * s2 * (z21 + z23)) / siniq;
         }
 
-        ee2 = 2.0 * s1 * s6;
-        e3 = 2.0 * s1 * s7;
-        xi2 = 2.0 * s2 * z12;
-        xi3 = 2.0 * s2 * (z13 - z11);
-        xl2 = -2.0 * s3 * z2;
-        xl3 = -2.0 * s3 * (z3 - z1);
-        xl4 = -2.0 * s3 * (-21.0 - 9.0 * eqsq) * ze;
-        xgh2 = 2.0 * s4 * z32;
-        xgh3 = 2.0 * s4 * (z33 - z31);
-        xgh4 = -18.0 * s4 * ze;
-        xh2 = -2.0 * s2 * z22;
-        xh3 = -2.0 * s2 * (z23 - z21);
+        d_ee2_ = 2.0 * s1 * s6;
+        d_e3_ = 2.0 * s1 * s7;
+        d_xi2_ = 2.0 * s2 * z12;
+        d_xi3_ = 2.0 * s2 * (z13 - z11);
+        d_xl2_ = -2.0 * s3 * z2;
+        d_xl3_ = -2.0 * s3 * (z3 - z1);
+        d_xl4_ = -2.0 * s3 * (-21.0 - 9.0 * eqsq) * ze;
+        d_xgh2_ = 2.0 * s4 * z32;
+        d_xgh3_ = 2.0 * s4 * (z33 - z31);
+        d_xgh4_ = -18.0 * s4 * ze;
+        d_xh2_ = -2.0 * s2 * z22;
+        d_xh3_ = -2.0 * s2 * (z23 - z21);
 
         if (cnt == 1)
             break;
         /*
          * do lunar terms
          */
-        sse = se;
-        ssi = si;
-        ssl = sl;
-        ssh = shdq;
-        ssg = sgh - cosiq * ssh;
-        se2 = ee2;
-        si2 = xi2;
-        sl2 = xl2;
-        sgh2 = xgh2;
-        sh2 = xh2;
-        se3 = e3;
-        si3 = xi3;
-        sl3 = xl3;
-        sgh3 = xgh3;
-        sh3 = xh3;
-        sl4 = xl4;
-        sgh4 = xgh4;
+        d_sse_ = se;
+        d_ssi_ = si;
+        d_ssl_ = sl;
+        d_ssh_ = shdq;
+        d_ssg_ = sgh - cosiq * d_ssh_;
+        d_se2_ = d_ee2_;
+        d_si2_ = d_xi2_;
+        d_sl2_ = d_xl2_;
+        d_sgh2_ = d_xgh2_;
+        d_sh2_ = d_xh2_;
+        d_se3_ = d_e3_;
+        d_si3_ = d_xi3_;
+        d_sl3_ = d_xl3_;
+        d_sgh3_ = d_xgh3_;
+        d_sh3_ = d_xh3_;
+        d_sl4_ = d_xl4_;
+        d_sgh4_ = d_xgh4_;
         zcosg = zcosgl;
         zsing = zsingl;
         zcosi = zcosil;
@@ -661,11 +666,11 @@ void SGDP4::DeepSpaceInitialize() {
         zmo = zmol;
 
     }
-    sse += se;
-    ssi += si;
-    ssl += sl;
-    ssg += sgh - cosiq * shdq;
-    ssh += shdq;
+    d_sse_ += se;
+    d_ssi_ += si;
+    d_ssl_ += sl;
+    d_ssg_ += sgh - cosiq * shdq;
+    d_ssh_ += shdq;
 
     /*
      * geopotential resonance initialization for 12 hour orbits
@@ -685,7 +690,15 @@ void SGDP4::DeepSpaceInitialize() {
             resonance_flag = true;
 
             double eoc = Eccentricity() * eqsq;
-            g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
+
+            double g211;
+            double g310;
+            double g322;
+            double g410;
+            double g422;
+            double g520;
+
+            double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
 
             if (Eccentricity() <= 0.65) {
                 g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eqsq;
@@ -708,6 +721,10 @@ void SGDP4::DeepSpaceInitialize() {
                 }
             }
 
+            double g533;
+            double g521;
+            double g532;
+
             if (Eccentricity() < 0.7) {
                 g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eqsq + 5542.21 * eoc;
                 g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eqsq + 5337.524 * eoc;
@@ -717,20 +734,21 @@ void SGDP4::DeepSpaceInitialize() {
                 g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eqsq + 146349.42 * eoc;
                 g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eqsq + 115605.82 * eoc;
             }
-            sini2 = siniq * siniq;
-            f220 = 0.75 * (1.0 + 2.0 * cosiq + cosq2);
-            f221 = 1.5 * sini2;
-            f321 = 1.875 * siniq * (1.0 - 2.0 * cosiq - 3.0 * cosq2);
-            f322 = -1.875 * siniq * (1.0 + 2.0 * cosiq - 3.0 * cosq2);
-            f441 = 35.0 * sini2 * f220;
-            f442 = 39.3750 * sini2 * sini2;
-            f522 = 9.84375 * siniq * (sini2 * (1.0 - 2.0 * cosiq - 5.0 * cosq2)
+
+            double sini2 = siniq * siniq;
+            double f220 = 0.75 * (1.0 + 2.0 * cosiq + cosq2);
+            double f221 = 1.5 * sini2;
+            double f321 = 1.875 * siniq * (1.0 - 2.0 * cosiq - 3.0 * cosq2);
+            double f322 = -1.875 * siniq * (1.0 + 2.0 * cosiq - 3.0 * cosq2);
+            double f441 = 35.0 * sini2 * f220;
+            double f442 = 39.3750 * sini2 * sini2;
+            double f522 = 9.84375 * siniq * (sini2 * (1.0 - 2.0 * cosiq - 5.0 * cosq2)
                     + 0.33333333 * (-2.0 + 4.0 * cosiq + 6.0 * cosq2));
-            f523 = siniq * (4.92187512 * sini2 * (-2.0 - 4.0 * cosiq + 10.0 * cosq2)
+            double f523 = siniq * (4.92187512 * sini2 * (-2.0 - 4.0 * cosiq + 10.0 * cosq2)
                     + 6.56250012 * (1.0 + 2.0 * cosiq - 3.0 * cosq2));
-            f542 = 29.53125 * siniq * (2.0 - 8.0 * cosiq + cosq2 *
+            double f542 = 29.53125 * siniq * (2.0 - 8.0 * cosiq + cosq2 *
                     (-12.0 + 8.0 * cosiq + 10.0 * cosq2));
-            f543 = 29.53125 * siniq * (-2.0 - 8.0 * cosiq + cosq2 *
+            double f543 = 29.53125 * siniq * (-2.0 - 8.0 * cosiq + cosq2 *
                     (12.0 + 8.0 * cosiq - 10.0 * cosq2));
             xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
             ainv2 = aqnv * aqnv;
@@ -764,36 +782,36 @@ void SGDP4::DeepSpaceInitialize() {
         resonance_flag = true;
         synchronous_flag = true;
 
-        g200 = 1.0 + eqsq * (-2.5 + 0.8125 * eqsq);
-        g310 = 1.0 + 2.0 * eqsq;
-        g300 = 1.0 + eqsq * (-6.0 + 6.60937 * eqsq);
-        f220 = 0.75 * (1.0 + cosiq) * (1.0 + cosiq);
-        f311 = 0.9375 * siniq * siniq * (1.0 + 3.0 * cosiq) - 0.75 * (1.0 + cosiq);
-        f330 = 1.0 + cosiq;
+        double g200 = 1.0 + eqsq * (-2.5 + 0.8125 * eqsq);
+        double g310 = 1.0 + 2.0 * eqsq;
+        double g300 = 1.0 + eqsq * (-6.0 + 6.60937 * eqsq);
+        double f220 = 0.75 * (1.0 + cosiq) * (1.0 + cosiq);
+        double f311 = 0.9375 * siniq * siniq * (1.0 + 3.0 * cosiq) - 0.75 * (1.0 + cosiq);
+        double f330 = 1.0 + cosiq;
         f330 = 1.875 * f330 * f330 * f330;
-        del1 = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
-        del2 = 2.0 * del1 * f220 * g200 * Q22;
-        del3 = 3.0 * del1 * f330 * g300 * Q33 * aqnv;
-        del1 = del1 * f311 * g310 * Q31 * aqnv;
-        fasx2 = 0.13130908;
-        fasx4 = 2.8843198;
-        fasx6 = 0.37448087;
-        xlamo = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
-        bfact = xlldot + xpidot - THDT;
-        bfact = bfact + ssl + ssg + ssh;
-        xfact = bfact - RecoveredMeanMotion();
+        d_del1_ = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
+        d_del2_ = 2.0 * del1 * f220 * g200 * Q22;
+        d_del3_ = 3.0 * del1 * f330 * g300 * Q33 * aqnv;
+        d_del1_ = del1 * f311 * g310 * Q31 * aqnv;
+        d_fasx2_ = 0.13130908;
+        d_fasx4_ = 2.8843198;
+        d_fasx6_ = 0.37448087;
+        d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
+        d_bfact_ = xlldot + xpidot - THDT;
+        d_bfact_ = bfact + ssl + ssg + ssh;
+        d_xfact_ = bfact - RecoveredMeanMotion();
     }
 
     if (initialize_integrator) {
         /*
          * initialize integrator
          */
-        xli = xlamo;
-        xni = RecoveredMeanMotion();
-        atime = 0.0;
-        stepp = 720.0;
-        stepn = -720.0;
-        step2 = 259200.0;
+        d_xli_ = d_xlamo_;
+        d_xni_ = RecoveredMeanMotion();
+        d_atime_ = 0.0;
+        d_stepp_ = 720.0;
+        d_stepn_ = -720.0;
+        d_step2_ = 259200.0;
     }
 }
 
