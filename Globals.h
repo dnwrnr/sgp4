@@ -41,7 +41,7 @@ public:
     }
 
     static const double XKMPER() {
-        return 6378.135;
+        return 6378.137;
     }
 
     static const double QOMS2T() {
@@ -49,15 +49,15 @@ public:
     }
 
     static const double XJ2() {
-        return 1.082616e-3;
+        return 1.08262998905e-3;
     }
 
     static const double XJ3() {
-        return -2.53881e-6;
+        return -2.53215306e-6;
     }
 
     static const double XJ4() {
-        return -1.65597e-6;
+        return -1.61098761e-6;
     }
 
     static const double MU() {
@@ -73,7 +73,7 @@ public:
     }
 
     static const double PI() {
-        return 3.14159265358979323846;
+        return 3.141592653589793238462643383279;
     }
 
     static const double TWOPI() {

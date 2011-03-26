@@ -30,7 +30,6 @@ private:
 
     double cosio_;
     double sinio_;
-    double xnodp_;
     double aodp_;
     double x3thm1_;
 

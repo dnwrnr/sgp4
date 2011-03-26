@@ -15,7 +15,6 @@ void SGDP4::Initialize(const Tle& tle) {
 
     cosio_ = 0.0;
     sinio_ = 0.0;
-    xnodp_ = 0.0;
     aodp_ = 0.0;
 
     eta_ = 0.0;
@@ -75,10 +74,9 @@ void SGDP4::Initialize(const Tle& tle) {
     tle_data_0_.epoch = jul;
 
     /*
-     * recover original mean motion (xnodp) and semimajor axis (aodp)
+     * recover original mean motion and semimajor axis (aodp)
      * from input elements
      */
-    double a1 = pow(Globals::XKE() / tle_data_0_.xno, Globals::TOTHRD());
     cosio_ = cos(tle_data_0_.xincl);
     sinio_ = sin(tle_data_0_.xincl);
     double theta2 = cosio_ * cosio_;
@@ -86,23 +84,24 @@ void SGDP4::Initialize(const Tle& tle) {
     double eosq = tle_data_0_.eo * tle_data_0_.eo;
     double betao2 = 1.0 - eosq;
     double betao = sqrt(betao2);
-    double del1 = 1.5 * Globals::CK2() * x3thm1_ / (a1 * a1 * betao * betao2);
-    double ao = a1 * (1.0 - del1 * (0.5 * Globals::TOTHRD() + del1 * (1.0 + 134.0 / 81.0 * del1)));
-    double delo = 1.5 * Globals::CK2() * x3thm1_ / (ao * ao * betao * betao2);
-    /*
-     * recovered mean motion
-     */
-    xnodp_ = tle_data_0_.xno / (1.0 + delo);
-    /*
-     * recovered semimajor axis
-     */
-    aodp_ = ao / (1.0 - delo);
-
-    gsto_ = tle_data_0_.epoch.ToGMST();
+    {
+        double a1 = pow(Globals::XKE() / tle_data_0_.xno, Globals::TOTHRD());
+        double del1 = 1.5 * Globals::CK2() * x3thm1_ / (a1 * a1 * betao * betao2);
+        double ao = a1 * (1.0 - del1 * (0.5 * Globals::TOTHRD() + del1 * (1.0 + 134.0 / 81.0 * del1)));
+        double delo = 1.5 * Globals::CK2() * x3thm1_ / (ao * ao * betao * betao2);
+        /*
+         * recovered mean motion
+         */
+        tle_data_0_.xno = tle_data_0_.xno / (1.0 + delo);
+        /*
+         * recovered semimajor axis
+         */
+        aodp_ = ao / (1.0 - delo);
+    }
 
     double rp = aodp_ * (1.0 - tle_data_0_.eo);
-    double perigee = (aodp_ * (1.0 - tle_data_0_.eo) - Globals::AE()) * Globals::XKMPER();
-    double period = Globals::TWOPI() / xnodp_;
+    double perigee = (rp - Globals::AE()) * Globals::XKMPER();
+    double period = Globals::TWOPI() / tle_data_0_.xno;
 
     /*
      * for perigee less than 220 kilometers, the simple_model flag is set and
@@ -114,11 +113,8 @@ void SGDP4::Initialize(const Tle& tle) {
     if (rp < (220.0 / Globals::XKMPER() + Globals::AE()))
         use_simple_model_ = true;
 
-    double s4_ = 0.0;
-    double qoms24_ = 0.0;
-
-    s4_ = Globals::S();
-    qoms24_ = Globals::QOMS2T();
+    double s4_ = Globals::S();
+    double qoms24_ = Globals::QOMS2T();
     /*
      * for perigee below 156km, the values of
      * s4 and qoms2t are altered
@@ -146,24 +142,24 @@ void SGDP4::Initialize(const Tle& tle) {
     double psisq = fabs(1.0 - etasq);
     double coef = qoms24_ * pow(tsi, 4.0);
     coef1_ = coef / pow(psisq, 3.5);
-    double c2 = coef1_ * xnodp_ * (aodp_ * (1.0 + 1.5 * etasq + eeta *
+    double c2 = coef1_ * tle_data_0_.xno * (aodp_ * (1.0 + 1.5 * etasq + eeta *
             (4.0 + etasq)) + 0.75 * Globals::CK2() * tsi / psisq *
             x3thm1_ * (8.0 + 3.0 * etasq * (8.0 + etasq)));
     c1_ = tle_data_0_.bstar * c2;
     a3ovk2_ = -Globals::XJ3() / Globals::CK2() * pow(Globals::AE(), 3.0);
 
     x1mth2_ = 1.0 - theta2;
-    c4_ = 2.0 * xnodp_ * coef1_ * aodp_ * betao2 *
+    c4_ = 2.0 * tle_data_0_.xno * coef1_ * aodp_ * betao2 *
             (eta_ * (2.0 + 0.5 * etasq) + tle_data_0_.eo * (0.5 + 2.0 * etasq) -
             2.0 * Globals::CK2() * tsi / (aodp_ * psisq) *
             (-3.0 * x3thm1_ * (1.0 - 2.0 * eeta + etasq *
             (1.5 - 0.5 * eeta)) + 0.75 * x1mth2_ * (2.0 * etasq - eeta *
             (1.0 + etasq)) * cos(2.0 * tle_data_0_.omega)));
     double theta4 = theta2 * theta2;
-    double temp1 = 3.0 * Globals::CK2() * pinvsq * xnodp_;
+    double temp1 = 3.0 * Globals::CK2() * pinvsq * tle_data_0_.xno;
     double temp2 = temp1 * Globals::CK2() * pinvsq;
-    double temp3 = 1.25 * Globals::CK4() * pinvsq * pinvsq * xnodp_;
-    xmdot_ = xnodp_ + 0.5 * temp1 * betao * x3thm1_ + 0.0625 * temp2 * betao *
+    double temp3 = 1.25 * Globals::CK4() * pinvsq * pinvsq * tle_data_0_.xno;
+    xmdot_ = tle_data_0_.xno + 0.5 * temp1 * betao * x3thm1_ + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
     double x1m5th = 1.0 - 5.0 * theta2;
     omgdot_ = -0.5 * temp1 * x1m5th + 0.0625 * temp2 * (7.0 - 114.0 * theta2 +
@@ -187,7 +183,7 @@ void SGDP4::Initialize(const Tle& tle) {
         // check result (different to telsko)
         double c3 = 0.0;
         if (tle_data_0_.eo > 1.0e-4) {
-            c3 = coef * tsi * a3ovk2_ * xnodp_ * Globals::AE() *
+            c3 = coef * tsi * a3ovk2_ * tle_data_0_.xno * Globals::AE() *
                     sinio_ / tle_data_0_.eo;
         }
 
@@ -213,6 +209,7 @@ void SGDP4::Initialize(const Tle& tle) {
         t5cof_ = 0.2 * (3.0 * d4_ + 12.0 * c1_ * d3_ + 6.0 * d2_ * d2_ + 15.0 *
                 c1sq * (2.0 * d2_ + c1sq));
     } else if (use_deep_space_) {
+        gsto_ = tle_data_0_.epoch.ToGMST();
         //CALL DPINIT(EOSQ,SINIO,COSIO,BETAO,AODP,THETA2,
         // SING,COSG,BETAO2,XMDOT,OMGDOT,XNODOT,XNODP)
     }
@@ -253,13 +250,13 @@ void SGDP4::FindPosition(double tsince) {
     tle_data_tsince_.omega = omgadf;
 
     if (use_deep_space_) {
-        double xn = xnodp_;
+        double xn = tle_data_0_.xno;
 #if 0
         CALL DPSEC(xmdf, tle_data_tsince_.omega, XNODE, tle_data_tsince_.eo, tle_data_tsince_.xincl, xn, tsince);
 #endif
         a = pow(Globals::XKE() / xn, Globals::TOTHRD()) * pow(tempa, 2.0);
         tle_data_tsince_.eo -= tempe;
-        double xmam = xmdf + xnodp_ * templ;
+        double xmam = xmdf + tle_data_0_.xno * templ;
 #if 0
         CALL DPPER(tle_data_tsince_.eo, tle_data_tsince_.xincl, tle_data_tsince_.omega, tle_data_tsince_.xnodeo, xmam);
 #endif
@@ -286,12 +283,12 @@ void SGDP4::FindPosition(double tsince) {
 
     } else {
         double xmp = xmdf;
-        if (use_simple_model_) {
+        if (!use_simple_model_) {
             double delomg = omgcof_ * tsince;
             double delm = xmcof_ * (pow(1.0 + eta_ * cos(xmdf), 3.0) - delmo_);
-            double temp = delomg + delm;
-            xmp = xmdf + temp;
-            tle_data_tsince_.omega -= temp;
+            double temp1 = delomg + delm;
+            xmp = xmdf + temp1;
+            tle_data_tsince_.omega -= temp1;
             double tcube = tsq * tsince;
             double tfour = tsince * tcube;
             tempa -= d2_ * tsq - d3_ * tcube - d4_ * tfour;
@@ -300,7 +297,7 @@ void SGDP4::FindPosition(double tsince) {
         }
         a = aodp_ * pow(tempa, 2.0);
         tle_data_tsince_.eo = tle_data_0_.eo - tempe;
-        xl = xmp + tle_data_tsince_.omega + xnode + xnodp_ * templ;
+        xl = xmp + tle_data_tsince_.omega + xnode + tle_data_0_.xno * templ;
     }
 
     double beta = sqrt(1.0 - tle_data_tsince_.eo * tle_data_tsince_.eo);
@@ -308,12 +305,19 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * long period periodics
      */
-    double axn = tle_data_tsince_.eo * cos(tle_data_tsince_.omega);
-    double temp = 1.0 / (a * beta * beta);
-    double xll = temp * xlcof_ * axn;
-    double aynl = temp * aycof_;
-    double xlt = xl + xll;
-    double ayn = tle_data_tsince_.eo * sin(tle_data_tsince_.omega) + aynl;
+    double axn;
+    double xll;
+    double aynl;
+    double xlt;
+    double ayn;
+    {
+        axn = tle_data_tsince_.eo * cos(tle_data_tsince_.omega);
+        double temp1 = 1.0 / (a * beta * beta);
+        xll = temp1 * xlcof_ * axn;
+        aynl = temp1 * aycof_;
+        xlt = xl + xll;
+        ayn = tle_data_tsince_.eo * sin(tle_data_tsince_.omega) + aynl;
+    }
     /*
      * solve keplers equation
      */
@@ -353,35 +357,51 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * short period preliminary quantities
      */
-    double elsq = axn * axn + ayn * ayn;
-    temp = 1.0 - elsq;
-    double pl = a * temp;
-    double r = a * (1.0 - ecose);
-    double temp1 = 1.0 / r;
-    double rdot = Globals::XKE() * sqrt(a) * esine * temp1;
-    double rfdot = Globals::XKE() * sqrt(pl) * temp1;
-    double temp2 = a * temp1;
-    double betal = sqrt(temp);
-    double temp3 = 1.0 / (1.0 + betal);
-    double cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
-    double sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
-    double u = atan2(sinu, cosu);
-    double sin2u = 2.0 * sinu * cosu;
-    double cos2u = 2.0 * cosu * cosu - 1.0;
+    double pl;
+    double r;
+    double betal;
+    double rdot;
+    double rfdot;
+    double u;
+    double sin2u;
+    double cos2u;
+    {
+        double elsq = axn * axn + ayn * ayn;
+        double temp1 = 1.0 - elsq;
+        pl = a * temp1;
+        r = a * (1.0 - ecose);
+        betal = sqrt(temp1);
+        double temp2 = 1.0 / r;
+        double temp3 = a * temp2;
+        double temp4 = 1.0 / (1.0 + betal);
+        rdot = Globals::XKE() * sqrt(a) * esine * temp2;
+        rfdot = Globals::XKE() * sqrt(pl) * temp2;
+        double cosu = temp3 * (cosepw - axn + ayn * esine * temp4);
+        double sinu = temp3 * (sinepw - ayn - axn * esine * temp4);
+        u = atan2(sinu, cosu);
+        sin2u = 2.0 * sinu * cosu;
+        cos2u = 2.0 * cosu * cosu - 1.0;
+    }
 
-    temp = 1.0 / pl;
-    temp1 = Globals::CK2() * temp;
-    temp2 = temp1 * temp;
     /*
      * update for short periodics
      */
-    double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1_) + 0.5 * temp1 * x1mth2_ * cos2u;
-    double uk = u - 0.25 * temp2 * x7thm1_ * sin2u;
-    double xnodek = xnode + 1.5 * temp2 * cosio_ * sin2u;
-
-    double xinck = tle_data_tsince_.xincl + 1.5 * temp2 * cosio_ * sinio_ * cos2u;
-    double rdotk = rdot - xn * temp1 * x1mth2_ * sin2u;
-    double rfdotk = rfdot + xn * temp1 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
+    double rk;
+    double uk;
+    double xnodek;
+    double xinck;
+    double rdotk;
+    double rfdotk;
+    {
+        double temp1 = Globals::CK2() * 1.0 / pl;
+        double temp2 = temp1 * 1.0 / pl;
+        rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1_) + 0.5 * temp1 * x1mth2_ * cos2u;
+        uk = u - 0.25 * temp2 * x7thm1_ * sin2u;
+        xnodek = xnode + 1.5 * temp2 * cosio_ * sin2u;
+        xinck = tle_data_tsince_.xincl + 1.5 * temp2 * cosio_ * sinio_ * cos2u;
+        rdotk = rdot - xn * temp1 * x1mth2_ * sin2u;
+        rfdotk = rfdot + xn * temp1 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
+    }
     /*
      * orientation vectors
      */
