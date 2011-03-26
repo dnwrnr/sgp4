@@ -130,6 +130,9 @@ void Tle::Initialize() {
     assert(!line_one_.empty());
     assert(!line_two_.empty());
 
+    assert(IsValidLine(line_one_, Tle::LINE_ONE));
+    assert(IsValidLine(line_two_, Tle::LINE_TWO));
+
     /*
      * line 1
      */
