@@ -192,15 +192,14 @@ void Tle::Initialize() {
         fields_[fld].second = atof(fields_[fld].first.c_str());
     }
 
-    int epochYear = (int) GetField(Tle::FLD_EPOCHYEAR);
-    double epochDay = GetField(Tle::FLD_EPOCHDAY);
-
-    if (epochYear < 57)
-        epochYear += 2000;
+    int year = static_cast<int> (GetField(Tle::FLD_EPOCHYEAR));
+    if (year < 57)
+        year += 2000;
     else
-        epochYear += 1900;
-
-    date_ = Julian(epochYear, epochDay);
+        year += 1900;
+    double day = GetField(Tle::FLD_EPOCHDAY);
+    
+    date_ = Julian(year, day);
 }
 
 /*

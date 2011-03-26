@@ -24,15 +24,12 @@ public:
     };
 
 private:
-    void Initialize();
+    void Initialize(const double& theta2, const double& betao2, const double& betao);
 
     bool first_run_;
 
-    struct TleData tle_data_0_;
-
     double cosio_;
     double sinio_;
-    double aodp_;
     double x3thm1_;
 
     double eta_;
@@ -121,7 +118,7 @@ private:
      * AODP
      */
     double RecoveredSemiMajorAxis() const {
-        return recovered_semi_major_axis;
+        return recovered_semi_major_axis_;
     }
 
     /*
@@ -129,6 +126,17 @@ private:
      */
     double RecoveredMeanMotion() const {
         return recovered_mean_motion_;
+    }
+
+    /*
+     * PERIGE
+     */
+    double Perigee() const {
+        return perigee_;
+    }
+
+    double Period() const {
+        return period_;
     }
 
     /*
@@ -145,8 +153,10 @@ private:
     double inclination_;
     double mean_motion_;
     double bstar_;
-    double recovered_semi_major_axis;
+    double recovered_semi_major_axis_;
     double recovered_mean_motion_;
+    double perigee_;
+    double period_;
     Julian epoch_;
 
 };
