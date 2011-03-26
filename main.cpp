@@ -51,7 +51,7 @@ int main() {
 
         for (itr = tles.begin(); itr != tles.end(); itr++) {
           SGDP4 model;
-          model.Initialize(*itr);
+          model.SetTle(*itr);
           model.FindPosition(0.0);
         }
     

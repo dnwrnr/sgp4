@@ -8,7 +8,7 @@ public:
     SGDP4(void);
     virtual ~SGDP4(void);
 
-    void Initialize(const Tle& tle);
+    void SetTle(const Tle& tle);
 
     void FindPosition(double tsince);
 
@@ -24,6 +24,8 @@ public:
     };
 
 private:
+    void Initialize();
+
     bool first_run_;
 
     struct TleData tle_data_0_;
@@ -65,6 +67,88 @@ private:
 
     bool use_simple_model_;
     bool use_deep_space_;
+
+    /*
+     * XMO
+     */
+    double MeanAnomoly() const {
+        return mean_anomoly_;
+    }
+
+    /*
+     * XNODEO
+     */
+    double AscendingNode() const {
+        return ascending_node_;
+    }
+
+    /*
+     * OMEGAO
+     */
+    double ArgumentPerigee() const {
+        return argument_perigee_;
+    }
+
+    /*
+     * EO
+     */
+    double Eccentricity() const {
+        return eccentricity_;
+    }
+
+    /*
+     * XINCL
+     */
+    double Inclination() const {
+        return inclination_;
+    }
+
+    /*
+     * XNO
+     */
+    double MeanMotion() const {
+        return mean_motion_;
+    }
+
+    /*
+     * BSTAR
+     */
+    double BStar() const {
+        return bstar_;
+    }
+
+    /*
+     * AODP
+     */
+    double RecoveredSemiMajorAxis() const {
+        return recovered_semi_major_axis;
+    }
+
+    /*
+     * XNODP
+     */
+    double RecoveredMeanMotion() const {
+        return recovered_mean_motion_;
+    }
+
+    /*
+     * EPOCH
+     */
+    Julian Epoch() const {
+        return epoch_;
+    }
+
+    double mean_anomoly_;
+    double ascending_node_;
+    double argument_perigee_;
+    double eccentricity_;
+    double inclination_;
+    double mean_motion_;
+    double bstar_;
+    double recovered_semi_major_axis;
+    double recovered_mean_motion_;
+    Julian epoch_;
+
 };
 
 #endif

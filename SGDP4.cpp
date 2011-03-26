@@ -11,61 +11,39 @@ SGDP4::SGDP4(void) {
 SGDP4::~SGDP4(void) {
 }
 
-void SGDP4::ProcessTle(const Tle& tle) {
+void SGDP4::SetTle(const Tle& tle) {
+
+    /*
+     * extract and format tle data
+     */
+    mean_anomoly_ = tle.GetField(Tle::FLD_M, Tle::U_RAD);
+    ascending_node_ = tle.GetField(Tle::FLD_RAAN, Tle::U_RAD);
+    argument_perigee_ = tle.GetField(Tle::FLD_ARGPER, Tle::U_RAD);
+    eccentricity_ = tle.GetField(Tle::FLD_E);
+    inclination_ = tle.GetField(Tle::FLD_I, Tle::U_RAD);
+    mean_motion_ = tle.GetField(Tle::FLD_MMOTION) / (1440.0 / Globals::TWOPI());
+    bstar_ = tle.GetField(Tle::FLD_BSTAR);
+
+    /*
+     * generate julian date for tle epoch
+     */
+    int year = static_cast<int> (tle.GetField(Tle::FLD_EPOCHYEAR));
+    if (year < 57)
+        year += 2000;
+    else
+        year += 1900;
+    double day = tle.GetField(Tle::FLD_EPOCHDAY);
+    Julian jul(year, day);
+    epoch_ = jul;
 
 
-#if 0
+    recovered_semi_major_axis = 0.0;
+    recovered_mean_motion_ = 0.0;
 
-    XMO MeanAnomoly() Mo
-    XNODEO AscendingNode() thetao
-    OMEGAO ArgumentPerigee() wo
-    EO Eccentricity() eo
-    XINCL Inclination() io
-    XNO MeanMotion() no
-    BSTAR BStar() bstar
-
-            double MeanAnomoly() const {
-        return mean_anomoly_;
-    }
-
-    double AscendingNode() const {
-        return ascending_node_;
-    }
-
-    double ArgumentPerigee() const {
-        return argument_perigee_;
-    }
-
-    double Eccentricity() const {
-        return eccentricity_;
-    }
-
-    double MeanMotion() const {
-        return mean_motion_;
-    }
-
-    double BStar() const {
-        return bstar_;
-    }
-
-    double RecoveredSemiMajorAxis() const {
-        return recovered_semi_major_axis;
-    }
-
-    double RecoveredMeanMotion() const {
-        return recovered_mean_motion_;
-    }
-
-    X, Y, Z, XDOT, YDOT, ZDOT
-    EPOCH
-
-    COMMON / C1 / CK2, CK4, E6A, QOMS2T, S, TOTHRD,
-            1 XJ3, XKE, XKMPER, XMNPDA, AE
-
-#endif
+    Initialize();
 }
 
-void SGDP4::Initialize(const Tle& tle) {
+void SGDP4::Initialize() {
 
     cosio_ = 0.0;
     sinio_ = 0.0;
@@ -104,28 +82,7 @@ void SGDP4::Initialize(const Tle& tle) {
     use_simple_model_ = false;
     use_deep_space_ = false;
 
-    /*
-     * extract and format tle data
-     */
-    tle_data_0_.bstar = tle.GetField(Tle::FLD_BSTAR);
-    tle_data_0_.eo = tle.GetField(Tle::FLD_E);
-    tle_data_0_.omega = tle.GetField(Tle::FLD_ARGPER, Tle::U_RAD);
-    tle_data_0_.xincl = tle.GetField(Tle::FLD_I, Tle::U_RAD);
-    tle_data_0_.xmo = tle.GetField(Tle::FLD_M, Tle::U_RAD);
-    tle_data_0_.xno = tle.GetField(Tle::FLD_MMOTION) / (1440.0 / Globals::TWOPI());
-    tle_data_0_.xnodeo = tle.GetField(Tle::FLD_RAAN, Tle::U_RAD);
 
-    /*
-     * generate julian date for tle epoch
-     */
-    int year = static_cast<int> (tle.GetField(Tle::FLD_EPOCHYEAR));
-    if (year < 57)
-        year += 2000;
-    else
-        year += 1900;
-    double day = tle.GetField(Tle::FLD_EPOCHDAY);
-    Julian jul(year, day);
-    tle_data_0_.epoch = jul;
 
     /*
      * recover original mean motion and semimajor axis (aodp)
