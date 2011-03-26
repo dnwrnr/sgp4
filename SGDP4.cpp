@@ -433,6 +433,81 @@ void SGDP4::FindPosition(double tsince) {
  */
 void SGDP4::DeepSpaceInitialize() {
 
+    double a1;
+    double a2;
+    double a3;
+    double a4;
+    double a5;
+    double a6;
+    double a7;
+    double a8;
+    double a9;
+    double a10;
+
+    double x1;
+    double x2;
+    double x3;
+    double x4;
+    double x5;
+    double x6;
+    double x7;
+    double x8;
+
+    double z1;
+    double z2;
+    double z3;
+
+    double z11;
+    double z12;
+    double z13;
+
+    double z21;
+    double z22;
+    double z23;
+
+    double z31;
+    double z32;
+    double z33;
+
+    double s1;
+    double s2;
+    double s3;
+    double s4;
+    double s5;
+    double s6;
+    double s7;
+
+    double ZNS = 1.19459E-5;
+    double C1SS = 2.9864797E-6;
+    double ZES = 0.01675;
+    double ZNL = 1.5835218E-4;
+    double C1L = 4.7968065E-7;
+    double ZEL = 0.05490;
+    double ZCOSIS = 0.91744867;
+    double ZSINI = 0.39785416;
+    double ZSINGS = -0.98088458;
+    double ZCOSGS = 0.1945905;
+    double Q22 = 1.7891679E-6;
+    double Q31 = 2.1460748E-6;
+    double Q33 = 2.2123015E-7;
+    double ROOT22 = 1.7891679E-6;
+    double ROOT32 = 3.7393792E-7;
+    double ROOT44 = 7.3636953E-9;
+    double ROOT52 = 1.1428639E-7;
+    double ROOT54 = 2.1765803E-9;
+    double THDT = 4.3752691E-3;
+
+    double ZCOSHS = 1.0;
+    double ZSINHS = 0.0;
+    double G22 = 5.7686396;
+    double G32 = 0.95240898;
+    double G44 = 1.8014998;
+    double G52 = 1.0508330;
+    double G54 = 4.4108898;
+
+
+
+
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
     double xpidot = omgdt_ + xnodot_;
     double sinq = sin(AscendingNode());
@@ -444,8 +519,8 @@ void SGDP4::DeepSpaceInitialize() {
     double day = Epoch().FromJan1_12h_1900();
 
     double xnodce = 4.5236020 - 9.2422029e-4 * day;
-    double stem = dsin(xnodce);
-    double ctem = dcos(xnodce);
+    double stem = sin(xnodce);
+    double ctem = cos(xnodce);
     double zcosil = 0.91375164 - 0.03568096 * ctem;
     double zsinil = sqrt(1.0 - zcosil * zcosil);
     double zsinhl = 0.089683511 * stem / zsinil;
@@ -455,7 +530,7 @@ void SGDP4::DeepSpaceInitialize() {
     double zmol = fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
-    double zx = actan(zx, zy);
+    double zx = atan2(zx, zy);
     double zx = gam + zx - xnodce;
     double zcosgl = cos(zx);
     double zsingl = sin(zx);
@@ -466,15 +541,15 @@ void SGDP4::DeepSpaceInitialize() {
      * do solar terms
      */
     double savtsn = 1e20;
-    double zcosg = zcosgs;
-    double zsing = zsings;
-    double zcosi = zcosis;
-    double zsini = zsinis;
+    double zcosg = ZCOSGS;
+    double zsing = ZSINGS;
+    double zcosi = ZCOSIS;
+    double zsini = ZSINI;
     double zcosh = cosq;
     double zsinh = sinq;
-    double cc = c1ss;
-    double zn = zns;
-    double ze = zes;
+    double cc = C1SS;
+    double zn = ZNS;
+    double ze = ZES;
     double zmo = zmos;
     double xnoi = 1.0 / RecoveredMeanMotion();
 
@@ -580,9 +655,9 @@ void SGDP4::DeepSpaceInitialize() {
         zsini = zsinil;
         zcosh = zcoshl * cosq + zsinhl * sinq;
         zsinh = sinq * zcoshl - cosq * zsinhl;
-        zn = znl;
-        cc = c1l;
-        ze = zel;
+        zn = ZNL;
+        cc = C1L;
+        ze = ZEL;
         zmo = zmol;
 
     }
@@ -660,26 +735,26 @@ void SGDP4::DeepSpaceInitialize() {
             xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
             ainv2 = aqnv * aqnv;
             temp1 = 3.0 * xno2 * ainv2;
-            temp = temp1 * root22;
+            temp = temp1 * ROOT22;
             d2201 = temp * f220 * g201;
             d2211 = temp * f221 * g211;
             temp1 = temp1 * aqnv;
-            temp = temp1 * root32;
+            temp = temp1 * ROOT32;
             d3210 = temp * f321 * g310;
             d3222 = temp * f322 * g322;
             temp1 = temp1 * aqnv;
-            temp = 2.0 * temp1 * root44;
+            temp = 2.0 * temp1 * ROOT44;
             d4410 = temp * f441 * g410;
             d4422 = temp * f442 * g422;
             temp1 = temp1 * aqnv;
-            temp = temp1 * root52;
+            temp = temp1 * ROOT52;
             d5220 = temp * f522 * g520;
             d5232 = temp * f523 * g532;
-            temp = 2.0 * temp1 * root54;
+            temp = 2.0 * temp1 * ROOT54;
             d5421 = temp * f542 * g521;
             d5433 = temp * f543 * g533;
             xlamo = MeanAnomoly() + AscendingNode() + AscendingNode() - gsto_ - gsto_;
-            bfact = xlldot + xnodot + xnodot - thdt - thdt;
+            bfact = xlldot + xnodot + xnodot - THDT - THDT;
             bfact = bfact + ssl + ssh + ssh;
         }
     } else {
@@ -697,14 +772,14 @@ void SGDP4::DeepSpaceInitialize() {
         f330 = 1.0 + cosiq;
         f330 = 1.875 * f330 * f330 * f330;
         del1 = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
-        del2 = 2.0 * del1 * f220 * g200 * q22;
-        del3 = 3.0 * del1 * f330 * g300 * q33 * aqnv;
-        del1 = del1 * f311 * g310 * q31 * aqnv;
+        del2 = 2.0 * del1 * f220 * g200 * Q22;
+        del3 = 3.0 * del1 * f330 * g300 * Q33 * aqnv;
+        del1 = del1 * f311 * g310 * Q31 * aqnv;
         fasx2 = 0.13130908;
         fasx4 = 2.8843198;
         fasx6 = 0.37448087;
         xlamo = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
-        bfact = xlldot + xpidot - thdt;
+        bfact = xlldot + xpidot - THDT;
         bfact = bfact + ssl + ssg + ssh;
         xfact = bfact - RecoveredMeanMotion();
     }
@@ -735,14 +810,14 @@ COMMON / E1 / XMO, XNODEO, OMEGAO, EO, XINCL, XNO, XNDT2O,
 
         double ZNS = 1.19459E-5;
 double C1SS = 2.9864797E-6;
-double ZES = .01675;
+double ZES = 0.01675;
 double ZNL = 1.5835218E-4;
 double C1L = 4.7968065E-7;
-double ZEL = .05490;
-double ZCOSIS = .91744867;
-double ZSINI = .39785416;
-double ZSINGS = -.98088458;
-double ZCOSGS = .1945905;
+double ZEL = 0.05490;
+double ZCOSIS = 0.91744867;
+double ZSINI = 0.39785416;
+double ZSINGS = -0.98088458;
+double ZCOSGS = 0.1945905;
 double ZCOSHS = 1.0;
 double ZSINHS = 0.0;
 double Q22 = 1.7891679E-6;
