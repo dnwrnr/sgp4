@@ -393,14 +393,15 @@ void SGDP4::FindPosition(double tsince) {
     double rdotk;
     double rfdotk;
     {
-        double temp1 = Globals::CK2() * 1.0 / pl;
-        double temp2 = temp1 * 1.0 / pl;
-        rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1_) + 0.5 * temp1 * x1mth2_ * cos2u;
-        uk = u - 0.25 * temp2 * x7thm1_ * sin2u;
-        xnodek = xnode + 1.5 * temp2 * cosio_ * sin2u;
-        xinck = tle_data_tsince_.xincl + 1.5 * temp2 * cosio_ * sinio_ * cos2u;
-        rdotk = rdot - xn * temp1 * x1mth2_ * sin2u;
-        rfdotk = rfdot + xn * temp1 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
+        double temp1 = 1.0 / pl;
+        double temp2 = Globals::CK2() * temp1;
+        double temp3 = temp2 * temp1;
+        rk = r * (1.0 - 1.5 * temp3 * betal * x3thm1_) + 0.5 * temp2 * x1mth2_ * cos2u;
+        uk = u - 0.25 * temp3 * x7thm1_ * sin2u;
+        xnodek = xnode + 1.5 * temp3 * cosio_ * sin2u;
+        xinck = tle_data_tsince_.xincl + 1.5 * temp3 * cosio_ * sinio_ * cos2u;
+        rdotk = rdot - xn * temp2 * x1mth2_ * sin2u;
+        rfdotk = rfdot + xn * temp2 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
     }
     /*
      * orientation vectors
@@ -425,9 +426,9 @@ void SGDP4::FindPosition(double tsince) {
     double x = rk * ux * Globals::XKMPER();
     double y = rk * uy * Globals::XKMPER();
     double z = rk * uz * Globals::XKMPER();
-    double xdot = (rdotk * ux + rfdotk * vx) * Globals::XKMPER() * Globals::XKE() / 60.0;
-    double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() * Globals::XKE() / 60.0;
-    double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() * Globals::XKE() / 60.0;
+    double xdot = (rdotk * ux + rfdotk * vx) * Globals::XKMPER() / 60.0;
+    double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() / 60.0;
+    double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
 }
 
 #if 0
