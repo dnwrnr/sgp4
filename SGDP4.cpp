@@ -53,10 +53,10 @@ void SGDP4::SetTle(const Tle& tle) {
     perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - Globals::AE()) * Globals::XKMPER();
     period_ = Globals::TWOPI() / RecoveredMeanMotion();
 
-    Initialize(theta2, betao2, betao);
+    Initialize(theta2, betao2, betao, eosq);
 }
 
-void SGDP4::Initialize(const double& theta2, const double& betao2, const double& betao) {
+void SGDP4::Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq) {
 
     cosio_ = 0.0;
     sinio_ = 0.0;
@@ -201,9 +201,9 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         gsto_ = Epoch().ToGMST();
         double sing = sin(ArgumentPerigee());
         double cosg = cos(ArgumentPerigee());
-        //DeepSpaceInitialize(eosq, sinio, cosio, betao);
-        //CALL DPINIT(EOSQ,SINIO,COSIO,BETAO,AODP,THETA2,
-        // SING,COSG,BETAO2,XMDOT,OMGDOT,XNODOT,XNODP)
+        DeepSpaceInitialize(eosq, sinio_, cosio_, betao,
+                theta2, sing, cosg, betao2,
+                xmdot_, omgdot_, xnodot_);
     }
 
     first_run_ = false;
@@ -424,79 +424,24 @@ void SGDP4::FindPosition(double tsince) {
 }
 
 /*
- * entry dpinit(const double& eqsq, const double& siniq, const double& cosiq,
- * const double& rteqsq, cosq2, sinomo, cosomo, bsq, xlldot, omgdt, xnodot, xnodp)
+ * variable used
+ * func DPINIT(EQSQ,SINIQ,COSIQ,RTEQSQ,theta2,sing,cosg,betao2,XLLDOT,OMGDT, XNODOT)
+ * call DPINIT(EOSQ,SINIO,COSIO,BETAO, THETA2,SING,COSG,BETAO2,XMDOT, OMGDOT,XNODOT)
  */
 
 /*
  * deep space initialization
  */
-void SGDP4::DeepSpaceInitialize() {
+void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
+        const double& theta2, const double& sing, const double& cosg, const double& betao2,
+        const double& xmdot, const double& omgdot, const double& xnodot) {
 
-    double omgdt = 0.0;
-    double cosiq = 0.0;
-    double siniq = 0.0;
-    double cosomo = 0.0;
-    double sinomo = 0.0;
-    double eqsq = 0.0;
-    double bsq = 0.0;
+
+    double se = 0.0;
+    double si = 0.0;
+    double sl = 0.0;
+    double sgh = 0.0;
     double shdq = 0.0;
-    double cosq2 = 0.0;
-    double rteqsq = 0.0;
-    double xlldot = 0.0;
-    double xnodot = 0.0;
-
-
-
-
-    double a1;
-    double a2;
-    double a3;
-    double a4;
-    double a5;
-    double a6;
-    double a7;
-    double a8;
-    double a9;
-    double a10;
-
-    double x1;
-    double x2;
-    double x3;
-    double x4;
-    double x5;
-    double x6;
-    double x7;
-    double x8;
-
-    double z1;
-    double z2;
-    double z3;
-
-    double z11;
-    double z12;
-    double z13;
-
-    double z21;
-    double z22;
-    double z23;
-
-    double z31;
-    double z32;
-    double z33;
-
-    double s1;
-    double s2;
-    double s3;
-    double s4;
-    double s5;
-    double s6;
-    double s7;
-
-    double se;
-    double si;
-    double sl;
-    double sgh;
 
     double bfact;
 
@@ -521,7 +466,7 @@ void SGDP4::DeepSpaceInitialize() {
     double THDT = 4.3752691E-3;
 
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
-    double xpidot = omgdt + xnodot_;
+    double xpidot = omgdot + xnodot_;
     double sinq = sin(AscendingNode());
     double cosq = cos(AscendingNode());
 
@@ -573,61 +518,61 @@ void SGDP4::DeepSpaceInitialize() {
         /*
          * solar terms are done a second time after lunar terms are done
          */
-        a1 = zcosg * zcosh + zsing * zcosi * zsinh;
-        a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
-        a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
-        a8 = zsing * zsini;
-        a9 = zsing * zsinh + zcosg * zcosi*zcosh;
-        a10 = zcosg * zsini;
-        a2 = cosiq * a7 + siniq * a8;
-        a4 = cosiq * a9 + siniq * a10;
-        a5 = -siniq * a7 + cosiq * a8;
-        a6 = -siniq * a9 + cosiq * a10;
-        x1 = a1 * cosomo + a2 * sinomo;
-        x2 = a3 * cosomo + a4 * sinomo;
-        x3 = -a1 * sinomo + a2 * cosomo;
-        x4 = -a3 * sinomo + a4 * cosomo;
-        x5 = a5 * sinomo;
-        x6 = a6 * sinomo;
-        x7 = a5 * cosomo;
-        x8 = a6 * cosomo;
-        z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
-        z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
-        z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
-        z1 = 3.0 * (a1 * a1 + a2 * a2) + z31 * eqsq;
-        z2 = 6.0 * (a1 * a3 + a2 * a4) + z32 * eqsq;
-        z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * eqsq;
-        z11 = -6.0 * a1 * a5 + eqsq * (-24. * x1 * x7 - 6. * x3 * x5);
-        z12 = -6.0 * (a1 * a6 + a3 * a5) + eqsq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
-        z13 = -6.0 * a3 * a6 + eqsq * (-24. * x2 * x8 - 6. * x4 * x6);
-        z21 = 6.0 * a2 * a5 + eqsq * (24. * x1 * x5 - 6. * x3 * x7);
-        z22 = 6.0 * (a4 * a5 + a2 * a6) + eqsq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
-        z23 = 6.0 * a4 * a6 + eqsq * (24. * x2 * x6 - 6. * x4 * x8);
-        z1 = z1 + z1 + bsq * z31;
-        z2 = z2 + z2 + bsq * z32;
-        z3 = z3 + z3 + bsq * z33;
-        s3 = cc * xnoi;
-        s2 = -0.5 * s3 / rteqsq;
-        s4 = s3 * rteqsq;
-        s1 = -15.0 * Eccentricity() * s4;
-        s5 = x1 * x3 + x2 * x4;
-        s6 = x2 * x3 + x1 * x4;
-        s7 = x2 * x4 - x1 * x3;
-        se = s1 * zn * s5;
-        si = s2 * zn * (z11 + z13);
-        sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eqsq);
-        sgh = s4 * zn * (z31 + z33 - 6.0);
+        double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
+        double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
+        double a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
+        double a8 = zsing * zsini;
+        double a9 = zsing * zsinh + zcosg * zcosi*zcosh;
+        double a10 = zcosg * zsini;
+        double a2 = cosio * a7 + sinio * a8;
+        double a4 = cosio * a9 + sinio * a10;
+        double a5 = -sinio * a7 + cosio * a8;
+        double a6 = -sinio * a9 + cosio * a10;
+        double x1 = a1 * cosg + a2 * sing;
+        double x2 = a3 * cosg + a4 * sing;
+        double x3 = -a1 * sing + a2 * cosg;
+        double x4 = -a3 * sing + a4 * cosg;
+        double x5 = a5 * sing;
+        double x6 = a6 * sing;
+        double x7 = a5 * cosg;
+        double x8 = a6 * cosg;
+        double z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
+        double z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
+        double z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
+        double z1 = 3.0 * (a1 * a1 + a2 * a2) + z31 * eosq;
+        double z2 = 6.0 * (a1 * a3 + a2 * a4) + z32 * eosq;
+        double z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * eosq;
+        double z11 = -6.0 * a1 * a5 + eosq * (-24. * x1 * x7 - 6. * x3 * x5);
+        double z12 = -6.0 * (a1 * a6 + a3 * a5) + eosq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
+        double z13 = -6.0 * a3 * a6 + eosq * (-24. * x2 * x8 - 6. * x4 * x6);
+        double z21 = 6.0 * a2 * a5 + eosq * (24. * x1 * x5 - 6. * x3 * x7);
+        double z22 = 6.0 * (a4 * a5 + a2 * a6) + eosq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
+        double z23 = 6.0 * a4 * a6 + eosq * (24. * x2 * x6 - 6. * x4 * x8);
+        z1 = z1 + z1 + betao2 * z31;
+        z2 = z2 + z2 + betao2 * z32;
+        z3 = z3 + z3 + betao2 * z33;
+        double s3 = cc * xnoi;
+        double s2 = -0.5 * s3 / betao;
+        double s4 = s3 * betao;
+        double s1 = -15.0 * Eccentricity() * s4;
+        double s5 = x1 * x3 + x2 * x4;
+        double s6 = x2 * x3 + x1 * x4;
+        double s7 = x2 * x4 - x1 * x3;
+        double se = s1 * zn * s5;
+        double si = s2 * zn * (z11 + z13);
+        double sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
+        double sgh = s4 * zn * (z31 + z33 - 6.0);
 
         /*
          * replaced
          * sh = -zn * s2 * (z21 + z23
          * with
-         * shdq = (-zn * s2 * (z21 + z23)) / siniq
+         * shdq = (-zn * s2 * (z21 + z23)) / sinio
          */
         if (Inclination() < 5.2359877e-2 || Inclination() > Globals::PI() - 5.2359877e-2) {
             shdq = 0.0;
         } else {
-            shdq = (-zn * s2 * (z21 + z23)) / siniq;
+            shdq = (-zn * s2 * (z21 + z23)) / sinio;
         }
 
         d_ee2_ = 2.0 * s1 * s6;
@@ -636,7 +581,7 @@ void SGDP4::DeepSpaceInitialize() {
         d_xi3_ = 2.0 * s2 * (z13 - z11);
         d_xl2_ = -2.0 * s3 * z2;
         d_xl3_ = -2.0 * s3 * (z3 - z1);
-        d_xl4_ = -2.0 * s3 * (-21.0 - 9.0 * eqsq) * ze;
+        d_xl4_ = -2.0 * s3 * (-21.0 - 9.0 * eosq) * ze;
         d_xgh2_ = 2.0 * s4 * z32;
         d_xgh3_ = 2.0 * s4 * (z33 - z31);
         d_xgh4_ = -18.0 * s4 * ze;
@@ -652,7 +597,7 @@ void SGDP4::DeepSpaceInitialize() {
         d_ssi_ = si;
         d_ssl_ = sl;
         d_ssh_ = shdq;
-        d_ssg_ = sgh - cosiq * d_ssh_;
+        d_ssg_ = sgh - cosio * d_ssh_;
         d_se2_ = d_ee2_;
         d_si2_ = d_xi2_;
         d_sl2_ = d_xl2_;
@@ -680,7 +625,7 @@ void SGDP4::DeepSpaceInitialize() {
     d_sse_ += se;
     d_ssi_ += si;
     d_ssl_ += sl;
-    d_ssg_ += sgh - cosiq * shdq;
+    d_ssg_ += sgh - cosio * shdq;
     d_ssh_ += shdq;
 
     /*
@@ -700,7 +645,7 @@ void SGDP4::DeepSpaceInitialize() {
              */
             resonance_flag = true;
 
-            double eoc = Eccentricity() * eqsq;
+            double eoc = Eccentricity() * eosq;
 
             double g211;
             double g310;
@@ -712,23 +657,23 @@ void SGDP4::DeepSpaceInitialize() {
             double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
 
             if (Eccentricity() <= 0.65) {
-                g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eqsq;
-                g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eqsq + 156.591 * eoc;
-                g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eqsq + 146.5816 * eoc;
-                g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eqsq + 313.953 * eoc;
-                g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eqsq + 1083.435 * eoc;
-                g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eqsq + 3708.276 * eoc;
+                g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eosq;
+                g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eosq + 156.591 * eoc;
+                g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eosq + 146.5816 * eoc;
+                g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eosq + 313.953 * eoc;
+                g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eosq + 1083.435 * eoc;
+                g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eosq + 3708.276 * eoc;
             } else {
-                g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eqsq + 266.724 * eoc;
-                g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eqsq + 1246.113 * eoc;
-                g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eqsq + 1215.972 * eoc;
-                g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eqsq + 3651.957 * eoc;
-                g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eqsq + 12422.52 * eoc;
+                g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eosq + 266.724 * eoc;
+                g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eosq + 1246.113 * eoc;
+                g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eosq + 1215.972 * eoc;
+                g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eosq + 3651.957 * eoc;
+                g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eosq + 12422.52 * eoc;
 
                 if (Eccentricity() <= 0.715) {
-                    g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eqsq;
+                    g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eosq;
                 } else {
-                    g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eqsq + 31324.56 * eoc;
+                    g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eosq + 31324.56 * eoc;
                 }
             }
 
@@ -737,30 +682,30 @@ void SGDP4::DeepSpaceInitialize() {
             double g532;
 
             if (Eccentricity() < 0.7) {
-                g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eqsq + 5542.21 * eoc;
-                g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eqsq + 5337.524 * eoc;
-                g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eqsq + 5341.4 * eoc;
+                g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eosq + 5542.21 * eoc;
+                g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eosq + 5337.524 * eoc;
+                g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eosq + 5341.4 * eoc;
             } else {
-                g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eqsq + 109377.94 * eoc;
-                g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eqsq + 146349.42 * eoc;
-                g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eqsq + 115605.82 * eoc;
+                g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eosq + 109377.94 * eoc;
+                g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eosq + 146349.42 * eoc;
+                g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eosq + 115605.82 * eoc;
             }
 
-            double sini2 = siniq * siniq;
-            double f220 = 0.75 * (1.0 + 2.0 * cosiq + cosq2);
+            double sini2 = sinio * sinio;
+            double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
             double f221 = 1.5 * sini2;
-            double f321 = 1.875 * siniq * (1.0 - 2.0 * cosiq - 3.0 * cosq2);
-            double f322 = -1.875 * siniq * (1.0 + 2.0 * cosiq - 3.0 * cosq2);
+            double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
+            double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
             double f441 = 35.0 * sini2 * f220;
             double f442 = 39.3750 * sini2 * sini2;
-            double f522 = 9.84375 * siniq * (sini2 * (1.0 - 2.0 * cosiq - 5.0 * cosq2)
-                    + 0.33333333 * (-2.0 + 4.0 * cosiq + 6.0 * cosq2));
-            double f523 = siniq * (4.92187512 * sini2 * (-2.0 - 4.0 * cosiq + 10.0 * cosq2)
-                    + 6.56250012 * (1.0 + 2.0 * cosiq - 3.0 * cosq2));
-            double f542 = 29.53125 * siniq * (2.0 - 8.0 * cosiq + cosq2 *
-                    (-12.0 + 8.0 * cosiq + 10.0 * cosq2));
-            double f543 = 29.53125 * siniq * (-2.0 - 8.0 * cosiq + cosq2 *
-                    (12.0 + 8.0 * cosiq - 10.0 * cosq2));
+            double f522 = 9.84375 * sinio * (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2)
+                    + 0.33333333 * (-2.0 + 4.0 * cosio + 6.0 * theta2));
+            double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2)
+                    + 6.56250012 * (1.0 + 2.0 * cosio - 3.0 * theta2));
+            double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 *
+                    (-12.0 + 8.0 * cosio + 10.0 * theta2));
+            double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
+                    (12.0 + 8.0 * cosio - 10.0 * theta2));
 
             double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
             double ainv2 = aqnv * aqnv;
@@ -786,7 +731,7 @@ void SGDP4::DeepSpaceInitialize() {
             d_d5433_ = temp * f543 * g533;
 
             d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - gsto_ - gsto_;
-            bfact = xlldot + xnodot + xnodot - THDT - THDT;
+            bfact = xmdot + xnodot + xnodot - THDT - THDT;
             bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
         }
     } else {
@@ -796,12 +741,12 @@ void SGDP4::DeepSpaceInitialize() {
         resonance_flag = true;
         synchronous_flag = true;
 
-        double g200 = 1.0 + eqsq * (-2.5 + 0.8125 * eqsq);
-        double g310 = 1.0 + 2.0 * eqsq;
-        double g300 = 1.0 + eqsq * (-6.0 + 6.60937 * eqsq);
-        double f220 = 0.75 * (1.0 + cosiq) * (1.0 + cosiq);
-        double f311 = 0.9375 * siniq * siniq * (1.0 + 3.0 * cosiq) - 0.75 * (1.0 + cosiq);
-        double f330 = 1.0 + cosiq;
+        double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
+        double g310 = 1.0 + 2.0 * eosq;
+        double g300 = 1.0 + eosq * (-6.0 + 6.60937 * eosq);
+        double f220 = 0.75 * (1.0 + cosio) * (1.0 + cosio);
+        double f311 = 0.9375 * sinio * sinio * (1.0 + 3.0 * cosio) - 0.75 * (1.0 + cosio);
+        double f330 = 1.0 + cosio;
         f330 = 1.875 * f330 * f330 * f330;
         d_del1_ = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
         d_del2_ = 2.0 * d_del1_ * f220 * g200 * Q22;
@@ -812,7 +757,7 @@ void SGDP4::DeepSpaceInitialize() {
         d_fasx6_ = 0.37448087;
 
         d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - gsto_;
-        bfact = xlldot + xpidot - THDT;
+        bfact = xmdot + xpidot - THDT;
         bfact = bfact + d_ssl_ + d_ssg_ + d_ssh_;
     }
 

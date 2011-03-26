@@ -24,8 +24,10 @@ public:
     };
 
 private:
-    void Initialize(const double& theta2, const double& betao2, const double& betao);
-    void DeepSpaceInitialize();
+    void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
+    void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
+            const double& theta2, const double& sing, const double& cosg, const double& betao2,
+            const double& xmdot, const double& omgdot, const double& xnodot);
 
     bool first_run_;
 
