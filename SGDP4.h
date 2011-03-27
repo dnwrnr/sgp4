@@ -28,6 +28,8 @@ private:
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& sing, const double& cosg, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
+    void DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em, double& xinc,
+            double& omgasm, double& xnodes, double& xll);
 
     bool first_run_;
 

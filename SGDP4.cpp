@@ -443,7 +443,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     double sgh = 0.0;
     double shdq = 0.0;
 
-    double bfact;
+    double bfact = 0.0;
 
     double ZNS = 1.19459E-5;
     double C1SS = 2.9864797E-6;
@@ -775,6 +775,98 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     }
 }
 
+/*
+ * entrances for lunar-solar periodic
+ * entry dpper(em, xinc, omgasm, xnodes, xll)
+ */
+void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em,
+        double& xinc, double& omgasm, double& xnodes, double& xll) {
+
+    double ZES = 0.01675;
+    double ZNS = 1.19459E-5;
+    double ZNL = 1.5835218E-4;
+    double ZEL = 0.05490;
+
+    double sghs = 0.0;
+    double shs = 0.0;
+    double sghl = 0.0;
+    double shl = 0.0;
+    double pe = 0.0;
+    double pinc = 0.0;
+    double pl = 0.0;
+
+    double sinis = sin(xinc);
+    double cosis = cos(xinc);
+
+    if (fabs(d_savtsn_ - t) >= 30.0) {
+        d_savtsn_ = t;
+
+        double zm = d_zmos_ + ZNS * t;
+        double zf = zm + 2.0 * ZES * sin(zm);
+        double sinzf = sin(zf);
+        double f2 = 0.5 * sinzf * sinzf - 0.25;
+        double f3 = -0.5 * sinzf * cos(zf);
+        double ses = d_se2_ * f2 + d_se3_ * f3;
+        double sis = d_si2_ * f2 + d_si3_ * f3;
+        double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
+
+        sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
+        shs = d_sh2_ * f2 + d_sh3_ * f3;
+        zm = d_zmol_ + ZNL * t;
+        zf = zm + 2.0 * ZEL * sin(zm);
+        sinzf = sin(zf);
+        f2 = 0.5 * sinzf * sinzf - 0.25;
+        f3 = -0.5 * sinzf * cos(zf);
+        double sel = d_ee2_ * f2 + d_e3_ * f3;
+        double sil = d_xi2_ * f2 + d_xi3_ * f3;
+        double sll = d_xl2_ * f2 + d_xl3_ * f3 + d_xl4_ * sinzf;
+        sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
+        shl = d_xh2_ * f2 + d_xh3_ * f3;
+        pe = ses + sel;
+        pinc = sis + sil;
+        pl = sls + sll;
+    }
+
+    double pgh = sghs + sghl;
+    double ph = shs + shl;
+
+    xinc += pinc;
+    em += pe;
+
+    if (Inclination() >= 0.2) {
+        /*
+         * apply periodics directly
+         */
+        ph /= sinio;
+        pgh -= cosio * ph;
+        omgasm += pgh;
+        xnodes += ph;
+        xll += pl;
+    } else {
+        /*
+         * apply periodics with lyddane modification
+         */
+        double sinok = sin(xnodes);
+        double cosok = cos(xnodes);
+        double alfdp = sinis * sinok;
+        double betdp = sinis * cosok;
+        double dalf = ph * cosok + pinc * cosis * sinok;
+        double dbet = -ph * sinok + pinc * cosis * cosok;
+
+        alfdp += dalf;
+        betdp += dbet;
+
+        double xls = xll + omgasm + cosis * xnodes;
+        double dls = pl + pgh - pinc * xnodes * sinis;
+
+        xls += dls;
+        xnodes = atan2(alfdp, betdp);
+        xll += pl;
+        omgasm = xls - xll - cos(xinc) * xnodes;
+    }
+}
+
+
 #if 0
 SUBROUTINE DEEP
 COMMON / E1 / XMO, XNODEO, OMEGAO, EO, XINCL, XNO, XNDT2O,
@@ -911,74 +1003,4 @@ XNI = XNQ
 XLI = XLAMO
 GO TO 125
 
-
-
-
-/*
- * ENTRANCES FOR LUNAR-SOLAR PERIODICS
- */
-ENTRY DPPER(EM, XINC, OMGASM, XNODES, XLL)
-SINIS = SIN(XINC)
-COSIS = COS(XINC)
-IF(DABS(SAVTSN - T).LT.(30.D0)) GO TO 210
-SAVTSN = T
-ZM = ZMOS + ZNS * T
-205 ZF = ZM + 2. * ZES * SIN(ZM)
-SINZF = SIN(ZF)
-F2 = .5 * SINZF * SINZF - .25
-F3 = -.5 * SINZF * COS(ZF)
-SES = SE2 * F2 + SE3*F3
-SIS = SI2 * F2 + SI3*F3
-SLS = SL2 * F2 + SL3 * F3 + SL4*SINZF
-SGHS = SGH2 * F2 + SGH3 * F3 + SGH4*SINZF
-SHS = SH2 * F2 + SH3*F3
-ZM = ZMOL + ZNL*T
-ZF = ZM + 2. * ZEL * SIN(ZM)
-SINZF = SIN(ZF)
-F2 = .5 * SINZF * SINZF - .25
-F3 = -.5 * SINZF * COS(ZF)
-SEL = EE2 * F2 + E3*F3
-SIL = XI2 * F2 + XI3*F3
-SLL = XL2 * F2 + XL3 * F3 + XL4*SINZF
-SGHL = XGH2 * F2 + XGH3 * F3 + XGH4*SINZF
-SHL = XH2 * F2 + XH3*F3
-PE = SES + SEL
-PINC = SIS + SIL
-PL = SLS + SLL
-210 PGH = SGHS + SGHL
-PH = SHS + SHL
-XINC = XINC + PINC
-EM = EM + PE
-IF(XQNCL.LT.(.2)) GO TO 220
-GO TO 218
-C
-C APPLY PERIODICS DIRECTLY
-C
-218 PH = PH / SINIQ
-PGH = PGH - COSIQ*PH
-OMGASM = OMGASM + PGH
-XNODES = XNODES + PH
-XLL = XLL + PL
-GO TO 230
-C
-C APPLY PERIODICS WITH LYDDANE MODIFICATION
-C
-220 SINOK = SIN(XNODES)
-67
-COSOK = COS(XNODES)
-ALFDP = SINIS*SINOK
-BETDP = SINIS*COSOK
-DALF = PH * COSOK + PINC * COSIS*SINOK
-DBET = -PH * SINOK + PINC * COSIS*COSOK
-ALFDP = ALFDP + DALF
-BETDP = BETDP + DBET
-XLS = XLL + OMGASM + COSIS*XNODES
-DLS = PL + PGH - PINC * XNODES*SINIS
-XLS = XLS + DLS
-XNODES = ACTAN(ALFDP, BETDP)
-XLL = XLL + PL
-OMGASM = XLS - XLL - COS(XINC) * XNODES
-230 CONTINUE
-RETURN
-END
 #endif
