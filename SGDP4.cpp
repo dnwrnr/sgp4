@@ -476,7 +476,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     double THDT = 4.3752691E-3;
 
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
-    double xpidot = omgdot + xnodot_;
+    double xpidot = omgdot + xnodot;
     double sinq = sin(AscendingNode());
     double cosq = cos(AscendingNode());
 
