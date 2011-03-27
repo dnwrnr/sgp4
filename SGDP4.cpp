@@ -776,8 +776,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 }
 
 /*
- * entrances for lunar-solar periodic
- * entry dpper(em, xinc, omgasm, xnodes, xll)
+ * lunar / solar periodics
  */
 void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) {
