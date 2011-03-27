@@ -291,6 +291,11 @@ void SGDP4::FindPosition(double tsince) {
     double ecose = 0.0;
     double esine = 0.0;
 
+    /*
+     * todo
+     */
+    double maxnr = Eccentricity();
+
     bool kepler_running = true;
 
     for (int i = 0; i < 10 && kepler_running; i++) {
@@ -309,6 +314,15 @@ void SGDP4::FindPosition(double tsince) {
              */
             double df = 1.0 - ecose;
             double nr = f / df;
+
+            /*
+             * 2nd order Newton-Raphson correction.
+             * f / (df - 0.5 * d2f * f/df)
+             */
+            if (i == 0 && fabs(nr) > 1.25 * maxnr)
+                nr = fabs(maxnr, nr);
+            else
+                nr = f / (df + 0.5 * esine * nr);
 
             /*
              * Newton-Raphson correction of -F/DF
