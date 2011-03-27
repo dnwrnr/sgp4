@@ -1,3 +1,5 @@
 syntax: glob
 Release\*
 Debug\*
+*.o
+sat

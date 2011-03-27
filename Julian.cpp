@@ -25,14 +25,14 @@ Julian::Julian() {
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    struct tm;
-    gmtime_r(&tv.tv_sec, &tm);
-    Initialize(tm.tm_year + 1900,
-            tm.tm_mon,
-            tm.tm_mday,
-            tm.tm_hour,
-            tm.tm_min,
-            (double) tm.tm_sec + (double) tv.tv_usec / 1000000.0)
+    struct tm gmt;
+    gmtime_r(&tv.tv_sec, &gmt);
+    Initialize(gmt.tm_year + 1900,
+            gmt.tm_mon,
+            gmt.tm_mday,
+            gmt.tm_hour,
+            gmt.tm_min,
+            (double) gmt.tm_sec + (double) tv.tv_usec / 1000000.0);
 #endif
 }
 
