@@ -21,42 +21,40 @@ private:
 
     bool first_run_;
 
-    double cosio_;
-    double sinio_;
-    double x3thm1_;
+    /*
+     * i_ variables are constants that wont be modified outside Init
+     */
+    double i_cosio_;
+    double i_sinio_;
+    double i_x3thm1_;
+    double i_eta_;
+    double i_c1_;
+    double i_a3ovk2_;
+    double i_x1mth2_;
+    double i_c4_;
+    double i_c5_;
+    double i_xmdot_;
+    double i_omgdot_;
+    double i_xnodot_;
+    double i_xnodcf_;
+    double i_t2cof_;
+    double i_xlcof_;
+    double i_aycof_;
+    double i_x7thm1_;
+    double i_omgcof_;
+    double i_xmcof_;
+    double i_delmo_;
+    double i_sinmo_;
+    double i_d2_;
+    double i_d3_;
+    double i_d4_;
+    double i_t3cof_;
+    double i_t4cof_;
+    double i_t5cof_;
+    double i_gsto_;
 
-    double eta_;
-    double coef1_;
-    double c1_;
-    double a3ovk2_;
-    double x1mth2_;
-    double c4_;
-    double c5_;
-
-    double xmdot_;
-    double omgdot_;
-    double xnodot_;
-    double xnodcf_;
-    double t2cof_;
-    double xlcof_;
-    double aycof_;
-    double x7thm1_;
-    double omgcof_;
-    double xmcof_;
-    double delmo_;
-    double sinmo_;
-
-    double d2_;
-    double d3_;
-    double d4_;
-    double t3cof_;
-    double t4cof_;
-    double t5cof_;
-
-    double gsto_;
-
-    bool use_simple_model_;
-    bool use_deep_space_;
+    bool i_use_simple_model_;
+    bool i_use_deep_space_;
 
     /*
      * XMO
@@ -139,6 +137,10 @@ private:
         return epoch_;
     }
 
+    /*
+     * these variables are set at the very start
+     * and should not be changed after that
+     */
     double mean_anomoly_;
     double ascending_node_;
     double argument_perigee_;
