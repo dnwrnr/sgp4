@@ -186,6 +186,17 @@ void SGDP4::FindPosition(double tsince) {
     double temp3;
 
     /*
+     * if using deep space these variables get modified
+     */
+    double local_x3thm1 = i_x3thm1_;
+    double local_x1mth2 = i_x1mth2_;
+    double local_x7thm1 = i_x7thm1_;
+    double local_cosio = i_cosio_;
+    double local_sinio = i_sinio_;
+    double local_xlcof = i_xlcof_;
+    double local_aycof = i_aycof_;
+
+    /*
      * local copies which we can safely modify
      */
     double tsince_eccentricity = Eccentricity();
@@ -220,7 +231,7 @@ void SGDP4::FindPosition(double tsince) {
         tsince_eccentricity -= tempe;
         double xmam = xmdf + RecoveredMeanMotion() * templ;
 
-        DeepPeriodics(sinio_, cosio_, tsince, tsince_eccentricity,
+        DeepPeriodics(local_sinio, local_cosio, tsince, tsince_eccentricity,
                 tsince_inclination, tsince_arg_perigee, tsince_ascending_node, xmam);
 
         xl = xmam + tsince_arg_perigee + xnode;
@@ -228,21 +239,21 @@ void SGDP4::FindPosition(double tsince) {
         /*
          * re-compute the perturbed values
          */
-        sinio_ = sin(tsince_inclination);
-        cosio_ = cos(tsince_inclination);
+        local_sinio = sin(tsince_inclination);
+        local_cosio = cos(tsince_inclination);
 
-        double theta2 = cosio_ * cosio_;
+        double theta2 = local_cosio * local_cosio;
 
-        x3thm1_ = 3.0 * theta2 - 1.0;
-        x1mth2_ = 1.0 - theta2;
-        x7thm1_ = 7.0 * theta2 - 1.0;
+        local_x3thm1 = 3.0 * theta2 - 1.0;
+        local_x1mth2 = 1.0 - theta2;
+        local_x7thm1 = 7.0 * theta2 - 1.0;
 
-        if (fabs(cosio_ + 1.0) > 1.5e-12)
-            xlcof_ = 0.125 * i_a3ovk2_ * sinio_ * (3.0 + 5.0 * cosio_) / (1.0 + cosio_);
+        if (fabs(local_cosio + 1.0) > 1.5e-12)
+            local_xlcof = 0.125 * i_a3ovk2_ * local_sinio * (3.0 + 5.0 * local_cosio) / (1.0 + local_cosio);
         else
-            xlcof_ = 0.125 * i_a3ovk2_ * sinio_ * (3.0 + 5.0 * cosio_) / 1.5e-12;
+            local_xlcof = 0.125 * i_a3ovk2_ * local_sinio * (3.0 + 5.0 * local_cosio) / 1.5e-12;
 
-        aycof_ = 0.25 * i_a3ovk2_ * sinio_;
+        local_aycof = 0.25 * i_a3ovk2_ * local_sinio;
 
     } else {
         double xmp = xmdf;
@@ -287,8 +298,8 @@ void SGDP4::FindPosition(double tsince) {
      */
     double axn = tsince_eccentricity * cos(tsince_arg_perigee);
     temp = 1.0 / (a * beta * beta);
-    double xll = temp * xlcof_ * axn;
-    double aynl = temp * aycof_;
+    double xll = temp * local_xlcof * axn;
+    double aynl = temp * local_aycof;
     double xlt = xl + xll;
     double ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
     double elsq = axn * axn + ayn * ayn;
@@ -342,7 +353,7 @@ void SGDP4::FindPosition(double tsince) {
              * f / (df - 0.5 * d2f * f/df)
              */
             if (i == 0 && fabs(nr) > 1.25 * maxnr)
-                nr = fabs(maxnr, nr);
+                nr = nr >= 0.0 ? fabs(maxnr) : -fabs(maxnr);
             else
                 nr = f / (df + 0.5 * esine * nr);
 
@@ -376,12 +387,12 @@ void SGDP4::FindPosition(double tsince) {
     temp = 1.0 / pl;
     temp1 = Globals::CK2() * temp;
     temp2 = temp1 * temp;
-    double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1_) + 0.5 * temp1 * x1mth2_ * cos2u;
-    double uk = u - 0.25 * temp2 * x7thm1_ * sin2u;
-    double xnodek = xnode + 1.5 * temp2 * cosio_ * sin2u;
-    double xinck = tsince_inclination + 1.5 * temp2 * cosio_ * sinio_ * cos2u;
-    double rdotk = rdot - xn * temp1 * x1mth2_ * sin2u;
-    double rfdotk = rfdot + xn * temp1 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
+    double rk = r * (1.0 - 1.5 * temp2 * betal * local_x3thm1) + 0.5 * temp1 * local_x1mth2 * cos2u;
+    double uk = u - 0.25 * temp2 * local_x7thm1 * sin2u;
+    double xnodek = xnode + 1.5 * temp2 * local_cosio * sin2u;
+    double xinck = tsince_inclination + 1.5 * temp2 * local_cosio * local_sinio * cos2u;
+    double rdotk = rdot - xn * temp1 * local_x1mth2 * sin2u;
+    double rfdotk = rfdot + xn * temp1 * (local_x1mth2 * cos2u + 1.5 * local_x3thm1);
 
     if (rk < 0.0) {
         throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
@@ -489,7 +500,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     /*
      * do solar terms
      */
-    d_savtsn_ = 1.0e20;
     double zcosg = ZCOSGS;
     double zsing = ZSINGS;
     double zcosi = ZCOSIS;
@@ -854,6 +864,7 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
  ENTRY DPSEC(XLL,OMGASM,XNODES,EM,XINC,XN,T)
  */
 void SGDP4::DeepSecular() {
+#if 0
     /*
      * passed in
      */
@@ -971,4 +982,5 @@ void SGDP4::DeepSecular() {
         xll = xl + temp + temp;
     else
         xll = xl - omgasm + temp;
+#endif
 }
