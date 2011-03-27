@@ -9,19 +9,7 @@ public:
     virtual ~SGDP4(void);
 
     void SetTle(const Tle& tle);
-
     void FindPosition(double tsince);
-
-    struct TleData {
-        double bstar;
-        double eo;
-        double omega;
-        double xincl;
-        double xmo;
-        double xno;
-        double xnodeo;
-        Julian epoch;
-    };
 
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);

@@ -211,17 +211,10 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
 void SGDP4::FindPosition(double tsince) {
 
-    struct TleData tle_data_tsince_;
-    memset(&tle_data_tsince_, 0, sizeof (tle_data_tsince_));
-
-    tle_data_tsince_.bstar = BStar();
-    tle_data_tsince_.eo = Eccentricity();
-    tle_data_tsince_.omega = ArgumentPerigee();
-    tle_data_tsince_.xincl = Inclination();
-    tle_data_tsince_.xmo = MeanAnomoly();
-    tle_data_tsince_.xno = RecoveredMeanMotion();
-    tle_data_tsince_.xnodeo = AscendingNode();
-    tle_data_tsince_.epoch = Epoch();
+    double tsince_eccentricity = Eccentricity();
+    double tsince_arg_perigee = ArgumentPerigee();
+    double tsince_inclination = Inclination();
+    double tsince_ascending_node = AscendingNode();
 
     double xl = 0.0;
     double a = 0.0;
@@ -231,34 +224,35 @@ void SGDP4::FindPosition(double tsince) {
      */
     double xmdf = MeanAnomoly() + xmdot_ * tsince;
     double omgadf = ArgumentPerigee() + omgdot_ * tsince;
-    double xnoddf = tle_data_tsince_.xnodeo + xnodot_ * tsince;
+    double xnoddf = tsince_ascending_node + xnodot_ * tsince;
 
     double tsq = tsince * tsince;
     double xnode = xnoddf + xnodcf_ * tsq;
     double tempa = 1.0 - c1_ * tsince;
-    double tempe = tle_data_tsince_.bstar * c4_ * tsince;
+    double tempe = BStar() * c4_ * tsince;
     double templ = t2cof_ * tsq;
 
-    tle_data_tsince_.omega = omgadf;
+    tsince_arg_perigee = omgadf;
 
     if (use_deep_space_) {
         double xn = RecoveredMeanMotion();
 #if 0
-        CALL DPSEC(xmdf, tle_data_tsince_.omega, XNODE, tle_data_tsince_.eo, tle_data_tsince_.xincl, xn, tsince);
+        CALL DPSEC(xmdf, tsince_arg_perigee, XNODE, tle_data_tsince_.eo, tsince_inclination, xn, tsince);
 #endif
         a = pow(Globals::XKE() / xn, Globals::TOTHRD()) * pow(tempa, 2.0);
-        tle_data_tsince_.eo -= tempe;
+        tsince_eccentricity -= tempe;
         double xmam = xmdf + RecoveredMeanMotion() * templ;
-#if 0
-        CALL DPPER(tle_data_tsince_.eo, tle_data_tsince_.xincl, tle_data_tsince_.omega, tle_data_tsince_.xnodeo, xmam);
-#endif
-        xl = xmam + tle_data_tsince_.omega + xnode;
+
+        DeepPeriodics(sinio_, cosio_, tsince, tsince_eccentricity,
+                tsince_inclination, tsince_arg_perigee, tsince_ascending_node, xmam);
+
+        xl = xmam + tsince_arg_perigee + xnode;
 
         /*
          * re-compute the perturbed values
          */
-        sinio_ = sin(tle_data_tsince_.xincl);
-        cosio_ = cos(tle_data_tsince_.xincl);
+        sinio_ = sin(tsince_inclination);
+        cosio_ = cos(tsince_inclination);
 
         double theta2 = cosio_ * cosio_;
 
@@ -280,19 +274,19 @@ void SGDP4::FindPosition(double tsince) {
             double delm = xmcof_ * (pow(1.0 + eta_ * cos(xmdf), 3.0) - delmo_);
             double temp1 = delomg + delm;
             xmp = xmdf + temp1;
-            tle_data_tsince_.omega -= temp1;
+            tsince_arg_perigee -= temp1;
             double tcube = tsq * tsince;
             double tfour = tsince * tcube;
             tempa -= d2_ * tsq - d3_ * tcube - d4_ * tfour;
-            tempe += tle_data_tsince_.bstar * c5_ * (sin(xmp) - sinmo_);
+            tempe += BStar() * c5_ * (sin(xmp) - sinmo_);
             templ += t3cof_ * tcube + tfour * (t4cof_ + tsince * t5cof_);
         }
         a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
-        tle_data_tsince_.eo = Eccentricity() - tempe;
-        xl = xmp + tle_data_tsince_.omega + xnode + RecoveredMeanMotion() * templ;
+        tsince_eccentricity = Eccentricity() - tempe;
+        xl = xmp + tsince_arg_perigee + xnode + RecoveredMeanMotion() * templ;
     }
 
-    double beta = sqrt(1.0 - tle_data_tsince_.eo * tle_data_tsince_.eo);
+    double beta = sqrt(1.0 - tsince_eccentricity * tsince_eccentricity);
     double xn = Globals::XKE() / pow(a, 1.5);
     /*
      * long period periodics
@@ -303,12 +297,12 @@ void SGDP4::FindPosition(double tsince) {
     double xlt;
     double ayn;
     {
-        axn = tle_data_tsince_.eo * cos(tle_data_tsince_.omega);
+        axn = tsince_eccentricity * cos(tsince_arg_perigee);
         double temp1 = 1.0 / (a * beta * beta);
         xll = temp1 * xlcof_ * axn;
         aynl = temp1 * aycof_;
         xlt = xl + xll;
-        ayn = tle_data_tsince_.eo * sin(tle_data_tsince_.omega) + aynl;
+        ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
     }
     /*
      * solve keplers equation
@@ -391,7 +385,7 @@ void SGDP4::FindPosition(double tsince) {
         rk = r * (1.0 - 1.5 * temp3 * betal * x3thm1_) + 0.5 * temp2 * x1mth2_ * cos2u;
         uk = u - 0.25 * temp3 * x7thm1_ * sin2u;
         xnodek = xnode + 1.5 * temp3 * cosio_ * sin2u;
-        xinck = tle_data_tsince_.xincl + 1.5 * temp3 * cosio_ * sinio_ * cos2u;
+        xinck = tsince_inclination + 1.5 * temp3 * cosio_ * sinio_ * cos2u;
         rdotk = rdot - xn * temp2 * x1mth2_ * sin2u;
         rfdotk = rfdot + xn * temp2 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
     }
@@ -422,12 +416,6 @@ void SGDP4::FindPosition(double tsince) {
     double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() / 60.0;
     double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
 }
-
-/*
- * variable used
- * func DPINIT(EQSQ,SINIQ,COSIQ,RTEQSQ,theta2,sing,cosg,betao2,XLLDOT,OMGDT, XNODOT)
- * call DPINIT(EOSQ,SINIO,COSIO,BETAO, THETA2,SING,COSG,BETAO2,XMDOT, OMGDOT,XNODOT)
- */
 
 /*
  * deep space initialization
