@@ -186,8 +186,6 @@ private:
     double d_zmol_;
     double d_zmos_;
 
-    double d_savtsn_;
-
     double d_sse_;
     double d_ssi_;
     double d_ssl_;

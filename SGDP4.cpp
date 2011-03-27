@@ -179,7 +179,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 }
 
 void SGDP4::FindPosition(double tsince) {
-    
+
     double temp;
     double temp1;
     double temp2;
@@ -785,34 +785,30 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     double sinis = sin(xinc);
     double cosis = cos(xinc);
 
-    if (fabs(d_savtsn_ - t) >= 30.0) {
-        d_savtsn_ = t;
+    double zm = d_zmos_ + ZNS * t;
+    double zf = zm + 2.0 * ZES * sin(zm);
+    double sinzf = sin(zf);
+    double f2 = 0.5 * sinzf * sinzf - 0.25;
+    double f3 = -0.5 * sinzf * cos(zf);
+    double ses = d_se2_ * f2 + d_se3_ * f3;
+    double sis = d_si2_ * f2 + d_si3_ * f3;
+    double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
 
-        double zm = d_zmos_ + ZNS * t;
-        double zf = zm + 2.0 * ZES * sin(zm);
-        double sinzf = sin(zf);
-        double f2 = 0.5 * sinzf * sinzf - 0.25;
-        double f3 = -0.5 * sinzf * cos(zf);
-        double ses = d_se2_ * f2 + d_se3_ * f3;
-        double sis = d_si2_ * f2 + d_si3_ * f3;
-        double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
-
-        sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
-        shs = d_sh2_ * f2 + d_sh3_ * f3;
-        zm = d_zmol_ + ZNL * t;
-        zf = zm + 2.0 * ZEL * sin(zm);
-        sinzf = sin(zf);
-        f2 = 0.5 * sinzf * sinzf - 0.25;
-        f3 = -0.5 * sinzf * cos(zf);
-        double sel = d_ee2_ * f2 + d_e3_ * f3;
-        double sil = d_xi2_ * f2 + d_xi3_ * f3;
-        double sll = d_xl2_ * f2 + d_xl3_ * f3 + d_xl4_ * sinzf;
-        sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
-        shl = d_xh2_ * f2 + d_xh3_ * f3;
-        pe = ses + sel;
-        pinc = sis + sil;
-        pl = sls + sll;
-    }
+    sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
+    shs = d_sh2_ * f2 + d_sh3_ * f3;
+    zm = d_zmol_ + ZNL * t;
+    zf = zm + 2.0 * ZEL * sin(zm);
+    sinzf = sin(zf);
+    f2 = 0.5 * sinzf * sinzf - 0.25;
+    f3 = -0.5 * sinzf * cos(zf);
+    double sel = d_ee2_ * f2 + d_e3_ * f3;
+    double sil = d_xi2_ * f2 + d_xi3_ * f3;
+    double sll = d_xl2_ * f2 + d_xl3_ * f3 + d_xl4_ * sinzf;
+    sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
+    shl = d_xh2_ * f2 + d_xh3_ * f3;
+    pe = ses + sel;
+    pinc = sis + sil;
+    pl = sls + sll;
 
     double pgh = sghs + sghl;
     double ph = shs + shl;
