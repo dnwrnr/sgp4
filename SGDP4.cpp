@@ -262,6 +262,23 @@ void SGDP4::FindPosition(double tsince) {
         xl = xmp + tsince_arg_perigee + xnode + RecoveredMeanMotion() * templ;
     }
 
+    if (a < 1.0) {
+        throw new SatelliteException("Error: Satellite crashed (a < 1.0)");
+    }
+
+    if (tsince_eccentricity < -1.0e-3) {
+        throw new SatelliteException("Error: Modified eccentricity too low (e < -1.0e-3)");
+    }
+
+    /*
+     * create limits to modified eccentricity
+     */
+    if (tsince_eccentricity < 1.0e-6) {
+        tsince_eccentricity = 1.0e-6;
+    } else if (tsince_eccentricity > 1.0 - 1.0e-6) {
+        tsince_eccentricity = 1.0 - 1.0e-6;
+    }
+
     double beta = sqrt(1.0 - tsince_eccentricity * tsince_eccentricity);
     double xn = Globals::XKE() / pow(a, 1.5);
     /*
