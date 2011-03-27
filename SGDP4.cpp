@@ -3,7 +3,8 @@
 #include "Vector.h"
 #include "SatelliteException.h"
 
-#include <math.h>
+#include <cmath>
+#include <iomanip>
 
 SGDP4::SGDP4(void) {
     first_run_ = true;
@@ -426,6 +427,11 @@ void SGDP4::FindPosition(double tsince) {
     double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() / 60.0;
     double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
     Vector velocity(xdot, ydot, zdot);
+
+    std::cout << std::setprecision(20);
+    std::cout << std::setw(28) << position.GetX() << " ";
+    std::cout << std::setw(28) << position.GetY() << " ";
+    std::cout << std::setw(28) << position.GetZ() << std::endl;
 }
 
 /*
