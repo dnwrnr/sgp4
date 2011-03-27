@@ -1,5 +1,6 @@
 #include "SGDP4.h"
 
+#include "Vector.h"
 #include "SatelliteException.h"
 
 #include <math.h>
@@ -23,10 +24,6 @@ void SGDP4::SetTle(const Tle& tle) {
     inclination_ = tle.GetField(Tle::FLD_I, Tle::U_RAD);
     mean_motion_ = tle.GetField(Tle::FLD_MMOTION) / (1440.0 / Globals::TWOPI());
     bstar_ = tle.GetField(Tle::FLD_BSTAR);
-
-    /*
-     * generate julian date for tle epoch
-     */
     epoch_ = tle.GetEpoch();
 
     /*
@@ -61,7 +58,6 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
     if (Period() >= 225.0) {
         i_use_deep_space_ = true;
-
     } else {
         i_use_deep_space_ = false;
         i_use_simple_model_ = false;
@@ -138,15 +134,22 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     i_aycof_ = 0.25 * i_a3ovk2_ * i_sinio_;
     i_x7thm1_ = 7.0 * theta2 - 1.0;
 
-    if (!i_use_deep_space_) {
-
+    if (i_use_deep_space_) {
+        i_gsto_ = Epoch().ToGMST();
+        double sing = sin(ArgumentPerigee());
+        double cosg = cos(ArgumentPerigee());
+        DeepSpaceInitialize(eosq, i_sinio_, i_cosio_, betao,
+                theta2, sing, cosg, betao2,
+                i_xmdot_, i_omgdot_, i_xnodot_);
+    } else {
         double c3 = 0.0;
         if (Eccentricity() > 1.0e-4) {
             c3 = coef * tsi * i_a3ovk2_ * RecoveredMeanMotion() * Globals::AE() *
                     i_a3ovk2_ / Eccentricity();
         }
 
-        i_c5_ = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 * (etasq + eeta) + eeta * etasq);
+        i_c5_ = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
+                (etasq + eeta) + eeta * etasq);
         i_omgcof_ = BStar() * c3 * cos(ArgumentPerigee());
 
         i_xmcof_ = 0.0;
@@ -155,28 +158,21 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
         i_delmo_ = pow(1.0 + i_eta_ * (cos(MeanAnomoly())), 3.0);
         i_sinmo_ = sin(MeanAnomoly());
-    }
 
-    if (!i_use_simple_model_) {
-        double c1sq = i_c1_ * i_c1_;
-        i_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
-        double temp = i_d2_ * tsi * i_c1_ / 3.0;
-        i_d3_ = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
-        i_d4_ = 0.5 * temp * RecoveredSemiMajorAxis() *
-                tsi * (221.0 * RecoveredSemiMajorAxis() + 31.0 * s4) * i_c1_;
-        i_t3cof_ = i_d2_ + 2.0 * c1sq;
-        i_t4cof_ = 0.25 * (3.0 * i_d3_ + i_c1_ *
-                (12.0 * i_d2_ + 10.0 * c1sq));
-        i_t5cof_ = 0.2 * (3.0 * i_d4_ + 12.0 * i_c1_ *
-                i_d3_ + 6.0 * i_d2_ * i_d2_ + 15.0 *
-                c1sq * (2.0 * i_d2_ + c1sq));
-    } else if (i_use_deep_space_) {
-        i_gsto_ = Epoch().ToGMST();
-        double sing = sin(ArgumentPerigee());
-        double cosg = cos(ArgumentPerigee());
-        DeepSpaceInitialize(eosq, i_sinio_, i_cosio_, betao,
-                theta2, sing, cosg, betao2,
-                i_xmdot_, i_omgdot_, i_xnodot_);
+        if (!i_use_simple_model_) {
+            double c1sq = i_c1_ * i_c1_;
+            i_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
+            double temp = i_d2_ * tsi * i_c1_ / 3.0;
+            i_d3_ = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
+            i_d4_ = 0.5 * temp * RecoveredSemiMajorAxis() *
+                    tsi * (221.0 * RecoveredSemiMajorAxis() + 31.0 * s4) * i_c1_;
+            i_t3cof_ = i_d2_ + 2.0 * c1sq;
+            i_t4cof_ = 0.25 * (3.0 * i_d3_ + i_c1_ *
+                    (12.0 * i_d2_ + 10.0 * c1sq));
+            i_t5cof_ = 0.2 * (3.0 * i_d4_ + 12.0 * i_c1_ *
+                    i_d3_ + 6.0 * i_d2_ * i_d2_ + 15.0 *
+                    c1sq * (2.0 * i_d2_ + c1sq));
+        }
     }
 
     first_run_ = false;
@@ -436,9 +432,11 @@ void SGDP4::FindPosition(double tsince) {
     double x = rk * ux * Globals::XKMPER();
     double y = rk * uy * Globals::XKMPER();
     double z = rk * uz * Globals::XKMPER();
+    Vector position(x, y, z);
     double xdot = (rdotk * ux + rfdotk * vx) * Globals::XKMPER() / 60.0;
     double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() / 60.0;
     double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
+    Vector velocity(xdot, ydot, zdot);
 }
 
 /*
