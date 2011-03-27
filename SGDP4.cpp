@@ -179,6 +179,11 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 }
 
 void SGDP4::FindPosition(double tsince) {
+    
+    double temp;
+    double temp1;
+    double temp2;
+    double temp3;
 
     /*
      * local copies which we can safely modify
@@ -280,21 +285,13 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * long period periodics
      */
-    double axn;
-    double xll;
-    double aynl;
-    double xlt;
-    double ayn;
-    double elsq;
-    {
-        axn = tsince_eccentricity * cos(tsince_arg_perigee);
-        double temp1 = 1.0 / (a * beta * beta);
-        xll = temp1 * xlcof_ * axn;
-        aynl = temp1 * aycof_;
-        xlt = xl + xll;
-        ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
-        elsq = axn * axn + ayn * ayn;
-    }
+    double axn = tsince_eccentricity * cos(tsince_arg_perigee);
+    temp = 1.0 / (a * beta * beta);
+    double xll = temp * xlcof_ * axn;
+    double aynl = temp * aycof_;
+    double xlt = xl + xll;
+    double ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
+    double elsq = axn * axn + ayn * ayn;
 
     if (elsq >= 1.0) {
         throw new SatelliteException("Error: sqrt(e) >= 1 (elsq >= 1.0)");
@@ -358,52 +355,33 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * short period preliminary quantities
      */
-    double pl;
-    double r;
-    double betal;
-    double rdot;
-    double rfdot;
-    double u;
-    double sin2u;
-    double cos2u;
-    {
-        double elsq = axn * axn + ayn * ayn;
-        double temp1 = 1.0 - elsq;
-        pl = a * temp1;
-        r = a * (1.0 - ecose);
-        betal = sqrt(temp1);
-        double temp2 = 1.0 / r;
-        double temp3 = a * temp2;
-        double temp4 = 1.0 / (1.0 + betal);
-        rdot = Globals::XKE() * sqrt(a) * esine * temp2;
-        rfdot = Globals::XKE() * sqrt(pl) * temp2;
-        double cosu = temp3 * (cosepw - axn + ayn * esine * temp4);
-        double sinu = temp3 * (sinepw - ayn - axn * esine * temp4);
-        u = atan2(sinu, cosu);
-        sin2u = 2.0 * sinu * cosu;
-        cos2u = 2.0 * cosu * cosu - 1.0;
-    }
+    temp = 1.0 - elsq;
+    double pl = a * temp;
+    double r = a * (1.0 - ecose);
+    temp1 = 1.0 / r;
+    double rdot = Globals::XKE() * sqrt(a) * esine * temp1;
+    double rfdot = Globals::XKE() * sqrt(pl) * temp1;
+    temp2 = a * temp1;
+    double betal = sqrt(temp1);
+    temp3 = 1.0 / (1.0 + betal);
+    double cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
+    double sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
+    double u = atan2(sinu, cosu);
+    double sin2u = 2.0 * sinu * cosu;
+    double cos2u = 2.0 * cosu * cosu - 1.0;
 
     /*
      * update for short periodics
      */
-    double rk;
-    double uk;
-    double xnodek;
-    double xinck;
-    double rdotk;
-    double rfdotk;
-    {
-        double temp1 = 1.0 / pl;
-        double temp2 = Globals::CK2() * temp1;
-        double temp3 = temp2 * temp1;
-        rk = r * (1.0 - 1.5 * temp3 * betal * x3thm1_) + 0.5 * temp2 * x1mth2_ * cos2u;
-        uk = u - 0.25 * temp3 * x7thm1_ * sin2u;
-        xnodek = xnode + 1.5 * temp3 * cosio_ * sin2u;
-        xinck = tsince_inclination + 1.5 * temp3 * cosio_ * sinio_ * cos2u;
-        rdotk = rdot - xn * temp2 * x1mth2_ * sin2u;
-        rfdotk = rfdot + xn * temp2 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
-    }
+    temp = 1.0 / pl;
+    temp1 = Globals::CK2() * temp;
+    temp2 = temp1 * temp;
+    double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1_) + 0.5 * temp1 * x1mth2_ * cos2u;
+    double uk = u - 0.25 * temp2 * x7thm1_ * sin2u;
+    double xnodek = xnode + 1.5 * temp2 * cosio_ * sin2u;
+    double xinck = tsince_inclination + 1.5 * temp2 * cosio_ * sinio_ * cos2u;
+    double rdotk = rdot - xn * temp1 * x1mth2_ * sin2u;
+    double rfdotk = rfdot + xn * temp1 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
 
     if (rk < 0.0) {
         throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
