@@ -272,6 +272,7 @@ void SGDP4::FindPosition(double tsince) {
     double aynl;
     double xlt;
     double ayn;
+    double elsq;
     {
         axn = tsince_eccentricity * cos(tsince_arg_perigee);
         double temp1 = 1.0 / (a * beta * beta);
@@ -279,9 +280,20 @@ void SGDP4::FindPosition(double tsince) {
         aynl = temp1 * aycof_;
         xlt = xl + xll;
         ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
+        elsq = axn * axn + ayn * ayn;
     }
+
+    if (elsq >= 1.0) {
+        throw new SatelliteException("Error: sqrt(e) >= 1 (elsq >= 1.0)");
+    }
+
     /*
      * solve keplers equation
+     * - solve using Newton-Raphson root solving
+     * - here capu is almost the mean anomoly
+     * - initialise the eccentric anomaly term epw
+     * - The fmod saves reduction of angle to +/-2pi in sin/cos() and prevents
+     * convergence problems.
      */
     double capu = fmod(xlt - xnode, Globals::TWOPI());
     double epw = capu;
@@ -292,9 +304,9 @@ void SGDP4::FindPosition(double tsince) {
     double esine = 0.0;
 
     /*
-     * todo
+     * sensibility check for N-R correction
      */
-    double maxnr = Eccentricity();
+    double maxnr = sqrt(elsq);
 
     bool kepler_running = true;
 
@@ -383,6 +395,7 @@ void SGDP4::FindPosition(double tsince) {
     if (rk < 0.0) {
         throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
     }
+
     /*
      * orientation vectors
      */
