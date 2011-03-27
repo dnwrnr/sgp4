@@ -18,6 +18,7 @@ private:
             const double& xmdot, const double& omgdot, const double& xnodot);
     void DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
+    void DeepSecular();
 
     bool first_run_;
 
