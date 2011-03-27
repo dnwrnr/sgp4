@@ -428,10 +428,15 @@ void SGDP4::FindPosition(double tsince) {
     double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
-    std::cout << std::setprecision(20);
-    std::cout << std::setw(28) << position.GetX() << " ";
-    std::cout << std::setw(28) << position.GetY() << " ";
-    std::cout << std::setw(28) << position.GetZ() << std::endl;
+    std::cout << std::setprecision(8) << std::fixed;
+    std::cout.width(17);
+    std::cout << tsince << " ";
+    std::cout.width(17);
+    std::cout << position.GetX() << " ";
+    std::cout.width(17);
+    std::cout << position.GetY() << " ";
+    std::cout.width(17);
+    std::cout << position.GetZ() << std::endl;
 }
 
 /*

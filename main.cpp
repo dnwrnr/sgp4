@@ -1,9 +1,11 @@
 #include "Julian.h"
 #include "Tle.h"
 #include "SGDP4.h"
+#include "Globals.h"
 
 #include <stdio.h>
 #include <list>
+#include <iomanip>
 
 int main() {
     std::list<Tle> tles;
@@ -52,7 +54,9 @@ int main() {
         for (itr = tles.begin(); itr != tles.end(); itr++) {
           SGDP4 model;
           model.SetTle(*itr);
-          model.FindPosition(0.0);
+          for(int i=0; i<10; i++) {
+            model.FindPosition(i * 360.0);
+          }
         }
     
     return 0;
