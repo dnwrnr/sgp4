@@ -23,7 +23,7 @@ private:
     bool first_run_;
 
     /*
-     * i_ variables are constants that wont be modified outside Init
+     * variables are constants that wont be modified outside init
      */
     double i_cosio_;
     double i_sinio_;
@@ -33,7 +33,6 @@ private:
     double i_a3ovk2_;
     double i_x1mth2_;
     double i_c4_;
-    double i_c5_;
     double i_xmdot_;
     double i_omgdot_;
     double i_xnodot_;
@@ -42,6 +41,10 @@ private:
     double i_xlcof_;
     double i_aycof_;
     double i_x7thm1_;
+    /*
+     * sgp4 constant
+     */
+    double i_c5_;
     double i_omgcof_;
     double i_xmcof_;
     double i_delmo_;
@@ -52,6 +55,9 @@ private:
     double i_t3cof_;
     double i_t4cof_;
     double i_t5cof_;
+    /*
+     * sdp4 constant
+     */
     double i_gsto_;
 
     bool i_use_simple_model_;

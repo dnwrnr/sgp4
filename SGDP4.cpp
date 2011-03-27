@@ -247,15 +247,15 @@ void SGDP4::FindPosition(double tsince) {
     } else {
         double xmp = xmdf;
         if (!i_use_simple_model_) {
-            double delomg = omgcof_ * tsince;
-            double delm = xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - delmo_);
+            double delomg = i_omgcof_ * tsince;
+            double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
             double temp1 = delomg + delm;
             xmp = xmdf + temp1;
             tsince_arg_perigee -= temp1;
             double tcube = tsq * tsince;
             double tfour = tsince * tcube;
             tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
-            tempe += BStar() * i_c5_ * (sin(xmp) - sinmo_);
+            tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
             templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
         }
         a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
