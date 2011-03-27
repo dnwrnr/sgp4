@@ -379,6 +379,10 @@ void SGDP4::FindPosition(double tsince) {
         rdotk = rdot - xn * temp2 * x1mth2_ * sin2u;
         rfdotk = rfdot + xn * temp2 * (x1mth2_ * cos2u + 1.5 * x3thm1_);
     }
+
+    if (rk < 0.0) {
+        throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
+    }
     /*
      * orientation vectors
      */
