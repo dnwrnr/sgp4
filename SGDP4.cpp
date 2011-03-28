@@ -176,6 +176,8 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
+    FindPosition(0.0);
+
     first_run_ = false;
 }
 
@@ -807,6 +809,8 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     double cosis = cos(xinc);
 
     double zm = d_zmos_ + ZNS * t;
+    if (first_run_)
+        zm = d_zmos_;
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -818,6 +822,8 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
     shs = d_sh2_ * f2 + d_sh3_ * f3;
     zm = d_zmol_ + ZNL * t;
+    if (first_run_)
+        zm = d_zmol_;
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -834,39 +840,42 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     double pgh = sghs + sghl;
     double ph = shs + shl;
 
-    xinc += pinc;
-    em += pe;
+    if (!first_run_) {
 
-    if (Inclination() >= 0.2) {
-        /*
-         * apply periodics directly
-         */
-        ph /= sinio;
-        pgh -= cosio * ph;
-        omgasm += pgh;
-        xnodes += ph;
-        xll += pl;
-    } else {
-        /*
-         * apply periodics with lyddane modification
-         */
-        double sinok = sin(xnodes);
-        double cosok = cos(xnodes);
-        double alfdp = sinis * sinok;
-        double betdp = sinis * cosok;
-        double dalf = ph * cosok + pinc * cosis * sinok;
-        double dbet = -ph * sinok + pinc * cosis * cosok;
+        xinc += pinc;
+        em += pe;
 
-        alfdp += dalf;
-        betdp += dbet;
+        if (Inclination() >= 0.2) {
+            /*
+             * apply periodics directly
+             */
+            ph /= sinio;
+            pgh -= cosio * ph;
+            omgasm += pgh;
+            xnodes += ph;
+            xll += pl;
+        } else {
+            /*
+             * apply periodics with lyddane modification
+             */
+            double sinok = sin(xnodes);
+            double cosok = cos(xnodes);
+            double alfdp = sinis * sinok;
+            double betdp = sinis * cosok;
+            double dalf = ph * cosok + pinc * cosis * sinok;
+            double dbet = -ph * sinok + pinc * cosis * cosok;
 
-        double xls = xll + omgasm + cosis * xnodes;
-        double dls = pl + pgh - pinc * xnodes * sinis;
+            alfdp += dalf;
+            betdp += dbet;
 
-        xls += dls;
-        xnodes = atan2(alfdp, betdp);
-        xll += pl;
-        omgasm = xls - xll - cos(xinc) * xnodes;
+            double xls = xll + omgasm + cosis * xnodes;
+            double dls = pl + pgh - pinc * xnodes * sinis;
+
+            xls += dls;
+            xnodes = atan2(alfdp, betdp);
+            xll += pl;
+            omgasm = xls - xll - cos(xinc) * xnodes;
+        }
     }
 }
 
