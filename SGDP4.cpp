@@ -455,25 +455,25 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 
     double bfact = 0.0;
 
-    double ZNS = 1.19459E-5;
-    double C1SS = 2.9864797E-6;
-    double ZES = 0.01675;
-    double ZNL = 1.5835218E-4;
-    double C1L = 4.7968065E-7;
-    double ZEL = 0.05490;
-    double ZCOSIS = 0.91744867;
-    double ZSINI = 0.39785416;
-    double ZSINGS = -0.98088458;
-    double ZCOSGS = 0.1945905;
-    double Q22 = 1.7891679E-6;
-    double Q31 = 2.1460748E-6;
-    double Q33 = 2.2123015E-7;
-    double ROOT22 = 1.7891679E-6;
-    double ROOT32 = 3.7393792E-7;
-    double ROOT44 = 7.3636953E-9;
-    double ROOT52 = 1.1428639E-7;
-    double ROOT54 = 2.1765803E-9;
-    double THDT = 4.3752691E-3;
+    static const double ZNS = 1.19459E-5;
+    static const double C1SS = 2.9864797E-6;
+    static const double ZES = 0.01675;
+    static const double ZNL = 1.5835218E-4;
+    static const double C1L = 4.7968065E-7;
+    static const double ZEL = 0.05490;
+    static const double ZCOSIS = 0.91744867;
+    static const double ZSINI = 0.39785416;
+    static const double ZSINGS = -0.98088458;
+    static const double ZCOSGS = 0.1945905;
+    static const double Q22 = 1.7891679E-6;
+    static const double Q31 = 2.1460748E-6;
+    static const double Q33 = 2.2123015E-7;
+    static const double ROOT22 = 1.7891679E-6;
+    static const double ROOT32 = 3.7393792E-7;
+    static const double ROOT44 = 7.3636953E-9;
+    static const double ROOT52 = 1.1428639E-7;
+    static const double ROOT54 = 2.1765803E-9;
+    static const double THDT = 4.3752691E-3;
 
     double aqnv = 1.0 / RecoveredSemiMajorAxis();
     double xpidot = omgdot + xnodot;
@@ -790,10 +790,10 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) {
 
-    double ZES = 0.01675;
-    double ZNS = 1.19459E-5;
-    double ZNL = 1.5835218E-4;
-    double ZEL = 0.05490;
+    static const double ZES = 0.01675;
+    static const double ZNS = 1.19459E-5;
+    static const double ZNL = 1.5835218E-4;
+    static const double ZEL = 0.05490;
 
     double sghs = 0.0;
     double shs = 0.0;
