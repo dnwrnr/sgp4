@@ -3,7 +3,6 @@
 #include "SGDP4.h"
 #include "Globals.h"
 
-#include <stdio.h>
 #include <list>
 #include <string>
 #include <iomanip>
