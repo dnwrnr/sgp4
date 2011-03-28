@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <list>
+#include <string>
 #include <iomanip>
 
 void RunTest();
