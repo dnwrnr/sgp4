@@ -26,6 +26,11 @@ private:
     void DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
     void DeepSecular();
+    void CalculateFinalPositionVelocity(const double& tsince, const double& e,
+        const double& a, const double& omega, const double& xl, const double& xnode,
+        const double& xincl, const double& xlcof, const double& aycof,
+        const double& x3thm1, const double& x1mth2, const double& x7thm1,
+        const double& cosio, const double& sinio);
 
     bool first_run_;
 

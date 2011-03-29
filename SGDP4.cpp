@@ -239,129 +239,137 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
 void SGDP4::FindPosition(double tsince) {
 
-    double temp;
-    double temp1;
-    double temp2;
-    double temp3;
+    /*
+     * constants calculated by Initialize()
+     * these will be modified if using SDP4 model
+     */
+    double final_xlcof = i_xlcof_;
+    double final_aycof = i_aycof_;
+    double final_x3thm1 = i_x3thm1_;
+    double final_x1mth2 = i_x1mth2_;
+    double final_x7thm1 = i_x7thm1_;
+    double final_cosio = i_cosio_;
+    double final_sinio = i_sinio_;
 
     /*
-     * if using deep space these variables get modified
+     * the final values
      */
-    double local_x3thm1 = i_x3thm1_;
-    double local_x1mth2 = i_x1mth2_;
-    double local_x7thm1 = i_x7thm1_;
-    double local_cosio = i_cosio_;
-    double local_sinio = i_sinio_;
-    double local_xlcof = i_xlcof_;
-    double local_aycof = i_aycof_;
-
-    /*
-     * local copies which we can safely modify
-     */
-    double tsince_eccentricity = Eccentricity();
-    double tsince_arg_perigee = ArgumentPerigee();
-    double tsince_inclination = Inclination();
-    double tsince_ascending_node = AscendingNode();
-
-    double xl = 0.0;
-    double a = 0.0;
+    double e;
+    double a;
+    double omega;
+    double xl;
+    double xnode;
+    double xincl;
 
     /*
      * update for secular gravity and atmospheric drag
      */
-    double xmdf = MeanAnomoly() + i_xmdot_ * tsince;
-    double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
-    double xnoddf = tsince_ascending_node + i_xnodot_ * tsince;
+    const double xmdf = MeanAnomoly() + i_xmdot_ * tsince;
+    const double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
+    const double xnoddf = AscendingNode() + i_xnodot_ * tsince;
 
-    double tsq = tsince * tsince;
-    double xnode = xnoddf + i_xnodcf_ * tsq;
+    const double tsq = tsince * tsince;
+    xnode = xnoddf + i_xnodcf_ * tsq;
     double tempa = 1.0 - i_c1_ * tsince;
     double tempe = BStar() * i_c4_ * tsince;
     double templ = i_t2cof_ * tsq;
 
-    tsince_arg_perigee = omgadf;
-
     if (i_use_deep_space_) {
-        double xn = RecoveredMeanMotion();
 #if 0
-        CALL DPSEC(xmdf, tsince_arg_perigee, XNODE, tle_data_tsince_.eo, tsince_inclination, xn, tsince);
-#endif
+        double xn = RecoveredMeanMotion();
+
+        CALL DPSEC(xmdf, final_arg_perigee, XNODE, tle_data_final_.eo, final_inclination, xn, tsince);
+
         a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-        tsince_eccentricity -= tempe;
+        final_eccentricity -= tempe;
         double xmam = xmdf + RecoveredMeanMotion() * templ;
 
-        DeepPeriodics(local_sinio, local_cosio, tsince, tsince_eccentricity,
-                tsince_inclination, tsince_arg_perigee, tsince_ascending_node, xmam);
+        DeepPeriodics(final_sinio, final_cosio, tsince, final_eccentricity,
+                final_inclination, final_arg_perigee, final_ascending_node, xmam);
 
-        xl = xmam + tsince_arg_perigee + xnode;
+        xl = xmam + final_arg_perigee + xnode;
 
         /*
          * re-compute the perturbed values
          */
-        local_sinio = sin(tsince_inclination);
-        local_cosio = cos(tsince_inclination);
+        final_sinio = sin(final_inclination);
+        final_cosio = cos(final_inclination);
 
-        double theta2 = local_cosio * local_cosio;
+        const double theta2 = final_cosio * final_cosio;
 
-        local_x3thm1 = 3.0 * theta2 - 1.0;
-        local_x1mth2 = 1.0 - theta2;
-        local_x7thm1 = 7.0 * theta2 - 1.0;
+        final_x3thm1 = 3.0 * theta2 - 1.0;
+        final_x1mth2 = 1.0 - theta2;
+        final_x7thm1 = 7.0 * theta2 - 1.0;
 
-        if (fabs(local_cosio + 1.0) > 1.5e-12)
-            local_xlcof = 0.125 * i_a3ovk2_ * local_sinio * (3.0 + 5.0 * local_cosio) / (1.0 + local_cosio);
+        if (fabs(final_cosio + 1.0) > 1.5e-12)
+            final_xlcof = 0.125 * i_a3ovk2_ * final_sinio * (3.0 + 5.0 * final_cosio) / (1.0 + final_cosio);
         else
-            local_xlcof = 0.125 * i_a3ovk2_ * local_sinio * (3.0 + 5.0 * local_cosio) / 1.5e-12;
+            final_xlcof = 0.125 * i_a3ovk2_ * final_sinio * (3.0 + 5.0 * final_cosio) / 1.5e-12;
 
-        local_aycof = 0.25 * i_a3ovk2_ * local_sinio;
-
+        final_aycof = 0.25 * i_a3ovk2_ * final_sinio;
+#endif
     } else {
+        xincl = Inclination();
+        omega = omgadf;
         double xmp = xmdf;
         if (!i_use_simple_model_) {
-            double delomg = i_omgcof_ * tsince;
-            double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
-            temp = delomg + delm;
+            const double delomg = i_omgcof_ * tsince;
+            const double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
+            const double temp = delomg + delm;
             xmp = xmdf + temp;
-            tsince_arg_perigee -= temp;
-            double tcube = tsq * tsince;
-            double tfour = tsince * tcube;
+            omega -= temp;
+            const double tcube = tsq * tsince;
+            const double tfour = tsince * tcube;
             tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
             tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
             templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
         }
         a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
-        tsince_eccentricity -= tempe;
-        xl = xmp + tsince_arg_perigee + xnode + RecoveredMeanMotion() * templ;
+        e = Eccentricity() - tempe;
+        xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
     }
+
+    /*
+     * using calculated values, find position and velocity
+     */
+    CalculateFinalPositionVelocity(tsince, e,
+            a, omega, xl, xnode,
+            xincl, final_xlcof, final_aycof,
+            final_x3thm1, final_x1mth2, final_x7thm1,
+            final_cosio, final_sinio);
+}
+
+void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
+        const double& a, const double& omega, const double& xl, const double& xnode,
+        const double& xincl, const double& xlcof, const double& aycof,
+        const double& x3thm1, const double& x1mth2, const double& x7thm1,
+        const double& cosio, const double& sinio) {
+
+    double temp;
+    double temp1;
+    double temp2;
+    double temp3;
 
     if (a < 1.0) {
         throw new SatelliteException("Error: Satellite crashed (a < 1.0)");
     }
 
-    if (tsince_eccentricity < -1.0e-3) {
+    if (e < -1.0e-3) {
         throw new SatelliteException("Error: Modified eccentricity too low (e < -1.0e-3)");
     }
 
-    /*
-     * create limits to modified eccentricity
-     */
-    if (tsince_eccentricity < 1.0e-6) {
-        tsince_eccentricity = 1.0e-6;
-    } else if (tsince_eccentricity > 1.0 - 1.0e-6) {
-        tsince_eccentricity = 1.0 - 1.0e-6;
-    }
-
-    double beta = sqrt(1.0 - tsince_eccentricity * tsince_eccentricity);
-    double xn = constants_.XKE / pow(a, 1.5);
+    const double beta = sqrt(1.0 - e * e);
+    const double xn = constants_.XKE / pow(a, 1.5);
     /*
      * long period periodics
      */
-    double axn = tsince_eccentricity * cos(tsince_arg_perigee);
+    const const double axn = e * cos(omega);
     temp = 1.0 / (a * beta * beta);
-    double xll = temp * local_xlcof * axn;
-    double aynl = temp * local_aycof;
-    double xlt = xl + xll;
-    double ayn = tsince_eccentricity * sin(tsince_arg_perigee) + aynl;
-    double elsq = axn * axn + ayn * ayn;
+    const double xll = temp * xlcof * axn;
+    const double aynl = temp * aycof;
+    const double xlt = xl + xll;
+    const double ayn = e * sin(omega) + aynl;
+    const double elsq = axn * axn + ayn * ayn;
 
     if (elsq >= 1.0) {
         throw new SatelliteException("Error: sqrt(e) >= 1 (elsq >= 1.0)");
@@ -375,7 +383,7 @@ void SGDP4::FindPosition(double tsince) {
      * - The fmod saves reduction of angle to +/-2pi in sin/cos() and prevents
      * convergence problems.
      */
-    double capu = fmod(xlt - xnode, Globals::TWOPI());
+    const double capu = fmod(xlt - xnode, Globals::TWOPI());
     double epw = capu;
 
     double sinepw = 0.0;
@@ -386,7 +394,7 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * sensibility check for N-R correction
      */
-    double maxnr = sqrt(elsq);
+    const double maxNewtonRaphson = 1.25 * fabs(sqrt(elsq));
 
     bool kepler_running = true;
 
@@ -404,54 +412,58 @@ void SGDP4::FindPosition(double tsince) {
             /*
              * 1st order Newton-Raphson correction
              */
-            double df = 1.0 - ecose;
-            double nr = f / df;
+            const double fdot = 1.0 - ecose;
+            double delta_epw = f / fdot;
 
             /*
              * 2nd order Newton-Raphson correction.
-             * f / (df - 0.5 * d2f * f/df)
+             * f / (fdot - 0.5 * d2f * f/fdot)
              */
-            if (i == 0 && fabs(nr) > 1.25 * maxnr)
-                nr = nr >= 0.0 ? fabs(maxnr) : -fabs(maxnr);
-            else
-                nr = f / (df + 0.5 * esine * nr);
+            if (i == 0) {
+                if (delta_epw > maxNewtonRaphson)
+                    delta_epw = maxNewtonRaphson;
+                else if (delta_epw < -maxNewtonRaphson)
+                    delta_epw = -maxNewtonRaphson;
+            } else {
+                delta_epw = f / (fdot + 0.5 * esine * delta_epw);
+            }
 
             /*
              * Newton-Raphson correction of -F/DF
              */
-            epw += nr;
+            epw += delta_epw;
         }
     }
     /*
      * short period preliminary quantities
      */
     temp = 1.0 - elsq;
-    double pl = a * temp;
-    double r = a * (1.0 - ecose);
+    const double pl = a * temp;
+    const double r = a * (1.0 - ecose);
     temp1 = 1.0 / r;
-    double rdot = constants_.XKE * sqrt(a) * esine * temp1;
-    double rfdot = constants_.XKE * sqrt(pl) * temp1;
+    const double rdot = constants_.XKE * sqrt(a) * esine * temp1;
+    const double rfdot = constants_.XKE * sqrt(pl) * temp1;
     temp2 = a * temp1;
-    double betal = sqrt(temp1);
+    const double betal = sqrt(temp);
     temp3 = 1.0 / (1.0 + betal);
-    double cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
-    double sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
-    double u = atan2(sinu, cosu);
-    double sin2u = 2.0 * sinu * cosu;
-    double cos2u = 2.0 * cosu * cosu - 1.0;
+    const double cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
+    const double sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
+    const double u = atan2(sinu, cosu);
+    const double sin2u = 2.0 * sinu * cosu;
+    const double cos2u = 2.0 * cosu * cosu - 1.0;
+    temp = 1.0 / pl;
+    temp1 = constants_.CK2 * temp;
+    temp2 = temp1 * temp;
 
     /*
      * update for short periodics
      */
-    temp = 1.0 / pl;
-    temp1 = constants_.CK2 * temp;
-    temp2 = temp1 * temp;
-    double rk = r * (1.0 - 1.5 * temp2 * betal * local_x3thm1) + 0.5 * temp1 * local_x1mth2 * cos2u;
-    double uk = u - 0.25 * temp2 * local_x7thm1 * sin2u;
-    double xnodek = xnode + 1.5 * temp2 * local_cosio * sin2u;
-    double xinck = tsince_inclination + 1.5 * temp2 * local_cosio * local_sinio * cos2u;
-    double rdotk = rdot - xn * temp1 * local_x1mth2 * sin2u;
-    double rfdotk = rfdot + xn * temp1 * (local_x1mth2 * cos2u + 1.5 * local_x3thm1);
+    const double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1) + 0.5 * temp1 * x1mth2 * cos2u;
+    const double uk = u - 0.25 * temp2 * x7thm1 * sin2u;
+    const double xnodek = xnode + 1.5 * temp2 * cosio * sin2u;
+    const double xinck = xincl + 1.5 * temp2 * cosio * sinio * cos2u;
+    const double rdotk = rdot - xn * temp1 * x1mth2 * sin2u;
+    const double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
     if (rk < 0.0) {
         throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
@@ -460,30 +472,30 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * orientation vectors
      */
-    double sinuk = sin(uk);
-    double cosuk = cos(uk);
-    double sinik = sin(xinck);
-    double cosik = cos(xinck);
-    double sinnok = sin(xnodek);
-    double cosnok = cos(xnodek);
-    double xmx = -sinnok * cosik;
-    double xmy = cosnok * cosik;
-    double ux = xmx * sinuk + cosnok * cosuk;
-    double uy = xmy * sinuk + sinnok * cosuk;
-    double uz = sinik * sinuk;
-    double vx = xmx * cosuk - cosnok * sinuk;
-    double vy = xmy * cosuk - sinnok * sinuk;
-    double vz = sinik * cosuk;
+    const double sinuk = sin(uk);
+    const double cosuk = cos(uk);
+    const double sinik = sin(xinck);
+    const double cosik = cos(xinck);
+    const double sinnok = sin(xnodek);
+    const double cosnok = cos(xnodek);
+    const double xmx = -sinnok * cosik;
+    const double xmy = cosnok * cosik;
+    const double ux = xmx * sinuk + cosnok * cosuk;
+    const double uy = xmy * sinuk + sinnok * cosuk;
+    const double uz = sinik * sinuk;
+    const double vx = xmx * cosuk - cosnok * sinuk;
+    const double vy = xmy * cosuk - sinnok * sinuk;
+    const double vz = sinik * cosuk;
     /*
      * position and velocity
      */
-    double x = rk * ux * constants_.XKMPER;
-    double y = rk * uy * constants_.XKMPER;
-    double z = rk * uz * constants_.XKMPER;
+    const double x = rk * ux * constants_.XKMPER;
+    const double y = rk * uy * constants_.XKMPER;
+    const double z = rk * uz * constants_.XKMPER;
     Vector position(x, y, z);
-    double xdot = (rdotk * ux + rfdotk * vx) * constants_.XKMPER / 60.0;
-    double ydot = (rdotk * uy + rfdotk * vy) * constants_.XKMPER / 60.0;
-    double zdot = (rdotk * uz + rfdotk * vz) * constants_.XKMPER / 60.0;
+    const double xdot = (rdotk * ux + rfdotk * vx) * constants_.XKMPER / 60.0;
+    const double ydot = (rdotk * uy + rfdotk * vy) * constants_.XKMPER / 60.0;
+    const double zdot = (rdotk * uz + rfdotk * vz) * constants_.XKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
     std::cout << std::setprecision(8) << std::fixed;
