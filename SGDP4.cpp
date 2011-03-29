@@ -69,6 +69,17 @@ void SGDP4::SetTle(const Tle& tle) {
     epoch_ = tle.GetEpoch();
 
     /*
+     * error checks
+     */
+    if (eccentricity_ < 0.0 || eccentricity_ > 1.0 - 1.0e-3) {
+        throw new SatelliteException("Eccentricity out of range");
+    }
+
+    if (inclination_ < 0.0 || eccentricity_ > Globals::PI()) {
+        throw new SatelliteException("Inclination out of range");
+    }
+
+    /*
      * recover original mean motion (xnodp) and semimajor axis (aodp)
      * from input elements
      */
