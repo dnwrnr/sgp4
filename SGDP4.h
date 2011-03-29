@@ -8,6 +8,13 @@ public:
     SGDP4(void);
     virtual ~SGDP4(void);
 
+    enum EnumConstants {
+        CONSTANTS_WGS72_OLD,
+        CONSTANTS_WGS72,
+        CONSTANTS_WGS84
+    };
+
+    void SetConstants(EnumConstants constants);
     void SetTle(const Tle& tle);
     void FindPosition(double tsince);
 
@@ -250,6 +257,24 @@ private:
     double d_stepp_;
     double d_stepn_;
     double d_step2_;
+
+    struct Constants {
+        double AE;
+        double MU;
+        double CK2;
+        double CK4;
+        double TWOTHRD;
+        double XKE;
+        double XKMPER;
+        double S;
+        double QOMS2T;
+        double XJ2;
+        double XJ3;
+        double XJ4;
+        double J3OJ2;
+    };
+
+    struct Constants constants_;
 
 };
 

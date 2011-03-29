@@ -8,9 +8,50 @@
 
 SGDP4::SGDP4(void) {
     first_run_ = true;
+    SetConstants(CONSTANTS_WGS72);
 }
 
 SGDP4::~SGDP4(void) {
+}
+
+void SGDP4::SetConstants(EnumConstants constants) {
+    constants_.AE = 1.0;
+    constants_.TWOTHRD = 2.0 / 3.0;
+    switch (constants) {
+        case CONSTANTS_WGS72_OLD:
+            constants_.MU = 0.0;
+            constants_.XKMPER = 6378.135;
+            constants_.XKE = 0.0743669161;
+            constants_.XJ2 = 0.001082616;
+            constants_.XJ3 = -0.00000253881;
+            constants_.XJ4 = -0.00000165597;
+            constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            break;
+        case CONSTANTS_WGS72:
+            constants_.MU = 398600.8;
+            constants_.XKMPER = 6378.135;
+            constants_.XKE = 60.0 / sqrt(constants_.XKMPER * constants_.XKMPER * constants_.XKMPER / constants_.MU);
+            constants_.XJ2 = 0.001082616;
+            constants_.XJ3 = -0.00000253881;
+            constants_.XJ4 = -0.00000165597;
+            constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            break;
+        case CONSTANTS_WGS84:
+            constants_.MU = 398600.5;
+            constants_.XKMPER = 6378.137;
+            constants_.XKE = 60.0 / sqrt(constants_.XKMPER * constants_.XKMPER * constants_.XKMPER / constants_.MU);
+            constants_.XJ2 = 0.00108262998905;
+            constants_.XJ3 = -0.00000253215306;
+            constants_.XJ4 = -0.00000161098761;
+            constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            break;
+        default:
+            throw new SatelliteException("Unrecognised constant value");
+            break;
+    }
+    constants_.CK2 = 0.5 * constants_.XJ2 * constants_.AE * constants_.AE;
+    constants_.CK4 = -0.375 * constants_.XJ4 * constants_.AE * constants_.AE * constants_.AE * constants_.AE;
+    constants_.QOMS2T = pow((120.0 - 78.0) * constants_.AE / constants_.XKMPER, 4.0);
 }
 
 void SGDP4::SetTle(const Tle& tle) {
@@ -31,7 +72,7 @@ void SGDP4::SetTle(const Tle& tle) {
      * recover original mean motion (xnodp) and semimajor axis (aodp)
      * from input elements
      */
-    double a1 = pow(Globals::XKE() / MeanMotion(), Globals::TOTHRD());
+    double a1 = pow(constants_.XKE / MeanMotion(), constants_.TWOTHRD);
     i_cosio_ = cos(Inclination());
     i_sinio_ = sin(Inclination());
     double theta2 = i_cosio_ * i_cosio_;
@@ -39,9 +80,9 @@ void SGDP4::SetTle(const Tle& tle) {
     double eosq = Eccentricity() * Eccentricity();
     double betao2 = 1.0 - eosq;
     double betao = sqrt(betao2);
-    double del1 = 1.5 * Globals::CK2() * i_x3thm1_ / (a1 * a1 * betao * betao2);
-    double ao = a1 * (1.0 - del1 * (0.5 * Globals::TOTHRD() + del1 * (1.0 + 134.0 / 81.0 * del1)));
-    double delo = 1.5 * Globals::CK2() * i_x3thm1_ / (ao * ao * betao * betao2);
+    double del1 = 1.5 * constants_.CK2 * i_x3thm1_ / (a1 * a1 * betao * betao2);
+    double ao = a1 * (1.0 - del1 * (0.5 * constants_.TWOTHRD + del1 * (1.0 + 134.0 / 81.0 * del1)));
+    double delo = 1.5 * constants_.CK2 * i_x3thm1_ / (ao * ao * betao * betao2);
 
     recovered_mean_motion_ = MeanMotion() / (1.0 + delo);
     recovered_semi_major_axis_ = ao / (1.0 - delo);
@@ -49,7 +90,7 @@ void SGDP4::SetTle(const Tle& tle) {
     /*
      * find perigee and period
      */
-    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - Globals::AE()) * Globals::XKMPER();
+    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - constants_.AE) * constants_.XKMPER;
     period_ = Globals::TWOPI() / RecoveredMeanMotion();
 
     Initialize(theta2, betao2, betao, eosq);
@@ -73,8 +114,8 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
-    double s4 = Globals::S();
-    double qoms24 = Globals::QOMS2T();
+    double s4 = constants_.S;
+    double qoms24 = constants_.QOMS2T;
     /*
      * for perigee below 156km, the values of
      * s4 and qoms2t are altered
@@ -84,10 +125,13 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         if (Perigee() <= 98.0) {
             s4 = 20.0;
         }
-        qoms24 = pow((120.0 - s4) * Globals::AE() / Globals::XKMPER(), 4.0);
-        s4 = s4 / Globals::XKMPER() + Globals::AE();
+        qoms24 = pow((120.0 - s4) * constants_.AE / constants_.XKMPER, 4.0);
+        s4 = s4 / constants_.XKMPER + constants_.AE;
     }
 
+    /*
+     * generate constants
+     */
     double pinvsq = 1.0 / (RecoveredSemiMajorAxis() * RecoveredSemiMajorAxis() * betao2 * betao2);
     double tsi = 1.0 / (RecoveredSemiMajorAxis() - s4);
     i_eta_ = RecoveredSemiMajorAxis() * Eccentricity() * tsi;
@@ -98,22 +142,22 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     double coef1 = coef / pow(psisq, 3.5);
     double c2 = coef1 * RecoveredMeanMotion() * (RecoveredSemiMajorAxis() *
             (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
-            0.75 * Globals::CK2() * tsi / psisq *
+            0.75 * constants_.CK2 * tsi / psisq *
             i_x3thm1_ * (8.0 + 3.0 * etasq *
             (8.0 + etasq)));
     i_c1_ = BStar() * c2;
-    i_a3ovk2_ = -Globals::XJ3() / Globals::CK2() * pow(Globals::AE(), 3.0);
+    i_a3ovk2_ = -constants_.XJ3 / constants_.CK2 * pow(constants_.AE, 3.0);
     i_x1mth2_ = 1.0 - theta2;
     i_c4_ = 2.0 * RecoveredMeanMotion() * coef1 * RecoveredSemiMajorAxis() * betao2 *
             (i_eta_ * (2.0 + 0.5 * etasq) + Eccentricity() * (0.5 + 2.0 * etasq) -
-            2.0 * Globals::CK2() * tsi / (RecoveredSemiMajorAxis() * psisq) *
+            2.0 * constants_.CK2 * tsi / (RecoveredSemiMajorAxis() * psisq) *
             (-3.0 * i_x3thm1_ * (1.0 - 2.0 * eeta + etasq *
             (1.5 - 0.5 * eeta)) + 0.75 * i_x1mth2_ * (2.0 * etasq - eeta *
             (1.0 + etasq)) * cos(2.0 * ArgumentPerigee())));
     double theta4 = theta2 * theta2;
-    double temp1 = 3.0 * Globals::CK2() * pinvsq * RecoveredMeanMotion();
-    double temp2 = temp1 * Globals::CK2() * pinvsq;
-    double temp3 = 1.25 * Globals::CK4() * pinvsq * pinvsq * RecoveredMeanMotion();
+    double temp1 = 3.0 * constants_.CK2 * pinvsq * RecoveredMeanMotion();
+    double temp2 = temp1 * constants_.CK2 * pinvsq;
+    double temp3 = 1.25 * constants_.CK4 * pinvsq * pinvsq * RecoveredMeanMotion();
     i_xmdot_ = RecoveredMeanMotion() + 0.5 * temp1 * betao *
             i_x3thm1_ + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
@@ -145,7 +189,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     } else {
         double c3 = 0.0;
         if (Eccentricity() > 1.0e-4) {
-            c3 = coef * tsi * i_a3ovk2_ * RecoveredMeanMotion() * Globals::AE() *
+            c3 = coef * tsi * i_a3ovk2_ * RecoveredMeanMotion() * constants_.AE *
                     i_a3ovk2_ / Eccentricity();
         }
 
@@ -155,7 +199,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
         i_xmcof_ = 0.0;
         if (Eccentricity() > 1.0e-4)
-            i_xmcof_ = -Globals::TOTHRD() * coef * BStar() * Globals::AE() / eeta;
+            i_xmcof_ = -constants_.TWOTHRD * coef * BStar() * constants_.AE / eeta;
 
         i_delmo_ = pow(1.0 + i_eta_ * (cos(MeanAnomoly())), 3.0);
         i_sinmo_ = sin(MeanAnomoly());
@@ -176,7 +220,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
-    FindPosition(0.0);
+    //FindPosition(0.0);
 
     first_run_ = false;
 }
@@ -230,7 +274,7 @@ void SGDP4::FindPosition(double tsince) {
 #if 0
         CALL DPSEC(xmdf, tsince_arg_perigee, XNODE, tle_data_tsince_.eo, tsince_inclination, xn, tsince);
 #endif
-        a = pow(Globals::XKE() / xn, Globals::TOTHRD()) * pow(tempa, 2.0);
+        a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
         tsince_eccentricity -= tempe;
         double xmam = xmdf + RecoveredMeanMotion() * templ;
 
@@ -295,7 +339,7 @@ void SGDP4::FindPosition(double tsince) {
     }
 
     double beta = sqrt(1.0 - tsince_eccentricity * tsince_eccentricity);
-    double xn = Globals::XKE() / pow(a, 1.5);
+    double xn = constants_.XKE / pow(a, 1.5);
     /*
      * long period periodics
      */
@@ -373,8 +417,8 @@ void SGDP4::FindPosition(double tsince) {
     double pl = a * temp;
     double r = a * (1.0 - ecose);
     temp1 = 1.0 / r;
-    double rdot = Globals::XKE() * sqrt(a) * esine * temp1;
-    double rfdot = Globals::XKE() * sqrt(pl) * temp1;
+    double rdot = constants_.XKE * sqrt(a) * esine * temp1;
+    double rfdot = constants_.XKE * sqrt(pl) * temp1;
     temp2 = a * temp1;
     double betal = sqrt(temp1);
     temp3 = 1.0 / (1.0 + betal);
@@ -388,7 +432,7 @@ void SGDP4::FindPosition(double tsince) {
      * update for short periodics
      */
     temp = 1.0 / pl;
-    temp1 = Globals::CK2() * temp;
+    temp1 = constants_.CK2 * temp;
     temp2 = temp1 * temp;
     double rk = r * (1.0 - 1.5 * temp2 * betal * local_x3thm1) + 0.5 * temp1 * local_x1mth2 * cos2u;
     double uk = u - 0.25 * temp2 * local_x7thm1 * sin2u;
@@ -421,13 +465,13 @@ void SGDP4::FindPosition(double tsince) {
     /*
      * position and velocity
      */
-    double x = rk * ux * Globals::XKMPER();
-    double y = rk * uy * Globals::XKMPER();
-    double z = rk * uz * Globals::XKMPER();
+    double x = rk * ux * constants_.XKMPER;
+    double y = rk * uy * constants_.XKMPER;
+    double z = rk * uz * constants_.XKMPER;
     Vector position(x, y, z);
-    double xdot = (rdotk * ux + rfdotk * vx) * Globals::XKMPER() / 60.0;
-    double ydot = (rdotk * uy + rfdotk * vy) * Globals::XKMPER() / 60.0;
-    double zdot = (rdotk * uz + rfdotk * vz) * Globals::XKMPER() / 60.0;
+    double xdot = (rdotk * ux + rfdotk * vx) * constants_.XKMPER / 60.0;
+    double ydot = (rdotk * uy + rfdotk * vy) * constants_.XKMPER / 60.0;
+    double zdot = (rdotk * uz + rfdotk * vz) * constants_.XKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
     std::cout << std::setprecision(8) << std::fixed;
