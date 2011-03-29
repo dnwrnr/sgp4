@@ -581,8 +581,8 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 
     const double zcosgl = cos(zx);
     const double zsingl = sin(zx);
-    double zmos = 6.2565837 + 0.017201977 * d_day_;
-    zmos = Globals::Fmod2p(zmos);
+    d_zmos_ = 6.2565837 + 0.017201977 * d_day_;
+    d_zmos_ = Globals::Fmod2p(d_zmos_);
 
     /*
      * do solar terms
