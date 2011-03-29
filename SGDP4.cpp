@@ -309,21 +309,27 @@ void SGDP4::FindPosition(double tsince) {
         final_aycof = 0.25 * i_a3ovk2_ * final_sinio;
 #endif
     } else {
+
         xincl = Inclination();
         omega = omgadf;
         double xmp = xmdf;
+
         if (!i_use_simple_model_) {
             const double delomg = i_omgcof_ * tsince;
             const double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
             const double temp = delomg + delm;
-            xmp = xmdf + temp;
+
+            xmp += temp;
             omega -= temp;
+
             const double tcube = tsq * tsince;
             const double tfour = tsince * tcube;
+
             tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
             tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
             templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
         }
+
         a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
         e = Eccentricity() - tempe;
         xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
