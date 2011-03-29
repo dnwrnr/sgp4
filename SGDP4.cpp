@@ -49,7 +49,7 @@ void SGDP4::SetConstants(EnumConstants constants) {
             throw new SatelliteException("Unrecognised constant value");
             break;
     }
-    constants_.S = constants_.AE + 78.0  / constants_.XKMPER;
+    constants_.S = constants_.AE + 78.0 / constants_.XKMPER;
     constants_.CK2 = 0.5 * constants_.XJ2 * constants_.AE * constants_.AE;
     constants_.CK4 = -0.375 * constants_.XJ4 * constants_.AE * constants_.AE * constants_.AE * constants_.AE;
     constants_.QOMS2T = pow((120.0 - 78.0) * constants_.AE / constants_.XKMPER, 4.0);
