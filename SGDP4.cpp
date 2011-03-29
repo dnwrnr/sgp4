@@ -64,7 +64,7 @@ void SGDP4::SetTle(const Tle& tle) {
     argument_perigee_ = tle.GetField(Tle::FLD_ARGPER, Tle::U_RAD);
     eccentricity_ = tle.GetField(Tle::FLD_E);
     inclination_ = tle.GetField(Tle::FLD_I, Tle::U_RAD);
-    mean_motion_ = tle.GetField(Tle::FLD_MMOTION) / (1440.0 / Globals::TWOPI());
+    mean_motion_ = tle.GetField(Tle::FLD_MMOTION) * Globals::TWOPI() / Globals::MIN_PER_DAY();
     bstar_ = tle.GetField(Tle::FLD_BSTAR);
     epoch_ = tle.GetEpoch();
 
