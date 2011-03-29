@@ -523,7 +523,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         const double& theta2, const double& sing, const double& cosg, const double& betao2,
         const double& xmdot, const double& omgdot, const double& xnodot) {
 
-
     double se = 0.0;
     double si = 0.0;
     double sl = 0.0;
