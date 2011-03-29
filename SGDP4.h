@@ -260,9 +260,6 @@ private:
     double d_xli_;
     double d_xni_;
     double d_atime_;
-    double d_stepp_;
-    double d_stepn_;
-    double d_step2_;
 
     struct Constants {
         double AE;

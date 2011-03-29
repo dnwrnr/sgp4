@@ -855,9 +855,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_xli_ = d_xlamo_;
         d_xni_ = RecoveredMeanMotion();
         d_atime_ = 0.0;
-        d_stepp_ = 720.0;
-        d_stepn_ = -720.0;
-        d_step2_ = 259200.0;
     }
 }
 
@@ -982,6 +979,10 @@ void SGDP4::DeepSecular() {
     xnodes = xnodes + d_ssh_ * t;
     em = Eccentricity() + d_sse_ * t;
     xinc = Inclination() + d_ssi_ * t;
+
+            double stepp = 720.0;
+        double stepn = -720.0;
+        double step2 = 259200.0;
 
     /*
      * check if needed
