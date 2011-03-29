@@ -17,7 +17,7 @@ public:
     }
 
     static const double SEC_PER_DAY() {
-        return 86400;
+        return 86400.0;
     }
 
     static const double MIN_PER_DAY() {
