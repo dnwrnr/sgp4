@@ -394,7 +394,7 @@ void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e
     /*
      * sensibility check for N-R correction
      */
-    const double maxNewtonRaphson = 1.25 * fabs(sqrt(elsq));
+    const double max_newton_naphson = 1.25 * fabs(sqrt(elsq));
 
     bool kepler_running = true;
 
@@ -420,10 +420,10 @@ void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e
              * f / (fdot - 0.5 * d2f * f/fdot)
              */
             if (i == 0) {
-                if (delta_epw > maxNewtonRaphson)
-                    delta_epw = maxNewtonRaphson;
-                else if (delta_epw < -maxNewtonRaphson)
-                    delta_epw = -maxNewtonRaphson;
+                if (delta_epw > max_newton_naphson)
+                    delta_epw = max_newton_naphson;
+                else if (delta_epw < -max_newton_naphson)
+                    delta_epw = -max_newton_naphson;
             } else {
                 delta_epw = f / (fdot + 0.5 * esine * delta_epw);
             }
