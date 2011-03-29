@@ -370,7 +370,7 @@ void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e
     /*
      * long period periodics
      */
-    const const double axn = e * cos(omega);
+    const double axn = e * cos(omega);
     temp = 1.0 / (a * beta * beta);
     const double xll = temp * xlcof * axn;
     const double aynl = temp * aycof;
@@ -552,26 +552,26 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     static const double ROOT54 = 2.1765803E-9;
     static const double THDT = 4.3752691E-3;
 
-    double aqnv = 1.0 / RecoveredSemiMajorAxis();
-    double xpidot = omgdot + xnodot;
-    double sinq = sin(AscendingNode());
-    double cosq = cos(AscendingNode());
+    const double aqnv = 1.0 / RecoveredSemiMajorAxis();
+    const double xpidot = omgdot + xnodot;
+    const double sinq = sin(AscendingNode());
+    const double cosq = cos(AscendingNode());
 
     /*
      * initialize lunar / solar terms
      */
     d_day_ = Epoch().FromJan1_12h_1900();
 
-    double xnodce = 4.5236020 - 9.2422029e-4 * d_day_;
-    double stem = sin(xnodce);
-    double ctem = cos(xnodce);
-    double zcosil = 0.91375164 - 0.03568096 * ctem;
-    double zsinil = sqrt(1.0 - zcosil * zcosil);
-    double zsinhl = 0.089683511 * stem / zsinil;
-    double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
-    double c = 4.7199672 + 0.22997150 * d_day_;
-    double gam = 5.8351514 + 0.0019443680 * d_day_;
-    double zmol = Globals::Fmod2p(c - gam);
+    const double xnodce = 4.5236020 - 9.2422029e-4 * d_day_;
+    const double stem = sin(xnodce);
+    const double ctem = cos(xnodce);
+    const double zcosil = 0.91375164 - 0.03568096 * ctem;
+    const double zsinil = sqrt(1.0 - zcosil * zcosil);
+    const double zsinhl = 0.089683511 * stem / zsinil;
+    const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
+    const double c = 4.7199672 + 0.22997150 * d_day_;
+    const double gam = 5.8351514 + 0.0019443680 * d_day_;
+    const double zmol = Globals::Fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     /*
@@ -580,8 +580,8 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     zx = atan2(zx, zy);
     zx = fmod(gam + zx - xnodce, Globals::TWOPI());
 
-    double zcosgl = cos(zx);
-    double zsingl = sin(zx);
+    const double zcosgl = cos(zx);
+    const double zsingl = sin(zx);
     double zmos = 6.2565837 + 0.017201977 * d_day_;
     zmos = Globals::Fmod2p(zmos);
 
@@ -598,56 +598,56 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     double zn = ZNS;
     double ze = ZES;
     double zmo = d_zmos_;
-    double xnoi = 1.0 / RecoveredMeanMotion();
+    const double xnoi = 1.0 / RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++) {
         /*
          * solar terms are done a second time after lunar terms are done
          */
-        double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
-        double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
-        double a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
-        double a8 = zsing * zsini;
-        double a9 = zsing * zsinh + zcosg * zcosi*zcosh;
-        double a10 = zcosg * zsini;
-        double a2 = cosio * a7 + sinio * a8;
-        double a4 = cosio * a9 + sinio * a10;
-        double a5 = -sinio * a7 + cosio * a8;
-        double a6 = -sinio * a9 + cosio * a10;
-        double x1 = a1 * cosg + a2 * sing;
-        double x2 = a3 * cosg + a4 * sing;
-        double x3 = -a1 * sing + a2 * cosg;
-        double x4 = -a3 * sing + a4 * cosg;
-        double x5 = a5 * sing;
-        double x6 = a6 * sing;
-        double x7 = a5 * cosg;
-        double x8 = a6 * cosg;
-        double z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
-        double z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
-        double z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
+        const double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
+        const double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
+        const double a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
+        const double a8 = zsing * zsini;
+        const double a9 = zsing * zsinh + zcosg * zcosi*zcosh;
+        const double a10 = zcosg * zsini;
+        const double a2 = cosio * a7 + sinio * a8;
+        const double a4 = cosio * a9 + sinio * a10;
+        const double a5 = -sinio * a7 + cosio * a8;
+        const double a6 = -sinio * a9 + cosio * a10;
+        const double x1 = a1 * cosg + a2 * sing;
+        const double x2 = a3 * cosg + a4 * sing;
+        const double x3 = -a1 * sing + a2 * cosg;
+        const double x4 = -a3 * sing + a4 * cosg;
+        const double x5 = a5 * sing;
+        const double x6 = a6 * sing;
+        const double x7 = a5 * cosg;
+        const double x8 = a6 * cosg;
+        const double z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
+        const double z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
+        const double z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
         double z1 = 3.0 * (a1 * a1 + a2 * a2) + z31 * eosq;
         double z2 = 6.0 * (a1 * a3 + a2 * a4) + z32 * eosq;
         double z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * eosq;
-        double z11 = -6.0 * a1 * a5 + eosq * (-24. * x1 * x7 - 6. * x3 * x5);
-        double z12 = -6.0 * (a1 * a6 + a3 * a5) + eosq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
-        double z13 = -6.0 * a3 * a6 + eosq * (-24. * x2 * x8 - 6. * x4 * x6);
-        double z21 = 6.0 * a2 * a5 + eosq * (24. * x1 * x5 - 6. * x3 * x7);
-        double z22 = 6.0 * (a4 * a5 + a2 * a6) + eosq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
-        double z23 = 6.0 * a4 * a6 + eosq * (24. * x2 * x6 - 6. * x4 * x8);
+        const double z11 = -6.0 * a1 * a5 + eosq * (-24. * x1 * x7 - 6. * x3 * x5);
+        const double z12 = -6.0 * (a1 * a6 + a3 * a5) + eosq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
+        const double z13 = -6.0 * a3 * a6 + eosq * (-24. * x2 * x8 - 6. * x4 * x6);
+        const double z21 = 6.0 * a2 * a5 + eosq * (24. * x1 * x5 - 6. * x3 * x7);
+        const double z22 = 6.0 * (a4 * a5 + a2 * a6) + eosq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
+        const double z23 = 6.0 * a4 * a6 + eosq * (24. * x2 * x6 - 6. * x4 * x8);
         z1 = z1 + z1 + betao2 * z31;
         z2 = z2 + z2 + betao2 * z32;
         z3 = z3 + z3 + betao2 * z33;
-        double s3 = cc * xnoi;
-        double s2 = -0.5 * s3 / betao;
-        double s4 = s3 * betao;
-        double s1 = -15.0 * Eccentricity() * s4;
-        double s5 = x1 * x3 + x2 * x4;
-        double s6 = x2 * x3 + x1 * x4;
-        double s7 = x2 * x4 - x1 * x3;
-        double se = s1 * zn * s5;
-        double si = s2 * zn * (z11 + z13);
-        double sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
-        double sgh = s4 * zn * (z31 + z33 - 6.0);
+        const double s3 = cc * xnoi;
+        const double s2 = -0.5 * s3 / betao;
+        const double s4 = s3 * betao;
+        const double s1 = -15.0 * Eccentricity() * s4;
+        const double s5 = x1 * x3 + x2 * x4;
+        const double s6 = x2 * x3 + x1 * x4;
+        const double s7 = x2 * x4 - x1 * x3;
+        const double se = s1 * zn * s5;
+        const double si = s2 * zn * (z11 + z13);
+        const double sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
+        const double sgh = s4 * zn * (z31 + z33 - 6.0);
 
         /*
          * replaced
@@ -708,6 +708,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         zmo = zmol;
 
     }
+
     d_sse_ += se;
     d_ssi_ += si;
     d_ssl_ += sl;
@@ -717,8 +718,8 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     /*
      * geopotential resonance initialization for 12 hour orbits
      */
-    bool resonance_flag = false;
-    bool synchronous_flag = false;
+    d_resonance_flag_ = false;
+    d_synchronous_flag_ = false;
     bool initialize_integrator = true;
 
     if (RecoveredMeanMotion() < 0.0052359877 && RecoveredMeanMotion() > 0.0034906585) {
@@ -729,9 +730,9 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
             /*
              * geopotential resonance initialization for 12 hour orbits
              */
-            resonance_flag = true;
+            d_resonance_flag_ = true;
 
-            double eoc = Eccentricity() * eosq;
+            const double eoc = Eccentricity() * eosq;
 
             double g211;
             double g310;
@@ -777,24 +778,24 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
                 g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eosq + 115605.82 * eoc;
             }
 
-            double sini2 = sinio * sinio;
-            double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
-            double f221 = 1.5 * sini2;
-            double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
-            double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
-            double f441 = 35.0 * sini2 * f220;
-            double f442 = 39.3750 * sini2 * sini2;
-            double f522 = 9.84375 * sinio * (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2)
+            const double sini2 = sinio * sinio;
+            const double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
+            const double f221 = 1.5 * sini2;
+            const double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
+            const double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
+            const double f441 = 35.0 * sini2 * f220;
+            const double f442 = 39.3750 * sini2 * sini2;
+            const double f522 = 9.84375 * sinio * (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2)
                     + 0.33333333 * (-2.0 + 4.0 * cosio + 6.0 * theta2));
-            double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2)
+            const double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2)
                     + 6.56250012 * (1.0 + 2.0 * cosio - 3.0 * theta2));
-            double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 *
+            const double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 *
                     (-12.0 + 8.0 * cosio + 10.0 * theta2));
-            double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
+            const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
                     (12.0 + 8.0 * cosio - 10.0 * theta2));
 
-            double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
-            double ainv2 = aqnv * aqnv;
+            const double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
+            const double ainv2 = aqnv * aqnv;
 
             double temp1 = 3.0 * xno2 * ainv2;
             double temp = temp1 * ROOT22;
@@ -824,14 +825,14 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         /*
          * 24h synchronous resonance terms initialization
          */
-        resonance_flag = true;
-        synchronous_flag = true;
+        d_resonance_flag_ = true;
+        d_synchronous_flag_ = true;
 
-        double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
-        double g310 = 1.0 + 2.0 * eosq;
-        double g300 = 1.0 + eosq * (-6.0 + 6.60937 * eosq);
-        double f220 = 0.75 * (1.0 + cosio) * (1.0 + cosio);
-        double f311 = 0.9375 * sinio * sinio * (1.0 + 3.0 * cosio) - 0.75 * (1.0 + cosio);
+        const double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
+        const double g310 = 1.0 + 2.0 * eosq;
+        const double g300 = 1.0 + eosq * (-6.0 + 6.60937 * eosq);
+        const double f220 = 0.75 * (1.0 + cosio) * (1.0 + cosio);
+        const double f311 = 0.9375 * sinio * sinio * (1.0 + 3.0 * cosio) - 0.75 * (1.0 + cosio);
         double f330 = 1.0 + cosio;
         f330 = 1.875 * f330 * f330 * f330;
         d_del1_ = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;

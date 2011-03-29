@@ -184,7 +184,8 @@ private:
 
 
 
-
+    bool d_resonance_flag_;
+    bool d_synchronous_flag_;
 
     double d_day_;
 
