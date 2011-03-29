@@ -23,14 +23,16 @@ private:
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& sing, const double& cosg, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
-    void DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em, double& xinc,
+    void DeepPeriodics(const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
     void DeepSecular();
+    void FindPositionSDP4(double tsince);
+    void FindPositionSGP4(double tsince);
     void CalculateFinalPositionVelocity(const double& tsince, const double& e,
-        const double& a, const double& omega, const double& xl, const double& xnode,
-        const double& xincl, const double& xlcof, const double& aycof,
-        const double& x3thm1, const double& x1mth2, const double& x7thm1,
-        const double& cosio, const double& sinio);
+            const double& a, const double& omega, const double& xl, const double& xnode,
+            const double& xincl, const double& xlcof, const double& aycof,
+            const double& x3thm1, const double& x1mth2, const double& x7thm1,
+            const double& cosio, const double& sinio);
 
     bool first_run_;
 

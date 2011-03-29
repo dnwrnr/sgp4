@@ -240,17 +240,13 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
 void SGDP4::FindPosition(double tsince) {
 
-    /*
-     * constants calculated by Initialize()
-     * these will be modified if using SDP4 model
-     */
-    double final_xlcof = i_xlcof_;
-    double final_aycof = i_aycof_;
-    double final_x3thm1 = i_x3thm1_;
-    double final_x1mth2 = i_x1mth2_;
-    double final_x7thm1 = i_x7thm1_;
-    double final_cosio = i_cosio_;
-    double final_sinio = i_sinio_;
+    if (i_use_deep_space_)
+        FindPositionSDP4(tsince);
+    else
+        FindPositionSGP4(tsince);
+}
+
+void SGDP4::FindPositionSDP4(double tsince) {
 
     /*
      * the final values
@@ -275,75 +271,114 @@ void SGDP4::FindPosition(double tsince) {
     double tempe = BStar() * i_c4_ * tsince;
     double templ = i_t2cof_ * tsq;
 
-    if (i_use_deep_space_) {
+    double em = Eccentricity();
+    double xinc = Inclination();
+    double xn = RecoveredMeanMotion();
 #if 0
-        double xn = RecoveredMeanMotion();
+    DeepSecular(xmdf, omgadf, xnode, em, xinc, xn, tsince);
 
-        CALL DPSEC(xmdf, final_arg_perigee, XNODE, tle_data_final_.eo, final_inclination, xn, tsince);
+    a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
+    xn = constants_.XKE / pow(a, 1.5);
+    e = em - tempe;
 
-        a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-        final_eccentricity -= tempe;
-        double xmam = xmdf + RecoveredMeanMotion() * templ;
+    double xmam = xmdf + RecoveredMeanMotion() * templ;
 
-        DeepPeriodics(final_sinio, final_cosio, tsince, final_eccentricity,
-                final_inclination, final_arg_perigee, final_ascending_node, xmam);
+    DeepPeriodics(tsince, final_eccentricity,
+            final_inclination, final_arg_perigee, final_ascending_node, xmam);
 
-        xl = xmam + final_arg_perigee + xnode;
-
-        /*
-         * re-compute the perturbed values
-         */
-        final_sinio = sin(final_inclination);
-        final_cosio = cos(final_inclination);
-
-        const double theta2 = final_cosio * final_cosio;
-
-        final_x3thm1 = 3.0 * theta2 - 1.0;
-        final_x1mth2 = 1.0 - theta2;
-        final_x7thm1 = 7.0 * theta2 - 1.0;
-
-        if (fabs(final_cosio + 1.0) > 1.5e-12)
-            final_xlcof = 0.125 * i_a3ovk2_ * final_sinio * (3.0 + 5.0 * final_cosio) / (1.0 + final_cosio);
-        else
-            final_xlcof = 0.125 * i_a3ovk2_ * final_sinio * (3.0 + 5.0 * final_cosio) / 1.5e-12;
-
-        final_aycof = 0.25 * i_a3ovk2_ * final_sinio;
+    xl = xmam + final_arg_perigee + xnode;
 #endif
-    } else {
 
-        xincl = Inclination();
-        omega = omgadf;
-        double xmp = xmdf;
+    /*
+     * re-compute the perturbed values
+     */
+    const double perturbed_sinio = sin(xincl);
+    const double perturbed_cosio = cos(xincl);
 
-        if (!i_use_simple_model_) {
-            const double delomg = i_omgcof_ * tsince;
-            const double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
-            const double temp = delomg + delm;
+    const double perturbed_theta2 = perturbed_cosio * perturbed_cosio;
 
-            xmp += temp;
-            omega -= temp;
+    const double perturbed_x3thm1 = 3.0 * perturbed_theta2 - 1.0;
+    const double perturbed_x1mth2 = 1.0 - perturbed_theta2;
+    const double perturbed_x7thm1 = 7.0 * perturbed_theta2 - 1.0;
 
-            const double tcube = tsq * tsince;
-            const double tfour = tsince * tcube;
+    double perturbed_xlcof;
+    if (fabs(perturbed_cosio + 1.0) > 1.5e-12)
+        perturbed_xlcof = 0.125 * i_a3ovk2_ * perturbed_sinio * (3.0 + 5.0 * perturbed_cosio) / (1.0 + perturbed_cosio);
+    else
+        perturbed_xlcof = 0.125 * i_a3ovk2_ * perturbed_sinio * (3.0 + 5.0 * perturbed_cosio) / 1.5e-12;
 
-            tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
-            tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
-            templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
-        }
-
-        a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
-        e = Eccentricity() - tempe;
-        xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
-    }
+    const double perturbed_aycof = 0.25 * i_a3ovk2_ * perturbed_sinio;
 
     /*
      * using calculated values, find position and velocity
      */
     CalculateFinalPositionVelocity(tsince, e,
             a, omega, xl, xnode,
-            xincl, final_xlcof, final_aycof,
-            final_x3thm1, final_x1mth2, final_x7thm1,
-            final_cosio, final_sinio);
+            xincl, perturbed_xlcof, perturbed_aycof,
+            perturbed_x3thm1, perturbed_x1mth2, perturbed_x7thm1,
+            perturbed_cosio, perturbed_sinio);
+
+}
+
+void SGDP4::FindPositionSGP4(double tsince) {
+
+    /*
+     * the final values
+     */
+    double e;
+    double a;
+    double omega;
+    double xl;
+    double xnode;
+    double xincl;
+
+    /*
+     * update for secular gravity and atmospheric drag
+     */
+    const double xmdf = MeanAnomoly() + i_xmdot_ * tsince;
+    const double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
+    const double xnoddf = AscendingNode() + i_xnodot_ * tsince;
+
+    const double tsq = tsince * tsince;
+    xnode = xnoddf + i_xnodcf_ * tsq;
+    double tempa = 1.0 - i_c1_ * tsince;
+    double tempe = BStar() * i_c4_ * tsince;
+    double templ = i_t2cof_ * tsq;
+
+    xincl = Inclination();
+    omega = omgadf;
+    double xmp = xmdf;
+
+    if (!i_use_simple_model_) {
+        const double delomg = i_omgcof_ * tsince;
+        const double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
+        const double temp = delomg + delm;
+
+        xmp += temp;
+        omega -= temp;
+
+        const double tcube = tsq * tsince;
+        const double tfour = tsince * tcube;
+
+        tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
+        tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
+        templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
+    }
+
+    a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
+    e = Eccentricity() - tempe;
+    xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
+
+    /*
+     * using calculated values, find position and velocity
+     * we can pass in constants from Initialize() as these dont change
+     */
+    CalculateFinalPositionVelocity(tsince, e,
+            a, omega, xl, xnode,
+            xincl, i_xlcof_, i_aycof_,
+            i_x3thm1_, i_x1mth2_, i_x7thm1_,
+            i_cosio_, i_sinio_);
+
 }
 
 void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
@@ -861,24 +896,13 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 /*
  * lunar / solar periodics
  */
-void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double& t, double& em,
+void SGDP4::DeepPeriodics(const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) {
 
     static const double ZES = 0.01675;
     static const double ZNS = 1.19459E-5;
     static const double ZNL = 1.5835218E-4;
     static const double ZEL = 0.05490;
-
-    double sghs = 0.0;
-    double shs = 0.0;
-    double sghl = 0.0;
-    double shl = 0.0;
-    double pe = 0.0;
-    double pinc = 0.0;
-    double pl = 0.0;
-
-    double sinis = sin(xinc);
-    double cosis = cos(xinc);
 
     double zm = d_zmos_ + ZNS * t;
     if (first_run_)
@@ -887,12 +911,12 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
     double f3 = -0.5 * sinzf * cos(zf);
-    double ses = d_se2_ * f2 + d_se3_ * f3;
-    double sis = d_si2_ * f2 + d_si3_ * f3;
-    double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
+    const double ses = d_se2_ * f2 + d_se3_ * f3;
+    const double sis = d_si2_ * f2 + d_si3_ * f3;
+    const double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
 
-    sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
-    shs = d_sh2_ * f2 + d_sh3_ * f3;
+    const double sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
+    const double shs = d_sh2_ * f2 + d_sh3_ * f3;
     zm = d_zmol_ + ZNL * t;
     if (first_run_)
         zm = d_zmol_;
@@ -900,53 +924,76 @@ void SGDP4::DeepPeriodics(const double& sinio, const double& cosio, const double
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * cos(zf);
-    double sel = d_ee2_ * f2 + d_e3_ * f3;
-    double sil = d_xi2_ * f2 + d_xi3_ * f3;
-    double sll = d_xl2_ * f2 + d_xl3_ * f3 + d_xl4_ * sinzf;
-    sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
-    shl = d_xh2_ * f2 + d_xh3_ * f3;
-    pe = ses + sel;
-    pinc = sis + sil;
-    pl = sls + sll;
+    const double sel = d_ee2_ * f2 + d_e3_ * f3;
+    const double sil = d_xi2_ * f2 + d_xi3_ * f3;
+    const double sll = d_xl2_ * f2 + d_xl3_ * f3 + d_xl4_ * sinzf;
+    const double sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
+    const double shl = d_xh2_ * f2 + d_xh3_ * f3;
 
-    double pgh = sghs + sghl;
-    double ph = shs + shl;
+    const double pe = ses + sel;
+    const double pinc = sis + sil;
+    const double pl = sls + sll;
+    const double pgh = sghs + sghl;
+    const double ph = shs + shl;
 
     if (!first_run_) {
 
         xinc += pinc;
         em += pe;
 
+        /* Spacetrack report #3 has sin/cos from before perturbations
+         * added to xinc (oldxinc), but apparently report # 6 has then
+         * from after they are added.
+         * (moved from start of function)
+         */
+        const double sinis = sin(xinc);
+        const double cosis = cos(xinc);
+
         if (Inclination() >= 0.2) {
             /*
              * apply periodics directly
              */
-            ph /= sinio;
-            pgh -= cosio * ph;
-            omgasm += pgh;
-            xnodes += ph;
+            const double tmp_ph = ph / sinis;
+
+            omgasm += pgh - cosis * tmp_ph;
+            xnodes += tmp_ph;
             xll += pl;
         } else {
             /*
              * apply periodics with lyddane modification
              */
-            double sinok = sin(xnodes);
-            double cosok = cos(xnodes);
+            const double sinok = sin(xnodes);
+            const double cosok = cos(xnodes);
             double alfdp = sinis * sinok;
             double betdp = sinis * cosok;
-            double dalf = ph * cosok + pinc * cosis * sinok;
-            double dbet = -ph * sinok + pinc * cosis * cosok;
+            const double dalf = ph * cosok + pinc * cosis * sinok;
+            const double dbet = -ph * sinok + pinc * cosis * cosok;
 
             alfdp += dalf;
             betdp += dbet;
 
             double xls = xll + omgasm + cosis * xnodes;
             double dls = pl + pgh - pinc * xnodes * sinis;
-
             xls += dls;
+
+            /*
+             * save old xnodes value
+             */
+            const double oldxnodes = xnodes;
+
             xnodes = atan2(alfdp, betdp);
+            /*
+             * Get perturbed xnodes in to same quadrant as original.
+             */
+            if (fabs(oldxnodes - xnodes) > Globals::PI()) {
+                if (xnodes < oldxnodes)
+                    xnodes += Globals::TWOPI();
+                else
+                    xnodes -= Globals::TWOPI();
+            }
+
             xll += pl;
-            omgasm = xls - xll - cos(xinc) * xnodes;
+            omgasm = xls - xll - cosis * xnodes;
         }
     }
 }
@@ -980,9 +1027,9 @@ void SGDP4::DeepSecular() {
     em = Eccentricity() + d_sse_ * t;
     xinc = Inclination() + d_ssi_ * t;
 
-            double stepp = 720.0;
-        double stepn = -720.0;
-        double step2 = 259200.0;
+    double stepp = 720.0;
+    double stepn = -720.0;
+    double step2 = 259200.0;
 
     /*
      * check if needed
