@@ -91,12 +91,13 @@ void SGDP4::SetTle(const Tle& tle) {
     double eosq = Eccentricity() * Eccentricity();
     double betao2 = 1.0 - eosq;
     double betao = sqrt(betao2);
-    double del1 = 1.5 * constants_.CK2 * i_x3thm1_ / (a1 * a1 * betao * betao2);
-    double ao = a1 * (1.0 - del1 * (0.5 * constants_.TWOTHRD + del1 * (1.0 + 134.0 / 81.0 * del1)));
-    double delo = 1.5 * constants_.CK2 * i_x3thm1_ / (ao * ao * betao * betao2);
+    double temp = (1.5 * constants_.CK2) * i_x3thm1_ / (betao * betao2);
+    double del1 = temp / (a1 * a1);
+    double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
+    double del0 = temp / (a0 * a0);
 
-    recovered_mean_motion_ = MeanMotion() / (1.0 + delo);
-    recovered_semi_major_axis_ = ao / (1.0 - delo);
+    recovered_mean_motion_ = MeanMotion() / (1.0 + del0);
+    recovered_semi_major_axis_ = a0 / (1.0 - del0);
 
     /*
      * find perigee and period
