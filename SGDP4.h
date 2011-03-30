@@ -35,6 +35,7 @@ private:
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio);
     void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot);
+    void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot);
 
     bool first_run_;
 

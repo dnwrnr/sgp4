@@ -1017,7 +1017,8 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
 
     static const double THDT = 4.3752691E-3;
 
-    static const double step = 720.0;
+    static const double STEP2 = 259200.0;
+    static const double STEP = 720.0;
 
     double xldot = 0.0;
     double xndot = 0.0;
@@ -1032,11 +1033,17 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     if (!d_resonance_flag_)
         return;
 
-    if (fabs(d_atime_) < step ||
-            (d_atime_ < 0.0 && t < d_atime_ - 1.0) ||
-            (d_atime_ > 0.0 && t > d_atime_ + 1.0)) {
+    /*
+     * 1st condition (restart if tsince is less than one time step)
+     * 2nd condition ()
+     * 3rd condition ()
+     */
+    if (d_atime_ == 0 ||
+            fabs(d_atime_) < STEP ||
+            (d_atime_ > 0.0 && t < d_atime_ - 1.0) ||
+            (d_atime_ < 0.0 && t > d_atime_ + 1.0)) {
         /*
-         * epoch restart
+         * restart from epoch
          */
         d_atime_ = 0.0;
         d_xni_ = RecoveredMeanMotion();
@@ -1044,36 +1051,39 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     }
 
     double ft = t - d_atime_;
-    double delt = 0.0;
 
-    if (fabs(ft) >= step) {
+    /*
+     * if time difference (ft) is greater than the time step (720.0)
+     * loop around until d_atime_ is within one time step of t
+     */
+    if (fabs(ft) >= STEP) {
 
-        if (t > 0.0)
-            delt = step;
-        else
-            delt = -step;
+        /*
+         * calculate step direction to allow d_atime_
+         * to catch up with t
+         */
+        double delt = -STEP;
+        if (ft >= 0.0)
+            delt = STEP;
 
         do {
-            /*
-             * integrator
-             */
-            d_xli_ = d_xli_ + xldot * delt + xndot * step2;
-            d_xni_ = d_xni_ + xndot * delt + xnddt * step2;
+            DeepSpaceCalcIntegrator(delt, STEP2, xndot, xnddt, xldot);
 
-            DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
-
-            d_atime_ += delt;
             ft = t - d_atime_;
-        } while (fabs(ft) >= step);
+        } while (fabs(ft) >= STEP);
     }
+
+    /*
+     * calculate dot terms
+     */
+    DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
 
     /*
      * integrator
      */
     xn = d_xni_ + xndot * ft + xnddt * ft * ft * 0.5;
-
-    double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
-    double temp = -xnodes + i_gsto_ + t * THDT;
+    const double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
+    const double temp = -xnodes + i_gsto_ + t * THDT;
 
     if (!d_synchronous_flag_)
         xll = xl + temp + temp;
@@ -1094,11 +1104,12 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
 
     if (d_synchronous_flag_) {
 
-        xndot = d_del1_ * sin(d_xli_ - d_fasx2_) + d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_))
-                1 + d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
-        xnddt = d_del1_ * cos(d_xli_ - d_fasx2_)
-                + 2.0 * d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_))
-                + 3.0 * d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
+        xndot = d_del1_ * sin(d_xli_ - d_fasx2_) +
+                d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_)) +
+                d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
+        xnddt = d_del1_ * cos(d_xli_ - d_fasx2_) + 2.0 *
+                d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_)) + 3.0 *
+                d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
 
     } else {
 
@@ -1130,4 +1141,26 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
 
     xldot = d_xni_ + d_xfact_;
     xnddt = xnddt * xldot;
+}
+
+/*
+ * deep space integrator for time period of delt
+ */
+void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) {
+
+    /*
+     * calculate dot terms
+     */
+    DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
+
+    /*
+     * integrator
+     */
+    d_xli_ = d_xli_ + xldot * delt + xndot * step2;
+    d_xni_ = d_xni_ + xndot * delt + xnddt * step2;
+
+    /*
+     * increment integrator time
+     */
+    d_atime_ += delt;
 }
