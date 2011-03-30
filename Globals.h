@@ -8,6 +8,24 @@ public:
     Globals(void);
     ~Globals(void);
 
+    static const double F() {
+        /*
+         * earth flattening
+         */
+        return 1.0 / 298.26;
+    }
+
+    static const double OMEGA_E() {
+        /*
+         * earth rotation per sideral day
+         */
+        return 1.00273790934;
+    }
+
+    static const double XKMPER() {
+        return 6378.135;
+    }
+
     static const double PI() {
         return 3.14159265358979323846264338327950288419716939937510582;
     }

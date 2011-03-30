@@ -5,7 +5,8 @@
 
 class Observer {
 public:
-    Observer(void);
+    Observer(const double latitude, const double longitude, const double altitude);
+    Observer(const CoordGeodetic &geo);
     virtual ~Observer(void);
 
     void SetLocation(const CoordGeodetic& geo) {
