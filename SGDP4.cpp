@@ -289,6 +289,7 @@ void SGDP4::FindPositionSDP4(double tsince) {
 
     xl = xmam + omgadf + xnode;
     xincl = xinc;
+    omega = omgadf;
 
     /*
      * re-compute the perturbed values
