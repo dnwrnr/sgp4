@@ -275,7 +275,9 @@ void SGDP4::FindPositionSDP4(double tsince) {
     double xinc = Inclination();
     double xn = RecoveredMeanMotion();
 #if 0
-    DeepSecular(xmdf, omgadf, xnode, em, xinc, xn, tsince);
+    DeepSecular(tsince, xll, omgasm,
+            xnodes, em, xinc, xn);
+    //DeepSecular(xmdf, omgadf, xnode, em, xinc, xn, tsince);
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
     xn = constants_.XKE / pow(a, 1.5);
@@ -1002,19 +1004,9 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
  * deep space secular effects
  ENTRY DPSEC(XLL,OMGASM,XNODES,EM,XINC,XN,T)
  */
-void SGDP4::DeepSecular() {
+void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
+        double& xnodes, double& em, double& xinc, double& xn) {
 #if 0
-    /*
-     * passed in
-     */
-    double xll;
-    double omgasm;
-    double xnodes;
-    double em;
-    double xinc;
-    double xn;
-    double t;
-
 
 
     double xldot = 0.0;

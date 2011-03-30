@@ -25,7 +25,8 @@ private:
             const double& xmdot, const double& omgdot, const double& xnodot);
     void DeepPeriodics(const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
-    void DeepSecular();
+    void DeepSecular(const double& t, double& xll, double& omgasm,
+            double& xnodes, double& em, double& xinc, double& xn);
     void FindPositionSDP4(double tsince);
     void FindPositionSGP4(double tsince);
     void CalculateFinalPositionVelocity(const double& tsince, const double& e,
