@@ -889,9 +889,9 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         /*
          * initialize integrator
          */
-        d_xli_ = d_xlamo_;
-        d_xni_ = RecoveredMeanMotion();
         d_atime_ = 0.0;
+        d_xni_ = RecoveredMeanMotion();
+        d_xli_ = d_xlamo_;
     }
 }
 
@@ -1027,14 +1027,13 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         return;
 
     /*
-     * 1st condition (restart if tsince is less than one time step)
-     * 2nd condition ()
-     * 3rd condition ()
+     * 1st condition (if d_atime_ is less than one time step from epoch)
+     * 2nd condition (if d_atime_ and t are of opposite signs, so zero crossing required)
+     * 3rd condition (if t is closer to zero than d_atime_)
      */
-    if (d_atime_ == 0 ||
-            fabs(d_atime_) < STEP ||
-            (d_atime_ > 0.0 && t < d_atime_ - 1.0) ||
-            (d_atime_ < 0.0 && t > d_atime_ + 1.0)) {
+    if (fabs(d_atime_) < STEP ||
+            t * d_atime_ <= 0.0 ||
+            fabs(t) < fabs(d_atime_)) {
         /*
          * restart from epoch
          */
@@ -1080,6 +1079,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
 
     if (!d_synchronous_flag_)
         xll = xl + temp + temp;
+
     else
         xll = xl - omgasm + temp;
 }
