@@ -1,18 +1,18 @@
 #ifndef COORD_H_
 #define COORD_H_
 
-class CoordGeographic {
+class CoordGeodetic {
 public:
 
-    CoordGeographic()
+    CoordGeodetic()
     : lat_(0.0), lon_(0.0), alt_(0.0) {
     }
 
-    CoordGeographic(double latitude, double longitude, double altitude)
+    CoordGeodetic(double latitude, double longitude, double altitude)
     : lat_(latitude), lon_(longitude), alt_(altitude) {
     }
 
-    virtual ~CoordGeographic() {
+    virtual ~CoordGeodetic() {
     };
 
     void SetLatitude(const double& latitude) {
