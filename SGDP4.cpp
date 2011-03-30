@@ -1006,34 +1006,24 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
  */
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) {
-#if 0
 
+    static const double step = 720.0;
 
     double xldot = 0.0;
     double xndot = 0.0;
     double xnddt = 0.0;
 
-    xll = xll + d_ssl_ * t;
-    omgasm = omgasm + d_ssg_ * t;
-    xnodes = xnodes + d_ssh_ * t;
-    em = Eccentricity() + d_sse_ * t;
-    xinc = Inclination() + d_ssi_ * t;
+    xll += d_ssl_ * t;
+    omgasm += d_ssg_ * t;
+    xnodes += d_ssh_ * t;
+    em += d_sse_ * t;
+    xinc += d_ssi_ * t;
 
-    double stepp = 720.0;
-    double stepn = -720.0;
-    double step2 = 259200.0;
-
-    /*
-     * check if needed
-     */
-    //if (xinc >= 0.0) {
-    //    xinc = -xinc;
-    //    xnodes = xnodes + Globals::PI();
-    //    omgasm = omgasm - Globals::PI();
-    //}
-
-    if (iresfl == 0)
+    if (!d_resonance_flag_)
         return;
+
+#if 0
+
 
     if (fabs(d_atime_) < d_stepp_ ||
             (d_atime_ < 0.0 && t < d_atime_ - 1.0) ||
@@ -1105,6 +1095,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
             ft = t - d_atime_;
         } while (fabs(ft) >= d_stepp_);
     }
+#endif
     /*
      * integrator
      */
@@ -1113,9 +1104,8 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
     double temp = -xnodes + thgr + t * thdt;
 
-    if (isynfl == 0)
+    if (!d_synchronous_flag_)
         xll = xl + temp + temp;
     else
         xll = xl - omgasm + temp;
-#endif
 }
