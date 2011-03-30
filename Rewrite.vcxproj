@@ -75,6 +75,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Coord.cpp" />
+    <ClCompile Include="Eci.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Julian.cpp" />
     <ClCompile Include="main.cpp" />
@@ -85,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Coord.h" />
+    <ClInclude Include="Eci.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Julian.h" />
     <ClInclude Include="Observer.h" />
