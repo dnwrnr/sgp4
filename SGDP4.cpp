@@ -287,6 +287,15 @@ void SGDP4::FindPositionSDP4(double tsince) {
 
     DeepPeriodics(tsince, e, xinc, omgadf, xnode, xmam);
 
+    /*
+     * TODO: is this needed
+     */
+    if (xinc < 0.0) {
+        xinc = -xinc;
+        xnode += Globals::PI();
+        omgadf -= Globals::PI();
+    }
+
     xl = xmam + omgadf + xnode;
     xincl = xinc;
     omega = omgadf;
