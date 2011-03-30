@@ -265,8 +265,8 @@ void SGDP4::FindPositionSDP4(double tsince) {
     /*
      * update for secular gravity and atmospheric drag
      */
-    const double xmdf = MeanAnomoly() + i_xmdot_ * tsince;
-    const double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
+    double xmdf = MeanAnomoly() + i_xmdot_ * tsince;
+    double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
     const double xnoddf = AscendingNode() + i_xnodot_ * tsince;
 
     const double tsq = tsince * tsince;
@@ -278,11 +278,10 @@ void SGDP4::FindPositionSDP4(double tsince) {
     double em = Eccentricity();
     double xinc = Inclination();
     double xn = RecoveredMeanMotion();
-#if 0
-    CALL DPSEC(XMDF, OMGADF, XNODE, EM, XINC, XN, TSINCE)
-    ENTRY DPSEC(XLL, OMGASM, XNODES, EM, XINC, XN, T)
-    DeepSecular(tsince, xll, omgasm,
-            xnodes, em, xinc, xn);
+
+    //CALL DPSEC(XMDF, OMGADF, XNODE, EM, XINC, XN, TSINCE)
+    //ENTRY DPSEC(XLL, OMGASM, XNODES, EM, XINC, XN, T)
+    DeepSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
     xn = constants_.XKE / pow(a, 1.5);
@@ -290,13 +289,12 @@ void SGDP4::FindPositionSDP4(double tsince) {
 
     double xmam = xmdf + RecoveredMeanMotion() * templ;
 
-    CALL DPPER(E, XINC, OMGADF, XNODE, XMAM)
-    ENTRY DPPER(EM, XINC, OMGASM, XNODES, XLL)
-    DeepPeriodics(tsince, final_eccentricity,
-            final_inclination, final_arg_perigee, final_ascending_node, xmam);
+    //CALL DPPER(E, XINC, OMGADF, XNODE, XMAM)
+    //ENTRY DPPER(EM, XINC, OMGASM, XNODES, XLL)
+    DeepPeriodics(tsince, e, xinc, omgadf, xnode, xmam);
 
-    xl = xmam + final_arg_perigee + xnode;
-#endif
+    xl = xmam + omgadf + xnode;
+    xincl = xinc;
 
     /*
      * re-compute the perturbed values
