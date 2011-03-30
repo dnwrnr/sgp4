@@ -279,16 +279,12 @@ void SGDP4::FindPositionSDP4(double tsince) {
     double xinc = Inclination();
     double xn = RecoveredMeanMotion();
 
-    //CALL DPSEC(XMDF, OMGADF, XNODE, EM, XINC, XN, TSINCE)
-    //ENTRY DPSEC(XLL, OMGASM, XNODES, EM, XINC, XN, T)
     DeepSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
     e = em - tempe;
     double xmam = xmdf + RecoveredMeanMotion() * templ;
 
-    //CALL DPPER(E, XINC, OMGADF, XNODE, XMAM)
-    //ENTRY DPPER(EM, XINC, OMGASM, XNODES, XLL)
     DeepPeriodics(tsince, e, xinc, omgadf, xnode, xmam);
 
     xl = xmam + omgadf + xnode;
