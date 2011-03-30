@@ -1149,8 +1149,8 @@ void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, dou
     /*
      * integrator
      */
-    d_xli_ = d_xli_ + xldot * delt + xndot * step2;
-    d_xni_ = d_xni_ + xndot * delt + xnddt * step2;
+    d_xli_ += xldot * delt + xndot * step2;
+    d_xni_ += xndot * delt + xnddt * step2;
 
     /*
      * increment integrator time

@@ -61,7 +61,7 @@ int main() {
     for (itr = tles.begin(); itr != tles.end(); itr++) {
         SGDP4 model;
         model.SetTle(*itr);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             model.FindPosition(i * 360.0);
         }
     }
