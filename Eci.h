@@ -27,9 +27,9 @@ public:
     }
 
 private:
+    Julian date_;
     Vector position_;
     Vector velocity_;
-    Julian date_;
 };
 
 #endif

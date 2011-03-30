@@ -2,12 +2,14 @@ CC=g++
 CFLAGS=-c -Wall -g
 LDFLAGS=
 SOURCES=Coord.cpp \
+	Eci.cpp \
 	Globals.cpp \
 	Julian.cpp \
-	main.cpp \
+	Observer.cpp \
 	SGDP4.cpp \
 	Tle.cpp \
-	Vector.cpp
+	Vector.cpp  \
+	main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=sat
 

@@ -28,7 +28,7 @@ Julian::Julian() {
     struct tm gmt;
     gmtime_r(&tv.tv_sec, &gmt);
     Initialize(gmt.tm_year + 1900,
-            gmt.tm_mon,
+            gmt.tm_mon + 1,
             gmt.tm_mday,
             gmt.tm_hour,
             gmt.tm_min,

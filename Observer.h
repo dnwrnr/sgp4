@@ -30,14 +30,13 @@ private:
     void UpdateObserversEci(const Julian &date);
 
     /*
-     * the observers eci for a particular time
-     */
-    Eci observers_eci_;
-
-    /*
      * the observers position
      */
     CoordGeodetic geo_;
+    /*
+     * the observers eci for a particular time
+     */
+    Eci observers_eci_;
 };
 
 #endif
