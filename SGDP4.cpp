@@ -602,7 +602,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     /*
      * initialize lunar / solar terms
      */
-    d_day_ = Epoch().FromJan1_12h_1900();
+    const double d_day_ = Epoch().FromJan1_12h_1900();
 
     const double xnodce = 4.5236020 - 9.2422029e-4 * d_day_;
     const double stem = sin(xnodce);
@@ -613,7 +613,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
     const double c = 4.7199672 + 0.22997150 * d_day_;
     const double gam = 5.8351514 + 0.0019443680 * d_day_;
-    const double zmol = Globals::Fmod2p(c - gam);
+    d_zmol_ = Globals::Fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     /*
@@ -747,7 +747,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         zn = ZNL;
         cc = C1L;
         ze = ZEL;
-        zmo = zmol;
+        zmo = d_zmol_;
 
     }
 

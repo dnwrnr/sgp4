@@ -192,21 +192,6 @@ private:
     bool d_resonance_flag_;
     bool d_synchronous_flag_;
 
-    double d_day_;
-
-    double d_xnodce_;
-    double d_stem_;
-    double d_ctem_;
-    double d_zcosil_;
-    double d_zsinil_;
-    double d_zsinhl_;
-    double d_zcoshl_;
-    double d_c_;
-    double d_gam_;
-    double d_zx_;
-    double d_zy_;
-    double d_zcosgl_;
-    double d_zsingl_;
     double d_zmol_;
     double d_zmos_;
 
