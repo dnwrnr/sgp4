@@ -275,9 +275,10 @@ void SGDP4::FindPositionSDP4(double tsince) {
     double xinc = Inclination();
     double xn = RecoveredMeanMotion();
 #if 0
+    CALL  DPSEC(XMDF, OMGADF, XNODE, EM, XINC, XN, TSINCE)
+    ENTRY DPSEC(XLL,  OMGASM, XNODES,EM, XINC, XN, T)
     DeepSecular(tsince, xll, omgasm,
             xnodes, em, xinc, xn);
-    //DeepSecular(xmdf, omgadf, xnode, em, xinc, xn, tsince);
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
     xn = constants_.XKE / pow(a, 1.5);
@@ -285,6 +286,8 @@ void SGDP4::FindPositionSDP4(double tsince) {
 
     double xmam = xmdf + RecoveredMeanMotion() * templ;
 
+    CALL DPPER(E, XINC, OMGADF, XNODE, XMAM)
+    ENTRY DPPER(EM,XINC,OMGASM,XNODES,XLL)
     DeepPeriodics(tsince, final_eccentricity,
             final_inclination, final_arg_perigee, final_ascending_node, xmam);
 
@@ -1002,11 +1005,15 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
 
 /*
  * deep space secular effects
- ENTRY DPSEC(XLL,OMGASM,XNODES,EM,XINC,XN,T)
  */
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) {
 
+    static const double G22 = 5.7686396;
+    static const double G32 = 0.95240898;
+    static const double G44 = 1.8014998;
+    static const double G52 = 1.0508330;
+    static const double G54 = 4.4108898;
     static const double step = 720.0;
 
     double xldot = 0.0;
@@ -1022,10 +1029,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     if (!d_resonance_flag_)
         return;
 
-#if 0
-
-
-    if (fabs(d_atime_) < d_stepp_ ||
+    if (fabs(d_atime_) < step ||
             (d_atime_ < 0.0 && t < d_atime_ - 1.0) ||
             (d_atime_ > 0.0 && t > d_atime_ + 1.0)) {
         /*
@@ -1039,12 +1043,12 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     double ft = t - d_atime_;
     double delt = 0.0;
 
-    if (fabs(ft) >= d_stepp_) {
+    if (fabs(ft) >= step) {
 
         if (t > 0.0)
-            delt = d_stepp_;
+            delt = step;
         else
-            delt = d_stepn_;
+            delt = -step;
 
         do {
             /*
@@ -1055,7 +1059,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
             /*
              * dot terms calculated
              */
-            if (isynfl != 0) {
+            if (d_synchronous_flag_) {
                 xndot = d_del1_ * sin(d_xli_ - d_fasx2_) + d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_))
                         1 + d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
                 xnddt = d_del1_ * cos(d_xli_ - d_fasx2_)
@@ -1067,35 +1071,35 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
                 double x2omi = xomi + xomi;
                 double x2li = d_xli_ + d_xli_;
 
-                xndot = d_d2201_ * sin(x2omi + d_xli_ - d_g22_)
-                        + d_d2211_ * sin(d_xli_ - d_g22_)
-                        + d_d3210_ * sin(xomi + xli - d_g32_)
-                        + d_d3222_ * sin(-xomi + xli - d_g32_)
-                        + d_d4410_ * sin(x2omi + x2li - d_g44_)
-                        + d_d4422_ * sin(x2li - d_g44)
-                        + d_d5220_ * sin(xomi + xli - d_g52_)
-                        + d_d5232_ * sin(-xomi + xli - d_g52_)
-                        + d_d5421_ * sin(xomi + x2li - d_g54_)
-                        + d_d5433_ * sin(-xomi + x2li - d_g54_);
-                xnddt = d_d2201_ * cos(x2omi + xli - d_g22_)
-                        + d_d2211_ * cos(xli - d_g22_)
-                        + d_d3210_ * cos(xomi + xli - d_g32_)
-                        + d_d3222_ * cos(-xomi + xli - d_g32_)
-                        + d_d5220_ * cos(xomi + xli - d_g52_)
-                        + d_d5232_ * cos(-xomi + xli - d_g52_)
-                        + 2.0 * (d_d4410_ * cos(x2omi + x2li - g44_)
-                        + d_d4422_ * cos(x2li - g44)
-                        + d_d5421_ * cos(xomi + x2li - d_g54_)
-                        + d_d5433_ * cos(-xomi + x2li - d_g54_));
+                xndot = d_d2201_ * sin(x2omi + d_xli_ - G22)
+                        + d_d2211_ * sin(d_xli_ - G22)
+                        + d_d3210_ * sin(xomi + xli - G32)
+                        + d_d3222_ * sin(-xomi + xli - G32)
+                        + d_d4410_ * sin(x2omi + x2li - G44)
+                        + d_d4422_ * sin(x2li - G44)
+                        + d_d5220_ * sin(xomi + xli - G52)
+                        + d_d5232_ * sin(-xomi + xli - G52)
+                        + d_d5421_ * sin(xomi + x2li - G54)
+                        + d_d5433_ * sin(-xomi + x2li - G54);
+                xnddt = d_d2201_ * cos(x2omi + xli - G22)
+                        + d_d2211_ * cos(xli - G22)
+                        + d_d3210_ * cos(xomi + xli - G32)
+                        + d_d3222_ * cos(-xomi + xli - G32)
+                        + d_d5220_ * cos(xomi + xli - G52)
+                        + d_d5232_ * cos(-xomi + xli - G52)
+                        + 2.0 * (d_d4410_ * cos(x2omi + x2li - G44)
+                        + d_d4422_ * cos(x2li - G44)
+                        + d_d5421_ * cos(xomi + x2li - G54)
+                        + d_d5433_ * cos(-xomi + x2li - G54));
             }
             xldot = xni + xfact;
             xnddt = xnddt * xldot;
 
             d_atime_ += delt;
             ft = t - d_atime_;
-        } while (fabs(ft) >= d_stepp_);
+        } while (fabs(ft) >= step);
     }
-#endif
+
     /*
      * integrator
      */
