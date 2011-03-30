@@ -237,20 +237,21 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
-    FindPosition(0.0);
+    Eci eci;
+    FindPosition(eci, 0.0);
 
     first_run_ = false;
 }
 
-void SGDP4::FindPosition(double tsince) {
+void SGDP4::FindPosition(Eci& eci, double tsince) {
 
     if (i_use_deep_space_)
-        FindPositionSDP4(tsince);
+        FindPositionSDP4(eci, tsince);
     else
-        FindPositionSGP4(tsince);
+        FindPositionSGP4(eci, tsince);
 }
 
-void SGDP4::FindPositionSDP4(double tsince) {
+void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
 
     /*
      * the final values
@@ -320,7 +321,7 @@ void SGDP4::FindPositionSDP4(double tsince) {
     /*
      * using calculated values, find position and velocity
      */
-    CalculateFinalPositionVelocity(tsince, e,
+    CalculateFinalPositionVelocity(eci, tsince, e,
             a, omega, xl, xnode,
             xincl, perturbed_xlcof, perturbed_aycof,
             perturbed_x3thm1, perturbed_x1mth2, perturbed_x7thm1,
@@ -328,7 +329,7 @@ void SGDP4::FindPositionSDP4(double tsince) {
 
 }
 
-void SGDP4::FindPositionSGP4(double tsince) {
+void SGDP4::FindPositionSGP4(Eci& eci, double tsince) {
 
     /*
      * the final values
@@ -381,7 +382,7 @@ void SGDP4::FindPositionSGP4(double tsince) {
      * using calculated values, find position and velocity
      * we can pass in constants from Initialize() as these dont change
      */
-    CalculateFinalPositionVelocity(tsince, e,
+    CalculateFinalPositionVelocity(eci, tsince, e,
             a, omega, xl, xnode,
             xincl, i_xlcof_, i_aycof_,
             i_x3thm1_, i_x1mth2_, i_x7thm1_,
@@ -389,7 +390,7 @@ void SGDP4::FindPositionSGP4(double tsince) {
 
 }
 
-void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
+void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
         const double& a, const double& omega, const double& xl, const double& xnode,
         const double& xincl, const double& xlcof, const double& aycof,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
@@ -548,15 +549,9 @@ void SGDP4::CalculateFinalPositionVelocity(const double& tsince, const double& e
     const double zdot = (rdotk * uz + rfdotk * vz) * constants_.XKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
-    std::cout << std::setprecision(8) << std::fixed;
-    std::cout.width(17);
-    std::cout << tsince << " ";
-    std::cout.width(17);
-    std::cout << position.GetX() << " ";
-    std::cout.width(17);
-    std::cout << position.GetY() << " ";
-    std::cout.width(17);
-    std::cout << position.GetZ() << std::endl;
+    Julian julian = Epoch();
+    julian.AddMin(tsince);
+    eci = Eci(julian, position, velocity);
 }
 
 /*

@@ -2,6 +2,7 @@
 #define SGDP4_H_
 
 #include "Tle.h"
+#include "Eci.h"
 
 class SGDP4 {
 public:
@@ -16,7 +17,7 @@ public:
 
     void SetConstants(EnumConstants constants);
     void SetTle(const Tle& tle);
-    void FindPosition(double tsince);
+    void FindPosition(Eci& eci, double tsince);
 
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
@@ -27,9 +28,9 @@ private:
             double& omgasm, double& xnodes, double& xll);
     void DeepSecular(const double& t, double& xll, double& omgasm,
             double& xnodes, double& em, double& xinc, double& xn);
-    void FindPositionSDP4(double tsince);
-    void FindPositionSGP4(double tsince);
-    void CalculateFinalPositionVelocity(const double& tsince, const double& e,
+    void FindPositionSDP4(Eci& eci, double tsince);
+    void FindPositionSGP4(Eci& eci, double tsince);
+    void CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,

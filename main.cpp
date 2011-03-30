@@ -2,6 +2,8 @@
 #include "Tle.h"
 #include "SGDP4.h"
 #include "Globals.h"
+#include "Observer.h"
+#include "Coord.h"
 
 #include <list>
 #include <string>
@@ -12,7 +14,6 @@ void RunTest();
 int main() {
 
     std::list<Tle> tles;
-#if 0
 
     tles.push_back(Tle("ALSAT 1                 ",
             "1 27559U 02054A   11089.12872679  .00000243  00000-0  48843-4 0  4131",
@@ -47,25 +48,52 @@ int main() {
     tles.push_back(Tle("UK-DMC 2                ",
             "1 35683U 09041C   11089.11558659  .00000272  00000-0  54146-4 0  8712",
             "2 35683  98.0762 348.1067 0001434  99.8921 260.2456 14.69414094 89293"));
-#endif
+
     //tles.push_back(Tle("SGP4 Test",
     //        "1 88888U          80275.98708465  .00073094  13844-3  66816-4 0     8",
     //        "2 88888  72.8435 115.9689 0086731  52.6988 110.5714 16.05824518   105"));
 
-    tles.push_back(Tle("SDP4 Test",
-            "1 11801U          80230.29629788  .01431103  00000-0  14311-1      13",
-            "2 11801  46.7916 230.4354 7318036  47.4722  10.4117  2.28537848    13"));
-    std::list<Tle>::iterator itr;
-    Julian jul;
+    //tles.push_back(Tle("SDP4 Test",
+    //        "1 11801U          80230.29629788  .01431103  00000-0  14311-1      13",
+    //        "2 11801  46.7916 230.4354 7318036  47.4722  10.4117  2.28537848    13"));
 
-    for (itr = tles.begin(); itr != tles.end(); itr++) {
-        SGDP4 model;
-        model.SetTle(*itr);
-        for (int i = 0; i < 5; i++) {
-            model.FindPosition(i * 360.0);
+    Observer obs(51.360242, 0.101473, 0.07);
+
+    std::list<Tle>::iterator itr;
+
+    while (true) {
+        Julian date_now;
+
+        for (itr = tles.begin(); itr != tles.end(); itr++) {
+            SGDP4 model;
+            double tsince = date_now.SpanMin((*itr).GetEpoch());
+            model.SetTle(*itr);
+            Eci eci;
+            model.FindPosition(eci, tsince);
+            CoordTopographic topo = obs.GetLookAngle(eci);
+
+            std::cout << std::setprecision(8) << std::fixed;
+            std::cout.width(17);
+            std::cout << tsince << " ";
+            std::cout.width(17);
+            std::cout << Globals::Rad2Deg(topo.GetAzimuth()) << " ";
+            std::cout.width(17);
+            std::cout << Globals::Rad2Deg(topo.GetElevation()) << std::endl;
+
+
         }
     }
-
+    /*
+    std::cout << std::setprecision(8) << std::fixed;
+    std::cout.width(17);
+    std::cout << tsince << " ";
+    std::cout.width(17);
+    std::cout << position.GetX() << " ";
+    std::cout.width(17);
+    std::cout << position.GetY() << " ";
+    std::cout.width(17);
+    std::cout << position.GetZ() << std::endl;
+     */
     //RunTest();
     return 0;
 }
@@ -78,7 +106,8 @@ void RunTle(Tle tle, double start, double end, double inc) {
     std::cout << "Satellite: " << tle.GetName() << std::endl << std::endl;
     while (running) {
         try {
-            model.FindPosition(current);
+            Eci eci;
+            model.FindPosition(eci, current);
         } catch (std::exception* ex) {
             std::cout << ex->what() << std::endl;
             break;

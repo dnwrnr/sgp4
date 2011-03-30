@@ -80,6 +80,14 @@ Julian::Julian(int year, int mon, int day, int hour, int min, double sec) {
     Initialize(year, mon, day, hour, min, sec);
 }
 
+bool Julian::operator==(const Julian &date) const {
+    return date_ == date.date_ ? true : false;
+}
+
+bool Julian::operator!=(const Julian &date) const {
+    return date_ == date.date_ ? false : true;
+}
+
 /*
  * create julian date from year and day of year
  */

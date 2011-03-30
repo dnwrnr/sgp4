@@ -125,7 +125,7 @@ void Tle::Initialize() {
     TrimRight(line_one_);
     TrimLeft(line_two_);
     TrimRight(line_two_);
-    
+
     assert(!name_.empty());
     assert(!line_one_.empty());
     assert(!line_two_.empty());
@@ -198,7 +198,7 @@ void Tle::Initialize() {
     else
         year += 1900;
     double day = GetField(Tle::FLD_EPOCHDAY);
-    
+
     date_ = Julian(year, day);
 }
 
