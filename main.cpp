@@ -72,6 +72,8 @@ int main() {
             model.FindPosition(eci, tsince);
             CoordTopographic topo = obs.GetLookAngle(eci);
 
+            std::cout.width(17);
+            std::cout << itr->GetName() << " ";
             std::cout << std::setprecision(8) << std::fixed;
             std::cout.width(17);
             std::cout << tsince << " ";
@@ -79,8 +81,6 @@ int main() {
             std::cout << Globals::Rad2Deg(topo.GetAzimuth()) << " ";
             std::cout.width(17);
             std::cout << Globals::Rad2Deg(topo.GetElevation()) << std::endl;
-
-
         }
     }
     /*

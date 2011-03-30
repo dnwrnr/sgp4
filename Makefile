@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall -g
+CFLAGS=-c -Wall -O2
 LDFLAGS=
 SOURCES=Coord.cpp \
 	Eci.cpp \
