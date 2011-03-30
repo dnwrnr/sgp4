@@ -1002,8 +1002,6 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
 
 /*
  * deep space secular effects
- * omgdot = i_omgdot_
- * omegaq = omegao
  */
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) {
@@ -1079,7 +1077,6 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
 
     if (!d_synchronous_flag_)
         xll = xl + temp + temp;
-
     else
         xll = xl - omgasm + temp;
 }
@@ -1106,6 +1103,10 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
 
     } else {
 
+        /*
+         * check ArgumentPerigee() and i_omgdot_
+         * are correct to use
+         */
         const double xomi = ArgumentPerigee() + i_omgdot_ * d_atime_;
         const double x2omi = xomi + xomi;
         const double x2li = d_xli_ + d_xli_;
