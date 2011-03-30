@@ -284,9 +284,7 @@ void SGDP4::FindPositionSDP4(double tsince) {
     DeepSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-    xn = constants_.XKE / pow(a, 1.5);
     e = em - tempe;
-
     double xmam = xmdf + RecoveredMeanMotion() * templ;
 
     //CALL DPPER(E, XINC, OMGADF, XNODE, XMAM)
