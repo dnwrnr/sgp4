@@ -127,12 +127,12 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
-    double s4 = constants_.S;
-    double qoms24 = constants_.QOMS2T;
     /*
      * for perigee below 156km, the values of
      * s4 and qoms2t are altered
      */
+    double s4 = constants_.S;
+    double qoms24 = constants_.QOMS2T;
     if (Perigee() < 156.0) {
         s4 = Perigee() - 78.0;
         if (Perigee() <= 98.0) {
@@ -193,13 +193,17 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     i_x7thm1_ = 7.0 * theta2 - 1.0;
 
     if (i_use_deep_space_) {
+
+        const double sing = sin(ArgumentPerigee());
+        const double cosg = cos(ArgumentPerigee());
         i_gsto_ = Epoch().ToGMST();
-        double sing = sin(ArgumentPerigee());
-        double cosg = cos(ArgumentPerigee());
+
         DeepSpaceInitialize(eosq, i_sinio_, i_cosio_, betao,
                 theta2, sing, cosg, betao2,
                 i_xmdot_, i_omgdot_, i_xnodot_);
+
     } else {
+
         double c3 = 0.0;
         if (Eccentricity() > 1.0e-4) {
             c3 = coef * tsi * i_a3ovk2_ * RecoveredMeanMotion() * constants_.AE *
@@ -233,7 +237,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         }
     }
 
-    //FindPosition(0.0);
+    FindPosition(0.0);
 
     first_run_ = false;
 }
@@ -1005,15 +1009,20 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
 
 /*
  * deep space secular effects
+ * omgdot = i_omgdot_
+ * omegaq = omegao
  */
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
-        double& xnodes, double& em, double& xinc, double& xn) {
+        double& xnodes, double& em, double& xinc, double& xn,
+        const double& omgdot, const double& omegaq) {
 
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
     static const double G44 = 1.8014998;
     static const double G52 = 1.0508330;
     static const double G54 = 4.4108898;
+    static const double THDT = 4.3752691E-3;
+
     static const double step = 720.0;
 
     double xldot = 0.0;
@@ -1036,7 +1045,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
          * epoch restart
          */
         d_atime_ = 0.0;
-        d_xni_ = xnq;
+        d_xni_ = RecoveredMeanMotion();
         d_xli_ = d_xlamo_;
     }
 
@@ -1060,39 +1069,41 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
              * dot terms calculated
              */
             if (d_synchronous_flag_) {
+
                 xndot = d_del1_ * sin(d_xli_ - d_fasx2_) + d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_))
                         1 + d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
                 xnddt = d_del1_ * cos(d_xli_ - d_fasx2_)
                         + 2.0 * d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_))
                         + 3.0 * d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
+
             } else {
 
-                double xomi = d_omegaq_ + omgdt * d_atime_;
-                double x2omi = xomi + xomi;
-                double x2li = d_xli_ + d_xli_;
+                const double xomi = omegaq + omgdot * d_atime_;
+                const double x2omi = xomi + xomi;
+                const double x2li = d_xli_ + d_xli_;
 
                 xndot = d_d2201_ * sin(x2omi + d_xli_ - G22)
                         + d_d2211_ * sin(d_xli_ - G22)
-                        + d_d3210_ * sin(xomi + xli - G32)
-                        + d_d3222_ * sin(-xomi + xli - G32)
+                        + d_d3210_ * sin(xomi + d_xli_ - G32)
+                        + d_d3222_ * sin(-xomi + d_xli_ - G32)
                         + d_d4410_ * sin(x2omi + x2li - G44)
                         + d_d4422_ * sin(x2li - G44)
-                        + d_d5220_ * sin(xomi + xli - G52)
-                        + d_d5232_ * sin(-xomi + xli - G52)
+                        + d_d5220_ * sin(xomi + d_xli_ - G52)
+                        + d_d5232_ * sin(-xomi + d_xli_ - G52)
                         + d_d5421_ * sin(xomi + x2li - G54)
                         + d_d5433_ * sin(-xomi + x2li - G54);
-                xnddt = d_d2201_ * cos(x2omi + xli - G22)
-                        + d_d2211_ * cos(xli - G22)
-                        + d_d3210_ * cos(xomi + xli - G32)
-                        + d_d3222_ * cos(-xomi + xli - G32)
-                        + d_d5220_ * cos(xomi + xli - G52)
-                        + d_d5232_ * cos(-xomi + xli - G52)
+                xnddt = d_d2201_ * cos(x2omi + d_xli_ - G22)
+                        + d_d2211_ * cos(d_xli_ - G22)
+                        + d_d3210_ * cos(xomi + d_xli_ - G32)
+                        + d_d3222_ * cos(-xomi + d_xli_ - G32)
+                        + d_d5220_ * cos(xomi + d_xli_ - G52)
+                        + d_d5232_ * cos(-xomi + d_xli_ - G52)
                         + 2.0 * (d_d4410_ * cos(x2omi + x2li - G44)
                         + d_d4422_ * cos(x2li - G44)
                         + d_d5421_ * cos(xomi + x2li - G54)
                         + d_d5433_ * cos(-xomi + x2li - G54));
             }
-            xldot = xni + xfact;
+            xldot = d_xni_ + d_xfact_;
             xnddt = xnddt * xldot;
 
             d_atime_ += delt;
@@ -1106,7 +1117,7 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
     xn = d_xni_ + xndot * ft + xnddt * ft * ft * 0.5;
 
     double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
-    double temp = -xnodes + thgr + t * thdt;
+    double temp = -xnodes + i_gsto_ + t * THDT;
 
     if (!d_synchronous_flag_)
         xll = xl + temp + temp;
