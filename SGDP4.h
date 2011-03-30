@@ -34,6 +34,7 @@ private:
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio);
+    void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot);
 
     bool first_run_;
 

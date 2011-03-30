@@ -1013,14 +1013,8 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
  * omegaq = omegao
  */
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
-        double& xnodes, double& em, double& xinc, double& xn,
-        const double& omgdot, const double& omegaq) {
+        double& xnodes, double& em, double& xinc, double& xn) {
 
-    static const double G22 = 5.7686396;
-    static const double G32 = 0.95240898;
-    static const double G44 = 1.8014998;
-    static const double G52 = 1.0508330;
-    static const double G54 = 4.4108898;
     static const double THDT = 4.3752691E-3;
 
     static const double step = 720.0;
@@ -1065,46 +1059,8 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
              */
             d_xli_ = d_xli_ + xldot * delt + xndot * step2;
             d_xni_ = d_xni_ + xndot * delt + xnddt * step2;
-            /*
-             * dot terms calculated
-             */
-            if (d_synchronous_flag_) {
 
-                xndot = d_del1_ * sin(d_xli_ - d_fasx2_) + d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_))
-                        1 + d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
-                xnddt = d_del1_ * cos(d_xli_ - d_fasx2_)
-                        + 2.0 * d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_))
-                        + 3.0 * d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
-
-            } else {
-
-                const double xomi = omegaq + omgdot * d_atime_;
-                const double x2omi = xomi + xomi;
-                const double x2li = d_xli_ + d_xli_;
-
-                xndot = d_d2201_ * sin(x2omi + d_xli_ - G22)
-                        + d_d2211_ * sin(d_xli_ - G22)
-                        + d_d3210_ * sin(xomi + d_xli_ - G32)
-                        + d_d3222_ * sin(-xomi + d_xli_ - G32)
-                        + d_d4410_ * sin(x2omi + x2li - G44)
-                        + d_d4422_ * sin(x2li - G44)
-                        + d_d5220_ * sin(xomi + d_xli_ - G52)
-                        + d_d5232_ * sin(-xomi + d_xli_ - G52)
-                        + d_d5421_ * sin(xomi + x2li - G54)
-                        + d_d5433_ * sin(-xomi + x2li - G54);
-                xnddt = d_d2201_ * cos(x2omi + d_xli_ - G22)
-                        + d_d2211_ * cos(d_xli_ - G22)
-                        + d_d3210_ * cos(xomi + d_xli_ - G32)
-                        + d_d3222_ * cos(-xomi + d_xli_ - G32)
-                        + d_d5220_ * cos(xomi + d_xli_ - G52)
-                        + d_d5232_ * cos(-xomi + d_xli_ - G52)
-                        + 2.0 * (d_d4410_ * cos(x2omi + x2li - G44)
-                        + d_d4422_ * cos(x2li - G44)
-                        + d_d5421_ * cos(xomi + x2li - G54)
-                        + d_d5433_ * cos(-xomi + x2li - G54));
-            }
-            xldot = d_xni_ + d_xfact_;
-            xnddt = xnddt * xldot;
+            DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
 
             d_atime_ += delt;
             ft = t - d_atime_;
@@ -1123,4 +1079,55 @@ void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         xll = xl + temp + temp;
     else
         xll = xl - omgasm + temp;
+}
+
+/*
+ * calculate dot terms
+ */
+void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
+
+    static const double G22 = 5.7686396;
+    static const double G32 = 0.95240898;
+    static const double G44 = 1.8014998;
+    static const double G52 = 1.0508330;
+    static const double G54 = 4.4108898;
+
+    if (d_synchronous_flag_) {
+
+        xndot = d_del1_ * sin(d_xli_ - d_fasx2_) + d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_))
+                1 + d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
+        xnddt = d_del1_ * cos(d_xli_ - d_fasx2_)
+                + 2.0 * d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_))
+                + 3.0 * d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
+
+    } else {
+
+        const double xomi = ArgumentPerigee() + i_omgdot_ * d_atime_;
+        const double x2omi = xomi + xomi;
+        const double x2li = d_xli_ + d_xli_;
+
+        xndot = d_d2201_ * sin(x2omi + d_xli_ - G22)
+                + d_d2211_ * sin(d_xli_ - G22)
+                + d_d3210_ * sin(xomi + d_xli_ - G32)
+                + d_d3222_ * sin(-xomi + d_xli_ - G32)
+                + d_d4410_ * sin(x2omi + x2li - G44)
+                + d_d4422_ * sin(x2li - G44)
+                + d_d5220_ * sin(xomi + d_xli_ - G52)
+                + d_d5232_ * sin(-xomi + d_xli_ - G52)
+                + d_d5421_ * sin(xomi + x2li - G54)
+                + d_d5433_ * sin(-xomi + x2li - G54);
+        xnddt = d_d2201_ * cos(x2omi + d_xli_ - G22)
+                + d_d2211_ * cos(d_xli_ - G22)
+                + d_d3210_ * cos(xomi + d_xli_ - G32)
+                + d_d3222_ * cos(-xomi + d_xli_ - G32)
+                + d_d5220_ * cos(xomi + d_xli_ - G52)
+                + d_d5232_ * cos(-xomi + d_xli_ - G52)
+                + 2.0 * (d_d4410_ * cos(x2omi + x2li - G44)
+                + d_d4422_ * cos(x2li - G44)
+                + d_d5421_ * cos(xomi + x2li - G54)
+                + d_d5433_ * cos(-xomi + x2li - G54));
+    }
+
+    xldot = d_xni_ + d_xfact_;
+    xnddt = xnddt * xldot;
 }
