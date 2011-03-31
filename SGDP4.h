@@ -24,11 +24,11 @@ private:
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& sing, const double& cosg, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
-    void DeepCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
+    void DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
             double& pl, double& pgh, double& ph);
-    void DeepPeriodics(const double& t, double& em, double& xinc,
+    void DeepSpacePeriodics(const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
-    void DeepSecular(const double& t, double& xll, double& omgasm,
+    void DeepSpaceSecular(const double& t, double& xll, double& omgasm,
             double& xnodes, double& em, double& xinc, double& xn);
     void FindPositionSDP4(Eci& eci, double tsince);
     void FindPositionSGP4(Eci& eci, double tsince);

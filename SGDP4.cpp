@@ -281,7 +281,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     double xn = RecoveredMeanMotion();
 
     /* t, xll, omgasm, xnodes, em, xinc, xn */
-    DeepSecular(tsince, xmdf, omega, xnode, e, xincl, xn);
+    DeepSpaceSecular(tsince, xmdf, omega, xnode, e, xincl, xn);
 
     if (xn <= 0.0) {
         throw new SatelliteException("Error: 2 (xn <= 0.0)");
@@ -309,7 +309,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     xlm = fmod(xlm, Globals::TWOPI());
     double xmam = fmod(xlm - omega - xnode, Globals::TWOPI());
 
-    DeepPeriodics(tsince, e, xincl, omega, xnode, xmam);
+    DeepSpacePeriodics(tsince, e, xincl, omega, xnode, xmam);
 
     if (xincl < 0.0) {
         xincl = -xincl;
@@ -921,7 +921,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     }
 }
 
-void SGDP4::DeepCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
+void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
         double& pl, double& pgh, double& ph) {
 
     static const double ZES = 0.01675;
@@ -974,7 +974,7 @@ void SGDP4::DeepCalculateLunarSolarTerms(const double t, double& pe, double& pin
 /*
  * lunar / solar periodics
  */
-void SGDP4::DeepPeriodics(const double& t, double& em,
+void SGDP4::DeepSpacePeriodics(const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) {
 
     double pe = 0.0;
@@ -983,7 +983,7 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
     double pgh = 0.0;
     double ph = 0.0;
 
-    DeepCalculateLunarSolarTerms(t, pe, pinc, pl, pgh, ph);
+    DeepSpaceCalculateLunarSolarTerms(t, pe, pinc, pl, pgh, ph);
 
     if (!first_run_) {
 
@@ -1050,7 +1050,7 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
 /*
  * deep space secular effects
  */
-void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
+void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) {
 
     static const double THDT = 4.37526908801129966e-3;
