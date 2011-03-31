@@ -659,7 +659,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     double cc = C1SS;
     double zn = ZNS;
     double ze = ZES;
-    double zmo = d_zmos_;
     const double xnoi = 1.0 / RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++) {
@@ -767,7 +766,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         zn = ZNL;
         cc = C1L;
         ze = ZEL;
-        zmo = d_zmol_;
 
     }
 
