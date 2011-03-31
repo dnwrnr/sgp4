@@ -354,7 +354,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
 
 }
 
-void SGDP4::FindPositionSGP4(Eci& eci, double tsince) {
+void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
 
     /*
      * the final values
@@ -419,7 +419,7 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
         const double& a, const double& omega, const double& xl, const double& xnode,
         const double& xincl, const double& xlcof, const double& aycof,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
-        const double& cosio, const double& sinio) {
+        const double& cosio, const double& sinio) const {
 
     double temp;
     double temp1;
@@ -1057,7 +1057,7 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
  * deep space secular effects
  */
 void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
-        double& xnodes, double& em, double& xinc, double& xn) {
+        double& xnodes, double& em, double& xinc, double& xn) const {
 
     static const double THDT = 4.37526908801129966e-3;
 
@@ -1193,7 +1193,7 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
 /*
  * deep space integrator for time period of delt
  */
-void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) {
+void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) const {
 
     /*
      * calculate dot terms

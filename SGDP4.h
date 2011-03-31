@@ -29,16 +29,16 @@ private:
     void DeepSpacePeriodics(const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
     void DeepSpaceSecular(const double& t, double& xll, double& omgasm,
-            double& xnodes, double& em, double& xinc, double& xn);
+            double& xnodes, double& em, double& xinc, double& xn) const;
     void FindPositionSDP4(Eci& eci, double tsince);
-    void FindPositionSGP4(Eci& eci, double tsince);
+    void FindPositionSGP4(Eci& eci, double tsince) const;
     void CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
-            const double& cosio, const double& sinio);
+            const double& cosio, const double& sinio) const;
     void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const;
-    void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot);
+    void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) const;
 
     bool first_run_;
 
@@ -247,12 +247,17 @@ private:
     double d_fasx4_;
     double d_fasx6_;
 
+    /*
+     * integrator constants
+     */
     double d_xfact_;
-
     double d_xlamo_;
-    double d_xli_;
-    double d_xni_;
-    double d_atime_;
+    /*
+     * integrator values
+     */
+    mutable double d_xli_;
+    mutable double d_xni_;
+    mutable double d_atime_;
 
     struct Constants {
         double AE;
