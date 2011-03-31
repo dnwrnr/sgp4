@@ -207,7 +207,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         double c3 = 0.0;
         if (Eccentricity() > 1.0e-4) {
             c3 = coef * tsi * i_a3ovk2_ * RecoveredMeanMotion() * constants_.AE *
-                    i_a3ovk2_ / Eccentricity();
+                    i_sinio_ / Eccentricity();
         }
 
         i_c5_ = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
