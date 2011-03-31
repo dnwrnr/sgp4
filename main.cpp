@@ -144,6 +144,8 @@ void RunTle(Tle tle, double start, double end, double inc) {
 
 void RunTest() {
 
+#if 0
+
     /*
       #   ------------------ Verification test cases ----------------------
       #                       # TEME example
@@ -379,7 +381,7 @@ void RunTest() {
     RunTle(Tle("28350",
             "1 28350U 04020A   06167.21788666  .16154492  76267-5  18678-3 0  8894",
             "2 28350  64.9977 345.6130 0024870 260.7578  99.9590 16.47856722116490"), 0.0, 2880.0, 120.0);
-
+#endif
 
     /*
     #   H-2 R/B                   # Deep space, perigee = 135.75 (<156) s4 mod
@@ -390,7 +392,7 @@ void RunTest() {
             "1 28623U 05006B   06177.81079184  .00637644  69054-6  96390-3 0  6000",
             "2 28623  28.5200 114.9834 6249053 170.2550 212.8965  3.79477162 12753"), 0.0, 1440.0, 120.0);
 
-
+    return;
     /*
     #   XM-3                      # 24h resonant geo, incl < 3 deg goes
     #                       # negative around 1130 min

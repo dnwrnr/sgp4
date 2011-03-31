@@ -135,7 +135,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     double qoms24 = constants_.QOMS2T;
     if (Perigee() < 156.0) {
         s4 = Perigee() - 78.0;
-        if (Perigee() <= 98.0) {
+        if (Perigee() < 98.0) {
             s4 = 20.0;
         }
         qoms24 = pow((120.0 - s4) * constants_.AE / constants_.XKMPER, 4.0);
@@ -256,12 +256,12 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     /*
      * the final values
      */
-    double e;
+    double e = Eccentricity();
     double a;
     double omega;
     double xl;
     double xnode;
-    double xincl;
+    double xincl = Inclination();
 
     /*
      * update for secular gravity and atmospheric drag
@@ -270,33 +270,58 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
     const double xnoddf = AscendingNode() + i_xnodot_ * tsince;
 
+    omega = omgadf;
+
     const double tsq = tsince * tsince;
     xnode = xnoddf + i_xnodcf_ * tsq;
     double tempa = 1.0 - i_c1_ * tsince;
     double tempe = BStar() * i_c4_ * tsince;
     double templ = i_t2cof_ * tsq;
 
-    double em = Eccentricity();
-    double xinc = Inclination();
     double xn = RecoveredMeanMotion();
 
-    DeepSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
+    /* t, xll, omgasm, xnodes, em, xinc, xn */
+    DeepSecular(tsince, xmdf, omega, xnode, e, xincl, xn);
 
-    a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-    e = em - tempe;
-    double xmam = xmdf + RecoveredMeanMotion() * templ;
-
-    DeepPeriodics(tsince, e, xinc, omgadf, xnode, xmam);
-
-    if (xinc < 0.0) {
-        xinc = -xinc;
-        xnode += Globals::PI();
-        omgadf -= Globals::PI();
+    if (xn <= 0.0) {
+        throw new SatelliteException("Error: 2 (xn <= 0.0)");
     }
 
-    xl = xmam + omgadf + xnode;
-    xincl = xinc;
-    omega = omgadf;
+    a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
+
+    e -= tempe;
+    /*
+     * fix tolerance for error recognition
+     */
+    if (e >= 1.0 || e < -0.001) {
+        throw new SatelliteException("Error: 1 (e >= 1.0 || e < -0.001)");
+    }
+    /*
+     * fix tolerance to avoid a divide by zero
+     */
+    if (e < 1.0e-6)
+        e = 1.0e-6;
+
+    xmdf += RecoveredMeanMotion() * templ;
+    double xlm = xmdf + omega + xnode;
+    xnode = fmod(xnode, Globals::TWOPI());
+    omega = fmod(omega, Globals::TWOPI());
+    xlm = fmod(xlm, Globals::TWOPI());
+    double xmam = fmod(xlm - omega - xnode, Globals::TWOPI());
+
+    DeepPeriodics(tsince, e, xincl, omega, xnode, xmam);
+
+    if (xincl < 0.0) {
+        xincl = -xincl;
+        xnode += Globals::PI();
+        omega -= Globals::PI();
+    }
+
+    xl = xmam + omega + xnode;
+
+    if (e < 0.0 || e > 1.0) {
+        throw new SatelliteException("Error: 3 (e < 0.0 || e > 1.0)");
+    }
 
     /*
      * re-compute the perturbed values
@@ -599,7 +624,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
      */
     const double d_day_ = Epoch().FromJan1_12h_1900();
 
-    const double xnodce = 4.5236020 - 9.2422029e-4 * d_day_;
+    const double xnodce = fmod(4.5236020 - 9.2422029e-4 * d_day_, Globals::TWOPI());
     const double stem = sin(xnodce);
     const double ctem = cos(xnodce);
     const double zcosil = 0.91375164 - 0.03568096 * ctem;
@@ -1007,7 +1032,7 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
 void SGDP4::DeepSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) {
 
-    static const double THDT = 4.3752691E-3;
+    static const double THDT = 4.37526908801129966e-3;
 
     static const double STEP2 = 259200.0;
     static const double STEP = 720.0;

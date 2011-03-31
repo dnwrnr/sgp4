@@ -45,20 +45,20 @@ private:
      */
     double i_cosio_;
     double i_sinio_;
-    double i_x3thm1_;
     double i_eta_;
-    double i_c1_;
+    double i_t2cof_;
     double i_a3ovk2_;
     double i_x1mth2_;
-    double i_c4_;
-    double i_xmdot_;
-    double i_omgdot_;
-    double i_xnodot_;
-    double i_xnodcf_;
-    double i_t2cof_;
-    double i_xlcof_;
-    double i_aycof_;
+    double i_x3thm1_;
     double i_x7thm1_;
+    double i_aycof_;
+    double i_xlcof_;
+    double i_xnodcf_;
+    double i_c1_;
+    double i_c4_;
+    double i_omgdot_; // secular rate of omega (radians/sec)
+    double i_xnodot_; // secular rate of xnode (radians/sec)
+    double i_xmdot_; // secular rate of xmo (radians/sec)
     /*
      * sgp4 constant
      */
