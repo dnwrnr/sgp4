@@ -766,7 +766,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         zn = ZNL;
         cc = C1L;
         ze = ZEL;
-
     }
 
     d_sse_ += se;
@@ -775,9 +774,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     d_ssg_ += sgh - cosio * shdq;
     d_ssh_ += shdq;
 
-    /*
-     * geopotential resonance initialization for 12 hour orbits
-     */
+
     d_resonance_flag_ = false;
     d_synchronous_flag_ = false;
     bool initialize_integrator = true;
@@ -908,10 +905,10 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     }
 
     if (initialize_integrator) {
-        d_xfact_ = bfact - RecoveredMeanMotion();
         /*
          * initialize integrator
          */
+        d_xfact_ = bfact - RecoveredMeanMotion();
         d_atime_ = 0.0;
         d_xni_ = RecoveredMeanMotion();
         d_xli_ = d_xlamo_;
