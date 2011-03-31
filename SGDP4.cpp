@@ -921,17 +921,17 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     }
 }
 
-/*
- * lunar / solar periodics
- */
-void SGDP4::DeepPeriodics(const double& t, double& em,
-        double& xinc, double& omgasm, double& xnodes, double& xll) {
+void SGDP4::DeepCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
+        double& pl, double& pgh, double& ph) {
 
     static const double ZES = 0.01675;
     static const double ZNS = 1.19459E-5;
     static const double ZNL = 1.5835218E-4;
     static const double ZEL = 0.05490;
 
+    /*
+     * update solar terms
+     */
     double zm = d_zmos_ + ZNS * t;
     if (first_run_)
         zm = d_zmos_;
@@ -942,9 +942,12 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
     const double ses = d_se2_ * f2 + d_se3_ * f3;
     const double sis = d_si2_ * f2 + d_si3_ * f3;
     const double sls = d_sl2_ * f2 + d_sl3_ * f3 + d_sl4_ * sinzf;
-
     const double sghs = d_sgh2_ * f2 + d_sgh3_ * f3 + d_sgh4_ * sinzf;
     const double shs = d_sh2_ * f2 + d_sh3_ * f3;
+
+    /*
+     * update lunar terms
+     */
     zm = d_zmol_ + ZNL * t;
     if (first_run_)
         zm = d_zmol_;
@@ -958,11 +961,29 @@ void SGDP4::DeepPeriodics(const double& t, double& em,
     const double sghl = d_xgh2_ * f2 + d_xgh3_ * f3 + d_xgh4_ * sinzf;
     const double shl = d_xh2_ * f2 + d_xh3_ * f3;
 
-    const double pe = ses + sel;
-    const double pinc = sis + sil;
-    const double pl = sls + sll;
-    const double pgh = sghs + sghl;
-    const double ph = shs + shl;
+    /*
+     * merge computed values
+     */
+    pe = ses + sel;
+    pinc = sis + sil;
+    pl = sls + sll;
+    pgh = sghs + sghl;
+    ph = shs + shl;
+}
+
+/*
+ * lunar / solar periodics
+ */
+void SGDP4::DeepPeriodics(const double& t, double& em,
+        double& xinc, double& omgasm, double& xnodes, double& xll) {
+
+    double pe = 0.0;
+    double pinc = 0.0;
+    double pl = 0.0;
+    double pgh = 0.0;
+    double ph = 0.0;
+
+    DeepCalculateLunarSolarTerms(t, pe, pinc, pl, pgh, ph);
 
     if (!first_run_) {
 
