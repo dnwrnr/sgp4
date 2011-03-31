@@ -118,11 +118,11 @@ void RunTle(Tle tle, double start, double end, double inc) {
             std::cout << std::setprecision(8) << std::fixed;
             std::cout.width(17);
             std::cout << val << " ";
-            std::cout.width(17);
+            std::cout.width(16);
             std::cout << position.GetX() << " ";
-            std::cout.width(17);
+            std::cout.width(16);
             std::cout << position.GetY() << " ";
-            std::cout.width(17);
+            std::cout.width(16);
             std::cout << position.GetZ() << std::endl;
 
         } catch (std::exception* ex) {
