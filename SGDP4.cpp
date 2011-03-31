@@ -780,7 +780,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
      */
     d_resonance_flag_ = false;
     d_synchronous_flag_ = false;
-    bool initialize_integrator = false;
+    bool initialize_integrator = true;
 
     if (RecoveredMeanMotion() < 0.0052359877 && RecoveredMeanMotion() > 0.0034906585) {
 
