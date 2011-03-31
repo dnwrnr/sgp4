@@ -25,7 +25,7 @@ private:
             const double& theta2, const double& sing, const double& cosg, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
     void DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
-            double& pl, double& pgh, double& ph);
+            double& pl, double& pgh, double& ph) const;
     void DeepSpacePeriodics(const double& t, double& em, double& xinc,
             double& omgasm, double& xnodes, double& xll);
     void DeepSpaceSecular(const double& t, double& xll, double& omgasm,
@@ -37,7 +37,7 @@ private:
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio);
-    void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot);
+    void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const;
     void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot);
 
     bool first_run_;

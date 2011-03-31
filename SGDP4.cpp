@@ -922,7 +922,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 }
 
 void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
-        double& pl, double& pgh, double& ph) {
+        double& pl, double& pgh, double& ph) const {
 
     static const double ZES = 0.01675;
     static const double ZNS = 1.19459E-5;
@@ -1131,7 +1131,7 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
 /*
  * calculate dot terms
  */
-void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
+void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const {
 
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
@@ -1151,7 +1151,7 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) {
     } else {
 
         /*
-         * check ArgumentPerigee() and i_omgdot_
+         * TODO: check ArgumentPerigee() and i_omgdot_
          * are correct to use
          */
         const double xomi = ArgumentPerigee() + i_omgdot_ * d_atime_;
