@@ -782,108 +782,10 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
      */
     d_resonance_flag_ = false;
     d_synchronous_flag_ = false;
-    bool initialize_integrator = true;
+    bool initialize_integrator = false;
 
     if (RecoveredMeanMotion() < 0.0052359877 && RecoveredMeanMotion() > 0.0034906585) {
 
-        if (RecoveredMeanMotion() < 8.26e-3 || RecoveredMeanMotion() > 9.24e-3 || Eccentricity() < 0.5) {
-            initialize_integrator = false;
-        } else {
-            /*
-             * geopotential resonance initialization for 12 hour orbits
-             */
-            d_resonance_flag_ = true;
-
-            const double eoc = Eccentricity() * eosq;
-
-            double g211;
-            double g310;
-            double g322;
-            double g410;
-            double g422;
-            double g520;
-
-            double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
-
-            if (Eccentricity() <= 0.65) {
-                g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eosq;
-                g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eosq + 156.591 * eoc;
-                g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eosq + 146.5816 * eoc;
-                g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eosq + 313.953 * eoc;
-                g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eosq + 1083.435 * eoc;
-                g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eosq + 3708.276 * eoc;
-            } else {
-                g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eosq + 266.724 * eoc;
-                g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eosq + 1246.113 * eoc;
-                g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eosq + 1215.972 * eoc;
-                g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eosq + 3651.957 * eoc;
-                g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eosq + 12422.52 * eoc;
-
-                if (Eccentricity() <= 0.715) {
-                    g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eosq;
-                } else {
-                    g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eosq + 31324.56 * eoc;
-                }
-            }
-
-            double g533;
-            double g521;
-            double g532;
-
-            if (Eccentricity() < 0.7) {
-                g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eosq + 5542.21 * eoc;
-                g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eosq + 5337.524 * eoc;
-                g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eosq + 5341.4 * eoc;
-            } else {
-                g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eosq + 109377.94 * eoc;
-                g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eosq + 146349.42 * eoc;
-                g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eosq + 115605.82 * eoc;
-            }
-
-            const double sini2 = sinio * sinio;
-            const double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
-            const double f221 = 1.5 * sini2;
-            const double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
-            const double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
-            const double f441 = 35.0 * sini2 * f220;
-            const double f442 = 39.3750 * sini2 * sini2;
-            const double f522 = 9.84375 * sinio * (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2)
-                    + 0.33333333 * (-2.0 + 4.0 * cosio + 6.0 * theta2));
-            const double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2)
-                    + 6.56250012 * (1.0 + 2.0 * cosio - 3.0 * theta2));
-            const double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 *
-                    (-12.0 + 8.0 * cosio + 10.0 * theta2));
-            const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
-                    (12.0 + 8.0 * cosio - 10.0 * theta2));
-
-            const double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
-            const double ainv2 = aqnv * aqnv;
-
-            double temp1 = 3.0 * xno2 * ainv2;
-            double temp = temp1 * ROOT22;
-            d_d2201_ = temp * f220 * g201;
-            d_d2211_ = temp * f221 * g211;
-            temp1 = temp1 * aqnv;
-            temp = temp1 * ROOT32;
-            d_d3210_ = temp * f321 * g310;
-            d_d3222_ = temp * f322 * g322;
-            temp1 = temp1 * aqnv;
-            temp = 2.0 * temp1 * ROOT44;
-            d_d4410_ = temp * f441 * g410;
-            d_d4422_ = temp * f442 * g422;
-            temp1 = temp1 * aqnv;
-            temp = temp1 * ROOT52;
-            d_d5220_ = temp * f522 * g520;
-            d_d5232_ = temp * f523 * g532;
-            temp = 2.0 * temp1 * ROOT54;
-            d_d5421_ = temp * f542 * g521;
-            d_d5433_ = temp * f543 * g533;
-
-            d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - i_gsto_ - i_gsto_;
-            bfact = xmdot + xnodot + xnodot - THDT - THDT;
-            bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
-        }
-    } else {
         /*
          * 24h synchronous resonance terms initialization
          */
@@ -907,7 +809,104 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
 
         d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - i_gsto_;
         bfact = xmdot + xpidot - THDT;
-        bfact = bfact + d_ssl_ + d_ssg_ + d_ssh_;
+        bfact += d_ssl_ + d_ssg_ + d_ssh_;
+
+    } else if (RecoveredMeanMotion() < 8.26e-3 || RecoveredMeanMotion() > 9.24e-3 || Eccentricity() < 0.5) {
+        initialize_integrator = false;
+    } else {
+        /*
+         * geopotential resonance initialization for 12 hour orbits
+         */
+        d_resonance_flag_ = true;
+
+        const double eoc = Eccentricity() * eosq;
+
+        double g211;
+        double g310;
+        double g322;
+        double g410;
+        double g422;
+        double g520;
+
+        double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
+
+        if (Eccentricity() <= 0.65) {
+            g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eosq;
+            g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eosq + 156.591 * eoc;
+            g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eosq + 146.5816 * eoc;
+            g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eosq + 313.953 * eoc;
+            g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eosq + 1083.435 * eoc;
+            g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eosq + 3708.276 * eoc;
+        } else {
+            g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eosq + 266.724 * eoc;
+            g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eosq + 1246.113 * eoc;
+            g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eosq + 1215.972 * eoc;
+            g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eosq + 3651.957 * eoc;
+            g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eosq + 12422.52 * eoc;
+
+            if (Eccentricity() <= 0.715) {
+                g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eosq;
+            } else {
+                g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eosq + 31324.56 * eoc;
+            }
+        }
+
+        double g533;
+        double g521;
+        double g532;
+
+        if (Eccentricity() < 0.7) {
+            g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eosq + 5542.21 * eoc;
+            g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eosq + 5337.524 * eoc;
+            g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eosq + 5341.4 * eoc;
+        } else {
+            g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eosq + 109377.94 * eoc;
+            g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eosq + 146349.42 * eoc;
+            g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eosq + 115605.82 * eoc;
+        }
+
+        const double sini2 = sinio * sinio;
+        const double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
+        const double f221 = 1.5 * sini2;
+        const double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
+        const double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
+        const double f441 = 35.0 * sini2 * f220;
+        const double f442 = 39.3750 * sini2 * sini2;
+        const double f522 = 9.84375 * sinio * (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2)
+                + 0.33333333 * (-2.0 + 4.0 * cosio + 6.0 * theta2));
+        const double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2)
+                + 6.56250012 * (1.0 + 2.0 * cosio - 3.0 * theta2));
+        const double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 *
+                (-12.0 + 8.0 * cosio + 10.0 * theta2));
+        const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
+                (12.0 + 8.0 * cosio - 10.0 * theta2));
+
+        const double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
+        const double ainv2 = aqnv * aqnv;
+
+        double temp1 = 3.0 * xno2 * ainv2;
+        double temp = temp1 * ROOT22;
+        d_d2201_ = temp * f220 * g201;
+        d_d2211_ = temp * f221 * g211;
+        temp1 = temp1 * aqnv;
+        temp = temp1 * ROOT32;
+        d_d3210_ = temp * f321 * g310;
+        d_d3222_ = temp * f322 * g322;
+        temp1 = temp1 * aqnv;
+        temp = 2.0 * temp1 * ROOT44;
+        d_d4410_ = temp * f441 * g410;
+        d_d4422_ = temp * f442 * g422;
+        temp1 = temp1 * aqnv;
+        temp = temp1 * ROOT52;
+        d_d5220_ = temp * f522 * g520;
+        d_d5232_ = temp * f523 * g532;
+        temp = 2.0 * temp1 * ROOT54;
+        d_d5421_ = temp * f542 * g521;
+        d_d5433_ = temp * f543 * g533;
+
+        d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - i_gsto_ - i_gsto_;
+        bfact = xmdot + xnodot + xnodot - THDT - THDT;
+        bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
     }
 
     if (initialize_integrator) {
