@@ -192,17 +192,31 @@ private:
 
 
 
-    bool d_resonance_flag_;
-    bool d_synchronous_flag_;
-
     double d_zmol_;
     double d_zmos_;
-
+    /*
+     * whether the deep space orbit is
+     * geopotential resonance for 12 hour orbits
+     */
+    bool d_resonance_flag_;
+    /*
+     * whether the deep space orbit is
+     * 24h synchronous resonance
+     */
+    bool d_synchronous_flag_;
+    /*
+     * lunar / solar constants for epoch
+     * applied during DeepSpaceSecular()
+     */
     double d_sse_;
     double d_ssi_;
     double d_ssl_;
     double d_ssg_;
     double d_ssh_;
+    /*
+     * lunar / solar constants
+     * used during DeepSpaceCalculateLunarSolarTerms()
+     */
     double d_se2_;
     double d_si2_;
     double d_sl2_;
@@ -215,7 +229,6 @@ private:
     double d_sh3_;
     double d_sl4_;
     double d_sgh4_;
-
     double d_ee2_;
     double d_e3_;
     double d_xi2_;
@@ -228,7 +241,9 @@ private:
     double d_xgh4_;
     double d_xh2_;
     double d_xh3_;
-
+    /*
+     * used during DeepSpaceCalcDotTerms()
+     */
     double d_d2201_;
     double d_d2211_;
     double d_d3210_;
@@ -239,14 +254,12 @@ private:
     double d_d5232_;
     double d_d5421_;
     double d_d5433_;
-
     double d_del1_;
     double d_del2_;
     double d_del3_;
     double d_fasx2_;
     double d_fasx4_;
     double d_fasx6_;
-
     /*
      * integrator constants
      */
