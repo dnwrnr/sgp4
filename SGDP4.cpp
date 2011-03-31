@@ -706,10 +706,10 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         const double s5 = x1 * x3 + x2 * x4;
         const double s6 = x2 * x3 + x1 * x4;
         const double s7 = x2 * x4 - x1 * x3;
-        const double se = s1 * zn * s5;
-        const double si = s2 * zn * (z11 + z13);
-        const double sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
-        const double sgh = s4 * zn * (z31 + z33 - 6.0);
+        se = s1 * zn * s5;
+        si = s2 * zn * (z11 + z13);
+        sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
+        sgh = s4 * zn * (z31 + z33 - 6.0);
 
         /*
          * replaced
