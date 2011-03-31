@@ -972,17 +972,23 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
 }
 
 /*
- * lunar / solar periodics
+ * calculate lunar / solar periodics and apply
  */
 void SGDP4::DeepSpacePeriodics(const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) {
 
+    /*
+     * storage for lunar / solar terms set by DeepSpaceCalculateLunarSolarTerms()
+     */
     double pe = 0.0;
     double pinc = 0.0;
     double pl = 0.0;
     double pgh = 0.0;
     double ph = 0.0;
 
+    /*
+     * calculate lunar / solar terms for current time
+     */
     DeepSpaceCalculateLunarSolarTerms(t, pe, pinc, pl, pgh, ph);
 
     if (!first_run_) {
