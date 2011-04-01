@@ -1130,10 +1130,10 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
     const double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
     const double temp = -xnodes + i_gsto_ + t * THDT;
 
-    if (!d_synchronous_flag_)
-        xll = xl + temp + temp;
+    if (d_synchronous_flag_)
+        xll = xl + temp - omgasm;
     else
-        xll = xl - omgasm + temp;
+        xll = xl + temp + temp;
 }
 
 /*
