@@ -3,3 +3,4 @@ Release\*
 Debug\*
 *.o
 sat
+*.txt
