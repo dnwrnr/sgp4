@@ -993,12 +993,16 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
         /* Spacetrack report #3 has sin/cos from before perturbations
          * added to xinc (oldxinc), but apparently report # 6 has then
          * from after they are added.
+         * use for strn3
+         * if (Inclination() >= 0.2)
+         * use for gsfc
+         * if (xinc >= 0.2)
          * (moved from start of function)
          */
         const double sinis = sin(xinc);
         const double cosis = cos(xinc);
 
-        if (Inclination() >= 0.2) {
+        if (xinc >= 0.2) {
             /*
              * apply periodics directly
              */
