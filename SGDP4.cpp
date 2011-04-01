@@ -924,7 +924,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
     static const double ZEL = 0.05490;
 
     /*
-     * update solar terms
+     * calculate solar terms
      */
     double zm = d_zmos_ + ZNS * t;
     if (first_run_)
@@ -940,7 +940,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
     const double shs = d_sh2_ * f2 + d_sh3_ * f3;
 
     /*
-     * update lunar terms
+     * calculate lunar terms
      */
     zm = d_zmol_ + ZNL * t;
     if (first_run_)
@@ -956,7 +956,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
     const double shl = d_xh2_ * f2 + d_xh3_ * f3;
 
     /*
-     * merge computed values
+     * merge calculated values
      */
     pe = ses + sel;
     pinc = sis + sil;
@@ -1154,10 +1154,6 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
 
     } else {
 
-        /*
-         * TODO: check ArgumentPerigee() and i_omgdot_
-         * are correct to use
-         */
         const double xomi = ArgumentPerigee() + i_omgdot_ * d_atime_;
         const double x2omi = xomi + xomi;
         const double x2li = d_xli_ + d_xli_;
@@ -1185,7 +1181,7 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
     }
 
     xldot = d_xni_ + d_xfact_;
-    xnddt = xnddt * xldot;
+    xnddt *= xldot;
 }
 
 /*

@@ -144,7 +144,7 @@ void RunTle(Tle tle, double start, double end, double inc) {
 
 void RunTest() {
 
-//#if 0
+    //#if 0
 
     /*
       #   ------------------ Verification test cases ----------------------
@@ -216,7 +216,7 @@ void RunTest() {
     RunTle(Tle("11801",
             "1 11801U          80230.29629788  .01431103  00000-0  14311-1      13",
             "2 11801  46.7916 230.4354 7318036  47.4722  10.4117  2.28537848    13"), 0.0, 1440.0, 360.0);
-//#endif
+    //#endif
 
     /*
    #   EUTELSAT 1-F1 (ECS1)## fig lyddane choice in GSFC at 2080 min
