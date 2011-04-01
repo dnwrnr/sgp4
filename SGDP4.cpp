@@ -810,7 +810,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_fasx4_ = 2.8843198;
         d_fasx6_ = 0.37448087;
 
-        d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - i_gsto_;
+        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + ArgumentPerigee() - i_gsto_, Globals::TWOPI());
         bfact = xmdot + xpidot - THDT;
         bfact += d_ssl_ + d_ssg_ + d_ssh_;
 
@@ -907,7 +907,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_d5421_ = temp * f542 * g521;
         d_d5433_ = temp * f543 * g533;
 
-        d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - i_gsto_ - i_gsto_;
+        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + AscendingNode() - i_gsto_ - i_gsto_, Globals::TWOPI());
         bfact = xmdot + xnodot + xnodot - THDT - THDT;
         bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
     }
