@@ -1045,6 +1045,8 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
             xnodes = atan2(alfdp, betdp);
             /*
              * Get perturbed xnodes in to same quadrant as original.
+             * RAAN is in the range of 0 to 360 degrees
+             * atan2 is in the range of -180 to 180 degrees
              */
             if (fabs(oldxnodes - xnodes) > Globals::PI()) {
                 if (xnodes < oldxnodes)
