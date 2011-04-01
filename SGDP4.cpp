@@ -1080,11 +1080,11 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
         return;
 
     /*
-     * 1st condition (if d_atime_ is less than one time step from epoch)
+     * 1st condition (if t is less than one time step from epoch)
      * 2nd condition (if d_atime_ and t are of opposite signs, so zero crossing required)
      * 3rd condition (if t is closer to zero than d_atime_)
      */
-    if (fabs(d_atime_) < STEP ||
+    if (fabs(t) < STEP ||
             t * d_atime_ <= 0.0 ||
             fabs(t) < fabs(d_atime_)) {
         /*
