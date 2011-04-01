@@ -311,6 +311,10 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
 
     DeepSpacePeriodics(tsince, e, xincl, omega, xnode, xmam);
 
+    /*
+     * keeping xincl positive important unless you need to display xincl
+     * and dislike negative inclinations
+     */
     if (xincl < 0.0) {
         xincl = -xincl;
         xnode += Globals::PI();
