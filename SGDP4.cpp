@@ -256,12 +256,12 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     /*
      * the final values
      */
-    double e = Eccentricity();
+    double e;
     double a;
     double omega;
     double xl;
     double xnode;
-    double xincl = Inclination();
+    double xincl;
 
     /*
      * update for secular gravity and atmospheric drag
@@ -270,8 +270,6 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     double omgadf = ArgumentPerigee() + i_omgdot_ * tsince;
     const double xnoddf = AscendingNode() + i_xnodot_ * tsince;
 
-    omega = omgadf;
-
     const double tsq = tsince * tsince;
     xnode = xnoddf + i_xnodcf_ * tsq;
     double tempa = 1.0 - i_c1_ * tsince;
@@ -279,17 +277,18 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     double templ = i_t2cof_ * tsq;
 
     double xn = RecoveredMeanMotion();
+    e = Eccentricity();
+    xincl = Inclination();
 
-    /* t, xll, omgasm, xnodes, em, xinc, xn */
-    DeepSpaceSecular(tsince, xmdf, omega, xnode, e, xincl, xn);
+    DeepSpaceSecular(tsince, xmdf, omgadf, xnode, e, xincl, xn);
 
     if (xn <= 0.0) {
         throw new SatelliteException("Error: 2 (xn <= 0.0)");
     }
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-
     e -= tempe;
+    
     /*
      * fix tolerance for error recognition
      */
@@ -302,14 +301,18 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     if (e < 1.0e-6)
         e = 1.0e-6;
 
+    /*
     xmdf += RecoveredMeanMotion() * templ;
-    double xlm = xmdf + omega + xnode;
+    double xlm = xmdf + omgadf + xnode;
     xnode = fmod(xnode, Globals::TWOPI());
-    omega = fmod(omega, Globals::TWOPI());
+    omgadf = fmod(omgadf, Globals::TWOPI());
     xlm = fmod(xlm, Globals::TWOPI());
-    double xmam = fmod(xlm - omega - xnode, Globals::TWOPI());
+    double xmam = fmod(xlm - omgadf - xnode, Globals::TWOPI());
+     */
 
-    DeepSpacePeriodics(tsince, e, xincl, omega, xnode, xmam);
+    double xmam = xmdf + RecoveredMeanMotion() * templ;
+
+    DeepSpacePeriodics(tsince, e, xincl, omgadf, xnode, xmam);
 
     /*
      * keeping xincl positive important unless you need to display xincl
@@ -318,10 +321,11 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     if (xincl < 0.0) {
         xincl = -xincl;
         xnode += Globals::PI();
-        omega -= Globals::PI();
+        omgadf -= Globals::PI();
     }
 
-    xl = xmam + omega + xnode;
+    xl = xmam + omgadf + xnode;
+    omega = omgadf;
 
     if (e < 0.0 || e > 1.0) {
         throw new SatelliteException("Error: 3 (e < 0.0 || e > 1.0)");
