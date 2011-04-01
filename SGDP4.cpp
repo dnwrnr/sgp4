@@ -928,7 +928,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
     static const double ZEL = 0.05490;
 
     /*
-     * calculate solar terms
+     * calculate solar terms for time t
      */
     double zm = d_zmos_ + ZNS * t;
     if (first_run_)
@@ -944,7 +944,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
     const double shs = d_sh2_ * f2 + d_sh3_ * f3;
 
     /*
-     * calculate lunar terms
+     * calculate lunar terms for time t
      */
     zm = d_zmol_ + ZNL * t;
     if (first_run_)
