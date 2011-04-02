@@ -173,7 +173,7 @@ time_t Julian::ToTime() const {
     // the fractional portion of day.
     int nDOM = (int) dblDay;
 
-    dblDay -= nDOM;
+    dblDay = dblDay - nDOM;
 
     const int SEC_PER_MIN = 60;
     const int SEC_PER_HR = 60 * SEC_PER_MIN;
@@ -202,7 +202,7 @@ time_t Julian::ToTime() const {
         // Valid time_t value returned from mktime().
         // mktime() expects a local time which means that tEpoch now needs
         // to be adjusted by the difference between this time zone and GMT.
-        //		tEpoch -= _timezone;
+        //		tEpoch = tEpoch - _timezone;
     }
 
     return tEpoch;

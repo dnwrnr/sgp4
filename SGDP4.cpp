@@ -284,8 +284,8 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     }
 
     a = pow(constants_.XKE / xn, constants_.TWOTHRD) * pow(tempa, 2.0);
-    e -= tempe;
-    
+    e = e - tempe;
+
     /*
      * fix tolerance for error recognition
      */
@@ -318,7 +318,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
     if (xincl < 0.0) {
         xincl = -xincl;
         xnode += Globals::PI();
-        omgadf -= Globals::PI();
+        omgadf = omgadf - Globals::PI();
     }
 
     xl = xmam + omgadf + xnode;
@@ -394,12 +394,12 @@ void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
         const double temp = delomg + delm;
 
         xmp += temp;
-        omega -= temp;
+        omega = omega - temp;
 
         const double tcube = tsq * tsince;
         const double tfour = tsince * tcube;
 
-        tempa -= i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
+        tempa = tempa - i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
         tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
         templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
     }
@@ -1049,7 +1049,7 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
                 if (xnodes < oldxnodes)
                     xnodes += Globals::TWOPI();
                 else
-                    xnodes -= Globals::TWOPI();
+                    xnodes = xnodes - Globals::TWOPI();
             }
 
             xll += pl;
@@ -1188,7 +1188,7 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
     }
 
     xldot = d_xni_ + d_xfact_;
-    xnddt *= xldot;
+    xnddt = xnddt * xldot;
 }
 
 /*
