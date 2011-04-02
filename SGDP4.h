@@ -39,8 +39,11 @@ private:
             const double& cosio, const double& sinio) const;
     void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const;
     void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) const;
+    void ResetGlobalVariables();
 
     bool first_run_;
+    bool i_use_simple_model_;
+    bool i_use_deep_space_;
 
     /*
      * variables are constants that wont be modified outside init
@@ -64,24 +67,100 @@ private:
     /*
      * sgp4 constant
      */
-    double i_c5_;
-    double i_omgcof_;
-    double i_xmcof_;
-    double i_delmo_;
-    double i_sinmo_;
-    double i_d2_;
-    double i_d3_;
-    double i_d4_;
-    double i_t3cof_;
-    double i_t4cof_;
-    double i_t5cof_;
+    double n_c5_;
+    double n_omgcof_;
+    double n_xmcof_;
+    double n_delmo_;
+    double n_sinmo_;
+    double n_d2_;
+    double n_d3_;
+    double n_d4_;
+    double n_t3cof_;
+    double n_t4cof_;
+    double n_t5cof_;
     /*
      * sdp4 constant
      */
-    double i_gsto_;
-
-    bool i_use_simple_model_;
-    bool i_use_deep_space_;
+    double d_gsto_;
+    double d_zmol_;
+    double d_zmos_;
+    /*
+     * whether the deep space orbit is
+     * geopotential resonance for 12 hour orbits
+     */
+    bool d_resonance_flag_;
+    /*
+     * whether the deep space orbit is
+     * 24h synchronous resonance
+     */
+    bool d_synchronous_flag_;
+    /*
+     * lunar / solar constants for epoch
+     * applied during DeepSpaceSecular()
+     */
+    double d_sse_;
+    double d_ssi_;
+    double d_ssl_;
+    double d_ssg_;
+    double d_ssh_;
+    /*
+     * lunar / solar constants
+     * used during DeepSpaceCalculateLunarSolarTerms()
+     */
+    double d_se2_;
+    double d_si2_;
+    double d_sl2_;
+    double d_sgh2_;
+    double d_sh2_;
+    double d_se3_;
+    double d_si3_;
+    double d_sl3_;
+    double d_sgh3_;
+    double d_sh3_;
+    double d_sl4_;
+    double d_sgh4_;
+    double d_ee2_;
+    double d_e3_;
+    double d_xi2_;
+    double d_xi3_;
+    double d_xl2_;
+    double d_xl3_;
+    double d_xl4_;
+    double d_xgh2_;
+    double d_xgh3_;
+    double d_xgh4_;
+    double d_xh2_;
+    double d_xh3_;
+    /*
+     * used during DeepSpaceCalcDotTerms()
+     */
+    double d_d2201_;
+    double d_d2211_;
+    double d_d3210_;
+    double d_d3222_;
+    double d_d4410_;
+    double d_d4422_;
+    double d_d5220_;
+    double d_d5232_;
+    double d_d5421_;
+    double d_d5433_;
+    double d_del1_;
+    double d_del2_;
+    double d_del3_;
+    double d_fasx2_;
+    double d_fasx4_;
+    double d_fasx6_;
+    /*
+     * integrator constants
+     */
+    double d_xfact_;
+    double d_xlamo_;
+    /*
+     * integrator values
+     */
+    mutable double d_xli_;
+    mutable double d_xni_;
+    mutable double d_atime_;
 
     /*
      * XMO
@@ -180,97 +259,6 @@ private:
     double perigee_;
     double period_;
     Julian epoch_;
-
-
-
-
-
-
-
-
-
-
-
-
-    double d_zmol_;
-    double d_zmos_;
-    /*
-     * whether the deep space orbit is
-     * geopotential resonance for 12 hour orbits
-     */
-    bool d_resonance_flag_;
-    /*
-     * whether the deep space orbit is
-     * 24h synchronous resonance
-     */
-    bool d_synchronous_flag_;
-    /*
-     * lunar / solar constants for epoch
-     * applied during DeepSpaceSecular()
-     */
-    double d_sse_;
-    double d_ssi_;
-    double d_ssl_;
-    double d_ssg_;
-    double d_ssh_;
-    /*
-     * lunar / solar constants
-     * used during DeepSpaceCalculateLunarSolarTerms()
-     */
-    double d_se2_;
-    double d_si2_;
-    double d_sl2_;
-    double d_sgh2_;
-    double d_sh2_;
-    double d_se3_;
-    double d_si3_;
-    double d_sl3_;
-    double d_sgh3_;
-    double d_sh3_;
-    double d_sl4_;
-    double d_sgh4_;
-    double d_ee2_;
-    double d_e3_;
-    double d_xi2_;
-    double d_xi3_;
-    double d_xl2_;
-    double d_xl3_;
-    double d_xl4_;
-    double d_xgh2_;
-    double d_xgh3_;
-    double d_xgh4_;
-    double d_xh2_;
-    double d_xh3_;
-    /*
-     * used during DeepSpaceCalcDotTerms()
-     */
-    double d_d2201_;
-    double d_d2211_;
-    double d_d3210_;
-    double d_d3222_;
-    double d_d4410_;
-    double d_d4422_;
-    double d_d5220_;
-    double d_d5232_;
-    double d_d5421_;
-    double d_d5433_;
-    double d_del1_;
-    double d_del2_;
-    double d_del3_;
-    double d_fasx2_;
-    double d_fasx4_;
-    double d_fasx6_;
-    /*
-     * integrator constants
-     */
-    double d_xfact_;
-    double d_xlamo_;
-    /*
-     * integrator values
-     */
-    mutable double d_xli_;
-    mutable double d_xni_;
-    mutable double d_atime_;
 
     struct Constants {
         double AE;

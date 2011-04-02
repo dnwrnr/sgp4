@@ -58,6 +58,11 @@ void SGDP4::SetConstants(EnumConstants constants) {
 void SGDP4::SetTle(const Tle& tle) {
 
     /*
+     * reset all constants etc
+     */
+    ResetGlobalVariables();
+
+    /*
      * extract and format tle data
      */
     mean_anomoly_ = tle.GetField(Tle::FLD_M, Tle::U_RAD);
@@ -196,7 +201,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
         const double sing = sin(ArgumentPerigee());
         const double cosg = cos(ArgumentPerigee());
-        i_gsto_ = Epoch().ToGMST();
+        d_gsto_ = Epoch().ToGMST();
 
         DeepSpaceInitialize(eosq, i_sinio_, i_cosio_, betao,
                 theta2, sing, cosg, betao2,
@@ -210,30 +215,30 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
                     i_sinio_ / Eccentricity();
         }
 
-        i_c5_ = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
+        n_c5_ = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
                 (etasq + eeta) + eeta * etasq);
-        i_omgcof_ = BStar() * c3 * cos(ArgumentPerigee());
+        n_omgcof_ = BStar() * c3 * cos(ArgumentPerigee());
 
-        i_xmcof_ = 0.0;
+        n_xmcof_ = 0.0;
         if (Eccentricity() > 1.0e-4)
-            i_xmcof_ = -constants_.TWOTHRD * coef * BStar() * constants_.AE / eeta;
+            n_xmcof_ = -constants_.TWOTHRD * coef * BStar() * constants_.AE / eeta;
 
-        i_delmo_ = pow(1.0 + i_eta_ * (cos(MeanAnomoly())), 3.0);
-        i_sinmo_ = sin(MeanAnomoly());
+        n_delmo_ = pow(1.0 + i_eta_ * (cos(MeanAnomoly())), 3.0);
+        n_sinmo_ = sin(MeanAnomoly());
 
         if (!i_use_simple_model_) {
             const double c1sq = i_c1_ * i_c1_;
-            i_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
-            const double temp = i_d2_ * tsi * i_c1_ / 3.0;
-            i_d3_ = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
-            i_d4_ = 0.5 * temp * RecoveredSemiMajorAxis() *
+            n_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
+            const double temp = n_d2_ * tsi * i_c1_ / 3.0;
+            n_d3_ = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
+            n_d4_ = 0.5 * temp * RecoveredSemiMajorAxis() *
                     tsi * (221.0 * RecoveredSemiMajorAxis() + 31.0 * s4) * i_c1_;
-            i_t3cof_ = i_d2_ + 2.0 * c1sq;
-            i_t4cof_ = 0.25 * (3.0 * i_d3_ + i_c1_ *
-                    (12.0 * i_d2_ + 10.0 * c1sq));
-            i_t5cof_ = 0.2 * (3.0 * i_d4_ + 12.0 * i_c1_ *
-                    i_d3_ + 6.0 * i_d2_ * i_d2_ + 15.0 *
-                    c1sq * (2.0 * i_d2_ + c1sq));
+            n_t3cof_ = n_d2_ + 2.0 * c1sq;
+            n_t4cof_ = 0.25 * (3.0 * n_d3_ + i_c1_ *
+                    (12.0 * n_d2_ + 10.0 * c1sq));
+            n_t5cof_ = 0.2 * (3.0 * n_d4_ + 12.0 * i_c1_ *
+                    n_d3_ + 6.0 * n_d2_ * n_d2_ + 15.0 *
+                    c1sq * (2.0 * n_d2_ + c1sq));
         }
     }
 
@@ -389,8 +394,8 @@ void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
     double xmp = xmdf;
 
     if (!i_use_simple_model_) {
-        const double delomg = i_omgcof_ * tsince;
-        const double delm = i_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - i_delmo_);
+        const double delomg = n_omgcof_ * tsince;
+        const double delm = n_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - n_delmo_);
         const double temp = delomg + delm;
 
         xmp += temp;
@@ -399,9 +404,9 @@ void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
         const double tcube = tsq * tsince;
         const double tfour = tsince * tcube;
 
-        tempa = tempa - i_d2_ * tsq - i_d3_ * tcube - i_d4_ * tfour;
-        tempe += BStar() * i_c5_ * (sin(xmp) - i_sinmo_);
-        templ += i_t3cof_ * tcube + tfour * (i_t4cof_ + tsince * i_t5cof_);
+        tempa = tempa - n_d2_ * tsq - n_d3_ * tcube - n_d4_ * tfour;
+        tempe += BStar() * n_c5_ * (sin(xmp) - n_sinmo_);
+        templ += n_t3cof_ * tcube + tfour * (n_t4cof_ + tsince * n_t5cof_);
     }
 
     a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
@@ -807,7 +812,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_fasx4_ = 2.8843198;
         d_fasx6_ = 0.37448087;
 
-        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + ArgumentPerigee() - i_gsto_, Globals::TWOPI());
+        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + ArgumentPerigee() - d_gsto_, Globals::TWOPI());
         bfact = xmdot + xpidot - THDT;
         bfact += d_ssl_ + d_ssg_ + d_ssh_;
 
@@ -904,7 +909,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_d5421_ = temp * f542 * g521;
         d_d5433_ = temp * f543 * g533;
 
-        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + AscendingNode() - i_gsto_ - i_gsto_, Globals::TWOPI());
+        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + AscendingNode() - d_gsto_ - d_gsto_, Globals::TWOPI());
         bfact = xmdot + xnodot + xnodot - THDT - THDT;
         bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
     }
@@ -1131,7 +1136,7 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
      */
     xn = d_xni_ + xndot * ft + xnddt * ft * ft * 0.5;
     const double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
-    const double temp = -xnodes + i_gsto_ + t * THDT;
+    const double temp = -xnodes + d_gsto_ + t * THDT;
 
     if (d_synchronous_flag_)
         xll = xl + temp - omgasm;
@@ -1211,4 +1216,41 @@ void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, dou
      * increment integrator time
      */
     d_atime_ += delt;
+}
+
+void SGDP4::ResetGlobalVariables() {
+
+    first_run_ = true;
+    i_use_simple_model_ = false;
+    i_use_deep_space_ = false;
+
+    i_cosio_ = i_sinio_ = i_eta_ = i_t2cof_ = i_a3ovk2_ = i_x1mth2_ =
+            i_x3thm1_ = i_x7thm1_ = i_aycof_ = i_xlcof_ = i_xnodcf_ = i_c1_ =
+            i_c4_ = i_omgdot_ = i_xnodot_ = i_xmdot_ = 0.0;
+    n_c5_ = n_omgcof_ = n_xmcof_ = n_delmo_ = n_sinmo_ = n_d2_ =
+            n_d3_ = n_d4_ = n_t3cof_ = n_t4cof_ = n_t5cof_ = 0.0;
+
+    d_gsto_ = d_zmol_ = d_zmos_ = 0.0;
+
+    d_resonance_flag_ = false;
+    d_synchronous_flag_ = false;
+
+    d_sse_ = d_ssi_ = d_ssl_ = d_ssg_ = d_ssh_ = 0.0;
+
+    d_se2_ = d_si2_ = d_sl2_ = d_sgh2_ = d_sh2_ = d_se3_ = d_si3_ = d_sl3_ =
+            d_sgh3_ = d_sh3_ = d_sl4_ = d_sgh4_ = d_ee2_ = d_e3_ = d_xi2_ =
+            d_xi3_ = d_xl2_ = d_xl3_ = d_xl4_ = d_xgh2_ = d_xgh3_ = d_xgh4_ =
+            d_xh2_ = d_xh3_ = 0.0;
+
+    d_d2201_ = d_d2211_ = d_d3210_ = d_d3222_ = d_d4410_ = d_d4422_ =
+            d_d5220_ = d_d5232_ = d_d5421_ = d_d5433_ = d_del1_ = d_del2_ =
+            d_del3_ = d_fasx2_ = d_fasx4_ = d_fasx6_ = 0.0;
+
+    d_xfact_ = d_xlamo_ = d_xli_ = d_xni_ = d_atime_ = 0.0;
+
+    mean_anomoly_ = ascending_node_ = argument_perigee_ = eccentricity_ =
+            inclination_ = mean_motion_ = bstar_ = recovered_semi_major_axis_ =
+            recovered_mean_motion_ = perigee_ = period_ = 0.0;
+
+    epoch_ = Julian();
 }
