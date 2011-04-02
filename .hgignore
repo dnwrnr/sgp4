@@ -4,3 +4,4 @@ Debug\*
 *.o
 sat
 *.txt
+*.orig
