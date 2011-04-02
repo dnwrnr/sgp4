@@ -212,7 +212,8 @@ time_t Julian::ToTime() const {
  * Greenwich Mean Sidereal Time
  */
 double Julian::ToGMST() const {
-    double value;
+
+    double theta;
     double tut1;
 
     // tut1 = Julian centuries from 2000 Jan. 1 12h UT1 (since J2000 which is 2451545.0)
@@ -220,16 +221,18 @@ double Julian::ToGMST() const {
     tut1 = (date_ - 2451545.0) / 36525.0;
 
     // Rotation angle in arcseconds
-    value = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
+    theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
 
     // 360.0 / 86400.0 = 1.0 / 240.0
-    value = fmod(Globals::Deg2Rad(value / 240.0), Globals::TWOPI());
+    theta = fmod(Globals::Deg2Rad(theta / 240.0), Globals::TWOPI());
 
-    // check quadrants
-    if (value < 0.0)
-        value += Globals::TWOPI();
+    /*
+     * check quadrants
+     */
+    if (theta < 0.0)
+        theta += Globals::TWOPI();
 
-    return value;
+    return theta;
 }
 
 /*

@@ -247,10 +247,14 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
 void SGDP4::FindPosition(Eci& eci, double tsince) {
 
+    Julian tsince_epoch = Epoch();
+    tsince_epoch.AddMin(tsince);
+    double actual_tsince = tsince_epoch.SpanMin(Epoch());
+
     if (i_use_deep_space_)
-        FindPositionSDP4(eci, tsince);
+        FindPositionSDP4(eci, actual_tsince);
     else
-        FindPositionSGP4(eci, tsince);
+        FindPositionSGP4(eci, actual_tsince);
 }
 
 void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
@@ -622,7 +626,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     static const double ROOT44 = 7.3636953E-9;
     static const double ROOT52 = 1.1428639E-7;
     static const double ROOT54 = 2.1765803E-9;
-    static const double THDT = 4.3752691E-3;
+    static const double THDT = 4.37526908801129966e-3;
 
     const double aqnv = 1.0 / RecoveredSemiMajorAxis();
     const double xpidot = omgdot + xnodot;
@@ -812,7 +816,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_fasx4_ = 2.8843198;
         d_fasx6_ = 0.37448087;
 
-        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + ArgumentPerigee() - d_gsto_, Globals::TWOPI());
+        d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - d_gsto_;
         bfact = xmdot + xpidot - THDT;
         bfact += d_ssl_ + d_ssg_ + d_ssh_;
 
@@ -909,7 +913,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_d5421_ = temp * f542 * g521;
         d_d5433_ = temp * f543 * g533;
 
-        d_xlamo_ = fmod(MeanAnomoly() + AscendingNode() + AscendingNode() - d_gsto_ - d_gsto_, Globals::TWOPI());
+        d_xlamo_ = MeanAnomoly() + AscendingNode() + AscendingNode() - d_gsto_ - d_gsto_;
         bfact = xmdot + xnodot + xnodot - THDT - THDT;
         bfact = bfact + d_ssl_ + d_ssh_ + d_ssh_;
     }
@@ -1012,7 +1016,7 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
         const double sinis = sin(xinc);
         const double cosis = cos(xinc);
 
-        if (xinc >= 0.2) {
+        if (Inclination() >= 0.2) {
             /*
              * apply periodics directly
              */
