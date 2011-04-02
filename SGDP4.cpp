@@ -26,6 +26,7 @@ void SGDP4::SetConstants(EnumConstants constants) {
             constants_.XJ3 = -0.00000253881;
             constants_.XJ4 = -0.00000165597;
             constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            constants_.QOMS2T = 1.88027916e-9;
             break;
         case CONSTANTS_WGS72:
             constants_.MU = 398600.8;
@@ -35,6 +36,7 @@ void SGDP4::SetConstants(EnumConstants constants) {
             constants_.XJ3 = -0.00000253881;
             constants_.XJ4 = -0.00000165597;
             constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            constants_.QOMS2T = 1.880279159015270643865e-9;
             break;
         case CONSTANTS_WGS84:
             constants_.MU = 398600.5;
@@ -44,6 +46,7 @@ void SGDP4::SetConstants(EnumConstants constants) {
             constants_.XJ3 = -0.00000253215306;
             constants_.XJ4 = -0.00000161098761;
             constants_.J3OJ2 = constants_.XJ3 / constants_.XJ2;
+            constants_.QOMS2T = pow((120.0 - 78.0) / constants_.XKMPER, 4.0);
             break;
         default:
             throw new SatelliteException("Unrecognised constant value");
@@ -52,7 +55,6 @@ void SGDP4::SetConstants(EnumConstants constants) {
     constants_.S = constants_.AE + 78.0 / constants_.XKMPER;
     constants_.CK2 = constants_.XJ2 / 2.0;
     constants_.CK4 = -3.0 * constants_.XJ4 / 8.0;
-    constants_.QOMS2T = pow((120.0 - 78.0) / constants_.XKMPER, 4.0);
 }
 
 void SGDP4::SetTle(const Tle& tle) {
