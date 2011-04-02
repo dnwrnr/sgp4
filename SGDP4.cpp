@@ -50,9 +50,9 @@ void SGDP4::SetConstants(EnumConstants constants) {
             break;
     }
     constants_.S = constants_.AE + 78.0 / constants_.XKMPER;
-    constants_.CK2 = 0.5 * constants_.XJ2 * constants_.AE * constants_.AE;
-    constants_.CK4 = -0.375 * constants_.XJ4 * constants_.AE * constants_.AE * constants_.AE * constants_.AE;
-    constants_.QOMS2T = pow((120.0 - 78.0) * constants_.AE / constants_.XKMPER, 4.0);
+    constants_.CK2 = constants_.XJ2 / 2.0;
+    constants_.CK4 = -3.0 * constants_.XJ4 / 8.0;
+    constants_.QOMS2T = pow((120.0 - 78.0) / constants_.XKMPER, 4.0);
 }
 
 void SGDP4::SetTle(const Tle& tle) {
@@ -84,18 +84,18 @@ void SGDP4::SetTle(const Tle& tle) {
      * recover original mean motion (xnodp) and semimajor axis (aodp)
      * from input elements
      */
-    double a1 = pow(constants_.XKE / MeanMotion(), constants_.TWOTHRD);
+    const double a1 = pow(constants_.XKE / MeanMotion(), constants_.TWOTHRD);
     i_cosio_ = cos(Inclination());
     i_sinio_ = sin(Inclination());
-    double theta2 = i_cosio_ * i_cosio_;
+    const double theta2 = i_cosio_ * i_cosio_;
     i_x3thm1_ = 3.0 * theta2 - 1.0;
-    double eosq = Eccentricity() * Eccentricity();
-    double betao2 = 1.0 - eosq;
-    double betao = sqrt(betao2);
-    double temp = (1.5 * constants_.CK2) * i_x3thm1_ / (betao * betao2);
-    double del1 = temp / (a1 * a1);
-    double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
-    double del0 = temp / (a0 * a0);
+    const double eosq = Eccentricity() * Eccentricity();
+    const double betao2 = 1.0 - eosq;
+    const double betao = sqrt(betao2);
+    const double temp = (1.5 * constants_.CK2) * i_x3thm1_ / (betao * betao2);
+    const double del1 = temp / (a1 * a1);
+    const double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
+    const double del0 = temp / (a0 * a0);
 
     recovered_mean_motion_ = MeanMotion() / (1.0 + del0);
     recovered_semi_major_axis_ = a0 / (1.0 - del0);
@@ -145,15 +145,15 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     /*
      * generate constants
      */
-    double pinvsq = 1.0 / (RecoveredSemiMajorAxis() * RecoveredSemiMajorAxis() * betao2 * betao2);
-    double tsi = 1.0 / (RecoveredSemiMajorAxis() - s4);
+    const double pinvsq = 1.0 / (RecoveredSemiMajorAxis() * RecoveredSemiMajorAxis() * betao2 * betao2);
+    const double tsi = 1.0 / (RecoveredSemiMajorAxis() - s4);
     i_eta_ = RecoveredSemiMajorAxis() * Eccentricity() * tsi;
-    double etasq = i_eta_ * i_eta_;
-    double eeta = Eccentricity() * i_eta_;
-    double psisq = fabs(1.0 - etasq);
-    double coef = qoms24 * pow(tsi, 4.0);
-    double coef1 = coef / pow(psisq, 3.5);
-    double c2 = coef1 * RecoveredMeanMotion() * (RecoveredSemiMajorAxis() *
+    const double etasq = i_eta_ * i_eta_;
+    const double eeta = Eccentricity() * i_eta_;
+    const double psisq = fabs(1.0 - etasq);
+    const double coef = qoms24 * pow(tsi, 4.0);
+    const double coef1 = coef / pow(psisq, 3.5);
+    const double c2 = coef1 * RecoveredMeanMotion() * (RecoveredSemiMajorAxis() *
             (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
             0.75 * constants_.CK2 * tsi / psisq *
             i_x3thm1_ * (8.0 + 3.0 * etasq *
@@ -167,18 +167,18 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
             (-3.0 * i_x3thm1_ * (1.0 - 2.0 * eeta + etasq *
             (1.5 - 0.5 * eeta)) + 0.75 * i_x1mth2_ * (2.0 * etasq - eeta *
             (1.0 + etasq)) * cos(2.0 * ArgumentPerigee())));
-    double theta4 = theta2 * theta2;
-    double temp1 = 3.0 * constants_.CK2 * pinvsq * RecoveredMeanMotion();
-    double temp2 = temp1 * constants_.CK2 * pinvsq;
-    double temp3 = 1.25 * constants_.CK4 * pinvsq * pinvsq * RecoveredMeanMotion();
+    const double theta4 = theta2 * theta2;
+    const double temp1 = 3.0 * constants_.CK2 * pinvsq * RecoveredMeanMotion();
+    const double temp2 = temp1 * constants_.CK2 * pinvsq;
+    const double temp3 = 1.25 * constants_.CK4 * pinvsq * pinvsq * RecoveredMeanMotion();
     i_xmdot_ = RecoveredMeanMotion() + 0.5 * temp1 * betao *
             i_x3thm1_ + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
-    double x1m5th = 1.0 - 5.0 * theta2;
+    const double x1m5th = 1.0 - 5.0 * theta2;
     i_omgdot_ = -0.5 * temp1 * x1m5th +
             0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
             temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
-    double xhdot1_ = -temp1 * i_cosio_;
+    const double xhdot1_ = -temp1 * i_cosio_;
     i_xnodot_ = xhdot1_ + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 *
             (3.0 - 7.0 * theta2)) * i_cosio_;
     i_xnodcf_ = 3.5 * betao2 * xhdot1_ * i_c1_;
@@ -222,9 +222,9 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
         i_sinmo_ = sin(MeanAnomoly());
 
         if (!i_use_simple_model_) {
-            double c1sq = i_c1_ * i_c1_;
+            const double c1sq = i_c1_ * i_c1_;
             i_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
-            double temp = i_d2_ * tsi * i_c1_ / 3.0;
+            const double temp = i_d2_ * tsi * i_c1_ / 3.0;
             i_d3_ = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
             i_d4_ = 0.5 * temp * RecoveredSemiMajorAxis() *
                     tsi * (221.0 * RecoveredSemiMajorAxis() + 31.0 * s4) * i_c1_;
@@ -236,9 +236,6 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
                     c1sq * (2.0 * i_d2_ + c1sq));
         }
     }
-
-    Eci eci;
-    FindPosition(eci, 0.0);
 
     first_run_ = false;
 }

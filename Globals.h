@@ -31,7 +31,7 @@ public:
     }
 
     static const double TWOPI() {
-        return 2 * 3.14159265358979323846264338327950288419716939937510582;
+        return 2.0 * 3.14159265358979323846264338327950288419716939937510582;
     }
 
     static const double SEC_PER_DAY() {
