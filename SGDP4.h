@@ -15,7 +15,7 @@ public:
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
-            const double& theta2, const double& sing, const double& cosg, const double& betao2,
+            const double& theta2, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
     void DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
             double& pl, double& pgh, double& ph) const;

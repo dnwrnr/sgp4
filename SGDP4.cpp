@@ -174,12 +174,10 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
 
     if (i_use_deep_space_) {
 
-        const double sing = sin(ArgumentPerigee());
-        const double cosg = cos(ArgumentPerigee());
         d_gsto_ = Epoch().ToGreenwichSiderealTime();
 
         DeepSpaceInitialize(eosq, i_sinio_, i_cosio_, betao,
-                theta2, sing, cosg, betao2,
+                theta2, betao2,
                 i_xmdot_, i_omgdot_, i_xnodot_);
 
     } else {
@@ -606,6 +604,8 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     const double xpidot = omgdot + xnodot;
     const double sinq = sin(AscendingNode());
     const double cosq = cos(AscendingNode());
+    const double sing = sin(ArgumentPerigee());
+    const double cosg = cos(ArgumentPerigee());
 
     /*
      * initialize lunar / solar terms
