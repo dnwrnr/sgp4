@@ -1010,6 +1010,10 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
             alfdp += dalf;
             betdp += dbet;
 
+            xnodes = fmod(xnodes, TWOPI);
+            if (xnodes < 0.0)
+                xnodes += TWOPI;
+
             double xls = xll + omgasm + cosis * xnodes;
             double dls = pl + pgh - pinc * xnodes * sinis;
             xls += dls;
@@ -1020,6 +1024,9 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
             const double oldxnodes = xnodes;
 
             xnodes = atan2(alfdp, betdp);
+            if (xnodes < 0.0)
+                xnodes += TWOPI;
+
             /*
              * Get perturbed xnodes in to same quadrant as original.
              * RAAN is in the range of 0 to 360 degrees
