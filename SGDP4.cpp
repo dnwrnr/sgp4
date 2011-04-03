@@ -1193,6 +1193,9 @@ void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, dou
 
 void SGDP4::ResetGlobalVariables() {
 
+    /*
+     * common variables
+     */
     first_run_ = true;
     i_use_simple_model_ = false;
     i_use_deep_space_ = false;
@@ -1200,9 +1203,16 @@ void SGDP4::ResetGlobalVariables() {
     i_cosio_ = i_sinio_ = i_eta_ = i_t2cof_ = i_a3ovk2_ = i_x1mth2_ =
             i_x3thm1_ = i_x7thm1_ = i_aycof_ = i_xlcof_ = i_xnodcf_ = i_c1_ =
             i_c4_ = i_omgdot_ = i_xnodot_ = i_xmdot_ = 0.0;
+
+    /*
+     * near space variables
+     */
     n_c5_ = n_omgcof_ = n_xmcof_ = n_delmo_ = n_sinmo_ = n_d2_ =
             n_d3_ = n_d4_ = n_t3cof_ = n_t4cof_ = n_t5cof_ = 0.0;
 
+    /*
+     * deep space variables
+     */
     d_gsto_ = d_zmol_ = d_zmos_ = 0.0;
 
     d_resonance_flag_ = false;
