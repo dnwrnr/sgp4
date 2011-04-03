@@ -9,13 +9,6 @@ public:
     SGDP4(void);
     virtual ~SGDP4(void);
 
-    enum EnumConstants {
-        CONSTANTS_WGS72_OLD,
-        CONSTANTS_WGS72,
-        CONSTANTS_WGS84
-    };
-
-    void SetConstants(EnumConstants constants);
     void SetTle(const Tle& tle);
     void FindPosition(Eci& eci, double tsince);
 

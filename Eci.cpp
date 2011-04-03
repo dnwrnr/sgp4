@@ -11,7 +11,7 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    const double theta = date_.ToLMST(longitude);
+    const double theta = date_.ToLocalMeanSiderealTime(longitude);
 
     const double c = 1.0 / sqrt(1.0 + Globals::F() * (Globals::F() - 2.0) * pow(sin(latitude), 2.0));
     const double s = pow(1.0 - Globals::F(), 2.0) * c;

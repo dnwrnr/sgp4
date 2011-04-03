@@ -49,7 +49,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     Vector range(x, y, z, w);
 
     // The site's Local Mean Sidereal Time at the time of interest.
-    double theta = date.ToLMST(geo_.GetLongitude());
+    double theta = date.ToLocalMeanSiderealTime(geo_.GetLongitude());
 
     double sin_lat = sin(geo_.GetLatitude());
     double cos_lat = cos(geo_.GetLatitude());

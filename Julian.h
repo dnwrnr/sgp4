@@ -20,8 +20,8 @@ public:
     };
 
     time_t ToTime() const;
-    double ToGMST() const;
-    double ToLMST(const double& lon) const;
+    double ToGreenwichSiderealTime() const;
+    double ToLocalMeanSiderealTime(const double& lon) const;
 
     double FromJan1_00h_1900() const {
         return date_ - Globals::EPOCH_JAN1_00H_1900();

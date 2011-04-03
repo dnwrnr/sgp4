@@ -211,8 +211,8 @@ time_t Julian::ToTime() const {
 /*
  * Greenwich Mean Sidereal Time
  */
-double Julian::ToGMST() const {
-
+double Julian::ToGreenwichSiderealTime() const {
+#if 0
     double theta;
     double tut1;
 
@@ -233,11 +233,32 @@ double Julian::ToGMST() const {
         theta += Globals::TWOPI();
 
     return theta;
+#endif
+
+    static const double C1 = 1.72027916940703639e-2;
+    static const double THGR70 = 1.7321343856509374;
+    static const double FK5R = 5.07551419432269442e-15;
+
+    /*
+     * get integer number of days from 0 jan 1970
+     */
+    const double ts70 = date_ - 2433281.5 - 7305.0;
+    const double ds70 = floor(ts70 + 1.0e-8);
+    const double tfrac = ts70 - ds70;
+    /*
+     * find greenwich location at epoch
+     */
+    const double c1p2p = C1 + Globals::TWOPI();
+    double gsto = fmod(THGR70 + C1 * ds70 + c1p2p * tfrac + ts70 * ts70 * FK5R, Globals::TWOPI());
+    if (gsto < 0.0)
+        gsto = gsto + Globals::TWOPI();
+
+    return gsto;
 }
 
 /*
  * Local Mean Sideral Time
  */
-double Julian::ToLMST(const double& lon) const {
-    return fmod(ToGMST() + lon, Globals::TWOPI());
+double Julian::ToLocalMeanSiderealTime(const double& lon) const {
+    return fmod(ToGreenwichSiderealTime() + lon, Globals::TWOPI());
 }
