@@ -816,7 +816,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
             g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eosq + 146.5816 * eoc;
             g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eosq + 313.953 * eoc;
             g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eosq + 1083.435 * eoc;
-            g520 = -532.114 + 3017.977 * Eccentricity() - 5740 * eosq + 3708.276 * eoc;
+            g520 = -532.114 + 3017.977 * Eccentricity() - 5740.032 * eosq + 3708.276 * eoc;
         } else {
             g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eosq + 266.724 * eoc;
             g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eosq + 1246.113 * eoc;
