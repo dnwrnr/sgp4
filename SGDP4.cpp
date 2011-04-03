@@ -230,7 +230,7 @@ void SGDP4::FindPosition(Eci& eci, double tsince) {
         FindPositionSGP4(eci, actual_tsince);
 }
 
-void SGDP4::FindPositionSDP4(Eci& eci, double tsince) {
+void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
 
     /*
      * the final values
@@ -954,7 +954,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
  * calculate lunar / solar periodics and apply
  */
 void SGDP4::DeepSpacePeriodics(const double& t, double& em,
-        double& xinc, double& omgasm, double& xnodes, double& xll) {
+        double& xinc, double& omgasm, double& xnodes, double& xll) const {
 
     /*
      * storage for lunar / solar terms set by DeepSpaceCalculateLunarSolarTerms()

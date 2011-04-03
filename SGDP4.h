@@ -20,10 +20,10 @@ private:
     void DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
             double& pl, double& pgh, double& ph) const;
     void DeepSpacePeriodics(const double& t, double& em, double& xinc,
-            double& omgasm, double& xnodes, double& xll);
+            double& omgasm, double& xnodes, double& xll) const;
     void DeepSpaceSecular(const double& t, double& xll, double& omgasm,
             double& xnodes, double& em, double& xinc, double& xn) const;
-    void FindPositionSDP4(Eci& eci, double tsince);
+    void FindPositionSDP4(Eci& eci, double tsince) const;
     void FindPositionSGP4(Eci& eci, double tsince) const;
     void CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
