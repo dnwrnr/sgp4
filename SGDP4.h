@@ -10,7 +10,8 @@ public:
     virtual ~SGDP4(void);
 
     void SetTle(const Tle& tle);
-    void FindPosition(Eci& eci, double tsince);
+    void FindPosition(Eci& eci, double tsince) const;
+    void FindPosition(Eci& eci, const Julian& date) const;
 
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);

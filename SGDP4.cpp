@@ -218,16 +218,19 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     first_run_ = false;
 }
 
-void SGDP4::FindPosition(Eci& eci, double tsince) {
-
-    Julian tsince_epoch = Epoch();
-    tsince_epoch.AddMin(tsince);
-    double actual_tsince = tsince_epoch.SpanMin(Epoch());
+void SGDP4::FindPosition(Eci& eci, double tsince) const {
 
     if (i_use_deep_space_)
-        FindPositionSDP4(eci, actual_tsince);
+        FindPositionSDP4(eci, tsince);
     else
-        FindPositionSGP4(eci, actual_tsince);
+        FindPositionSGP4(eci, tsince);
+}
+
+void SGDP4::FindPosition(Eci& eci, const Julian& date) const {
+
+    const double tsince = date.SpanMin(Epoch());
+
+    FindPosition(eci, tsince);
 }
 
 void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
