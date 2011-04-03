@@ -141,9 +141,6 @@ private:
     double d_del1_;
     double d_del2_;
     double d_del3_;
-    double d_fasx2_;
-    double d_fasx4_;
-    double d_fasx6_;
     /*
      * integrator constants
      */

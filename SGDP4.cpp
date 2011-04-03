@@ -786,9 +786,6 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_del2_ = 2.0 * d_del1_ * f220 * g200 * Q22;
         d_del3_ = 3.0 * d_del1_ * f330 * g300 * Q33 * aqnv;
         d_del1_ = d_del1_ * f311 * g310 * Q31 * aqnv;
-        d_fasx2_ = 0.13130908;
-        d_fasx4_ = 2.8843198;
-        d_fasx6_ = 0.37448087;
 
         d_xlamo_ = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - d_gsto_;
         bfact = xmdot + xpidot - THDT;
@@ -1137,15 +1134,18 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
     static const double G44 = 1.8014998;
     static const double G52 = 1.0508330;
     static const double G54 = 4.4108898;
+    static const double FASX2 = 0.13130908;
+    static const double FASX4 = 2.8843198;
+    static const double FASX6 = 0.37448087;
 
     if (d_synchronous_flag_) {
 
-        xndot = d_del1_ * sin(d_xli_ - d_fasx2_) +
-                d_del2_ * sin(2.0 * (d_xli_ - d_fasx4_)) +
-                d_del3_ * sin(3.0 * (d_xli_ - d_fasx6_));
-        xnddt = d_del1_ * cos(d_xli_ - d_fasx2_) + 2.0 *
-                d_del2_ * cos(2.0 * (d_xli_ - d_fasx4_)) + 3.0 *
-                d_del3_ * cos(3.0 * (d_xli_ - d_fasx6_));
+        xndot = d_del1_ * sin(d_xli_ - FASX2) +
+                d_del2_ * sin(2.0 * (d_xli_ - FASX4)) +
+                d_del3_ * sin(3.0 * (d_xli_ - FASX6));
+        xnddt = d_del1_ * cos(d_xli_ - FASX2) + 2.0 *
+                d_del2_ * cos(2.0 * (d_xli_ - FASX4)) + 3.0 *
+                d_del3_ * cos(3.0 * (d_xli_ - FASX6));
 
     } else {
 
@@ -1237,7 +1237,7 @@ void SGDP4::ResetGlobalVariables() {
 
     d_d2201_ = d_d2211_ = d_d3210_ = d_d3222_ = d_d4410_ = d_d4422_ =
             d_d5220_ = d_d5232_ = d_d5421_ = d_d5433_ = d_del1_ = d_del2_ =
-            d_del3_ = d_fasx2_ = d_fasx4_ = d_fasx6_ = 0.0;
+            d_del3_ = 0.0;
 
     d_xfact_ = d_xlamo_ = d_xli_ = d_xni_ = d_atime_ = 0.0;
 
