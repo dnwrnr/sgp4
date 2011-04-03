@@ -1,6 +1,8 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#include <cmath>
+
 class Vector {
 public:
 
@@ -42,6 +44,8 @@ public:
     double GetW() const {
         return w_;
     }
+
+    double GetMagnitude() const;
 
 protected:
     double x_;

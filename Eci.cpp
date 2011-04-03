@@ -21,12 +21,12 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
     position_.SetY(achcp * sin(theta));
 
     position_.SetZ((Globals::XKMPER() * s + altitude) * sin(latitude));
-    position_.SetW(sqrt(pow(position_.GetX(), 2.0) + pow(position_.GetY(), 2.0) + pow(position_.GetZ(), 2.0)));
+    position_.SetW(position_.GetMagnitude());
 
     velocity_.SetX(-mfactor * position_.GetY());
     velocity_.SetY(mfactor * position_.GetX());
     velocity_.SetZ(0.0);
-    velocity_.SetW(sqrt(pow(velocity_.GetX(), 2.0) + pow(velocity_.GetY(), 2.0)));
+    velocity_.SetW(velocity_.GetMagnitude());
 }
 
 Eci::Eci(const Julian &date, const Vector &position, const Vector &velocity)
