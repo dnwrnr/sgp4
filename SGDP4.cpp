@@ -9,13 +9,24 @@
 #define AE       (1.0)
 #define Q0       (120.0)
 #define S0       (78.0)
+#define MU       (398600.8)
 #define XKMPER   (6378.135)
 #define XJ2      (1.082616e-3)
 #define XJ3      (-2.53881e-6)
 #define XJ4      (-1.65597e-6)
+/*
+ * alternative XKE
+ * affects final results
+ * #define XKE      (60.0 / sqrt(XKMPER * XKMPER * XKMPER / MU))
+ */
 #define XKE      (7.43669161331734132e-2)
 #define CK2      (0.5 * XJ2 * AE * AE)
 #define CK4      (-0.375 * XJ4 * AE * AE * AE * AE)
+/*
+ * alternative QOMS2T
+ * affects final results
+ * #define #define QOMS2T   (pow(((Q0 - 78.0) / XKMPER), 4.0))
+ */
 #define QOMS2T   (1.880279159015270643865e-9)
 #define S        (AE * (1.0 + S0 / XKMPER))
 #define PI       (3.14159265358979323846264338327950288419716939937510582)
@@ -78,6 +89,11 @@ void SGDP4::SetTle(const Tle& tle) {
     const double del0 = temp / (a0 * a0);
 
     recovered_mean_motion_ = MeanMotion() / (1.0 + del0);
+    /*
+     * alternative way to calculate
+     * doesnt affect final results
+     * recovered_semi_major_axis_ = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
+     */
     recovered_semi_major_axis_ = a0 / (1.0 - del0);
 
     /*
