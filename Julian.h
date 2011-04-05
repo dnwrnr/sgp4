@@ -13,8 +13,15 @@ public:
     Julian(int year, double day);
     Julian(int year, int mon, int day, int hour, int min, double sec);
 
+    /*
+     * comparison operators
+     */
     bool operator==(const Julian &date) const;
     bool operator!=(const Julian &date) const;
+    bool operator>(const Julian &date) const;
+    bool operator<(const Julian &date) const;
+    bool operator>=(const Julian &date) const;
+    bool operator<=(const Julian &date) const;
 
     ~Julian() {
     };

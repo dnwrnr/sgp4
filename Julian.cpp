@@ -88,6 +88,22 @@ bool Julian::operator!=(const Julian &date) const {
     return date_ == date.date_ ? false : true;
 }
 
+bool Julian::operator>(const Julian &date) const {
+    return date_ > date.date_ ? true : false;
+}
+
+bool Julian::operator<(const Julian &date) const {
+    return date_ < date.date_ ? true : false;
+}
+
+bool Julian::operator>=(const Julian &date) const {
+    return date_ >= date.date_ ? true : false;
+}
+
+bool Julian::operator<=(const Julian &date) const {
+    return date_ <= date.date_ ? true : false;
+}
+
 /*
  * create julian date from year and day of year
  */
