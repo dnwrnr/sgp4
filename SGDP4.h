@@ -250,25 +250,6 @@ private:
     double perigee_;
     double period_;
     Julian epoch_;
-
-    struct Constants {
-        double AE;
-        double MU;
-        double CK2;
-        double CK4;
-        double TWOTHRD;
-        double XKE;
-        double XKMPER;
-        double S;
-        double QOMS2T;
-        double XJ2;
-        double XJ3;
-        double XJ4;
-        double J3OJ2;
-    };
-
-    struct Constants constants_;
-
 };
 
 #endif
