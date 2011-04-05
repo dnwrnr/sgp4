@@ -232,7 +232,10 @@ bool Tle::IsValidLine(std::string& str, TleLine line) {
  * validate line given a pattern
  */
 bool Tle::ValidateLine(const std::string& pattern, const std::string& line) {
-    assert(pattern.length() == line.length());
+
+    if (pattern.length() != line.length()) {
+        return false;
+    }
 
     std::string::size_type pos = 0;
 
