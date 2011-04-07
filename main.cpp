@@ -9,7 +9,18 @@
 #include <string>
 #include <iomanip>
 
-void RunTest();
+void FindSatellite(const Julian& time_start, const Julian& time_end) {
+
+    /*
+     * half a second
+     */
+    static const double delta = 1.0 / (60.0 * 60.0 * 24.0 * 2.0);
+
+    //while (fabs(time_end - time_start) > delta) {
+
+    //}
+
+}
 
 void GeneratePassList(const CoordGeodetic& geo, const SGDP4& model, const Julian& date) {
     Observer obs(geo);
@@ -18,12 +29,17 @@ void GeneratePassList(const CoordGeodetic& geo, const SGDP4& model, const Julian
 
     CoordTopographic topo = obs.GetLookAngle(eci);
 
-    Julian date_start;
-    Julian date_end;
+    /*
+     * set start and end date
+     */
+    Julian time0 = date;
+    Julian time1 = date;
+    time1.AddDay(10.0);
 
-    date_end.AddDay(10.0);
-
-    for (Julian jd = date_start; jd <= date_end; jd.AddMin(1.0)) {
+    /*
+     * step throw period with 1 minute increments
+     */
+    for (Julian jd = date; jd <= time1; jd.AddMin(1.0)) {
 
     }
 }
@@ -45,4 +61,73 @@ int main() {
 
     return 0;
 }
+
+#if 0
+
+http://olifantasia.com/projects/gnuradio/mdvh/weather_sat/weather_sat_scripts_without_capture_files_2010061701/decoding/poes-weather-hrpt-decoder/hrpt-decoder-1.0.0.2/satellite/predict/
+
+xmnpda = 1440.0
+
+    /* same formulas, but the one from predict is nicer */
+    //sat->footprint = 2.0 * xkmper * acos (xkmper/sat->pos.w);
+    sat->footprint = 12756.33 * acos (xkmper / (xkmper+sat->alt));
+    age = sat->jul_utc - sat->jul_epoch;
+    sat->orbit = (long) floor((sat->tle.xno * xmnpda/twopi +
+                    age * sat->tle.bstar * ae) * age +
+                    sat->tle.xmo/twopi) + sat->tle.revnum - 1;
+
+bool TSat::IsGeostationary(void)
+{
+ /* This function returns a 1 if the satellite
+    appears to be in a geostationary orbit
+
+    Circular orbit at an altitude of 35 800 km over the equator.
+    A satellite moving with the Earth's rotation in a geostationary
+    orbit has a period of 23 hours, 56 minutes and 4 seconds.
+ */
+ double sma, aalt;
+
+  if(meanmo == 0.0)
+     return true;
+
+  sma  = 331.25*exp(log(1440.0/meanmo)*(2.0/3.0));
+  aalt = sma*(1.0+eccn)-xkmper;
+
+  if(fabs(meanmo-omega_E) < 0.0005 || // allmost same speed as earth
+     aalt > 35000)                    // altitude is over 35000 km
+     return true;
+  else
+     return false;
+}
+
+// latitude in radians
+bool TSat::DoesRise(double lat)
+{
+ /* This function returns a true if the satellite can ever rise
+    above the horizon of the ground station.
+*/
+ double lin, sma, apogee;
+ bool rc = false;
+
+  if(meanmo == 0.0)
+     return rc;
+  else {
+     lin = incl;
+
+     if(lin >= 90.0)
+        lin=180.0-lin;
+
+     sma    = 331.25*exp(log(1440.0/meanmo)*(2.0/3.0));
+     apogee = sma*(1.0+eccn)-xkmper;
+
+     if((acos2(xkmper/(apogee+xkmper))+lin*deg2rad) > fabs(lat))
+        rc = true;
+     else
+  	rc = false;
+  }
+
+ return rc;
+}
+
+#endif
 
