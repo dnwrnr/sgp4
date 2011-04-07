@@ -51,14 +51,14 @@ void SGDP4::SetTle(const Tle& tle) {
     /*
      * extract and format tle data
      */
-    mean_anomoly_ = tle.GetField(Tle::FLD_M, Tle::U_RAD);
-    ascending_node_ = tle.GetField(Tle::FLD_RAAN, Tle::U_RAD);
-    argument_perigee_ = tle.GetField(Tle::FLD_ARGPER, Tle::U_RAD);
-    eccentricity_ = tle.GetField(Tle::FLD_E);
-    inclination_ = tle.GetField(Tle::FLD_I, Tle::U_RAD);
-    mean_motion_ = tle.GetField(Tle::FLD_MMOTION) * TWOPI / Globals::MIN_PER_DAY();
-    bstar_ = tle.GetField(Tle::FLD_BSTAR);
-    epoch_ = tle.GetEpoch();
+    mean_anomoly_ = tle.MeanAnomaly(false);
+    ascending_node_ = tle.RightAscendingNode(false);
+    argument_perigee_ = tle.ArgumentPerigee(false);
+    eccentricity_ = tle.Eccentricity();
+    inclination_ = tle.Inclination(false);
+    mean_motion_ = tle.MeanMotion() * TWOPI / Globals::MIN_PER_DAY();
+    bstar_ = tle.BStar();
+    epoch_ = tle.Epoch();
 
     /*
      * error checks
