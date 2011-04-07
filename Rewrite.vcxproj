@@ -81,6 +81,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Observer.cpp" />
     <ClCompile Include="SGDP4.cpp" />
+    <ClCompile Include="Timespan.cpp" />
     <ClCompile Include="Tle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
@@ -92,6 +93,7 @@
     <ClInclude Include="Observer.h" />
     <ClInclude Include="SatelliteException.h" />
     <ClInclude Include="SGDP4.h" />
+    <ClInclude Include="Timespan.h" />
     <ClInclude Include="Tle.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>

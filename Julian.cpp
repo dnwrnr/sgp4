@@ -80,6 +80,9 @@ Julian::Julian(int year, int mon, int day, int hour, int min, double sec) {
     Initialize(year, mon, day, hour, min, sec);
 }
 
+/*
+ * comparison
+ */
 bool Julian::operator==(const Julian &date) const {
     return date_ == date.date_ ? true : false;
 }
@@ -102,6 +105,34 @@ bool Julian::operator>=(const Julian &date) const {
 
 bool Julian::operator<=(const Julian &date) const {
     return date_ <= date.date_ ? true : false;
+}
+
+/*
+ * assignment
+ */
+Julian& Julian::operator=(const Julian& b) {
+    date_ = b.date_;
+    return (*this);
+}
+
+Julian& Julian::operator=(const double b) {
+    date_ = b;
+    return (*this);
+}
+
+/*
+ * arithmetic
+ */
+Julian Julian::operator+(const Timespan& b) const {
+    Julian result(*this);
+    result.date_ += b.GetTotalDays();
+    return result;
+}
+
+Julian Julian::operator-(const Timespan& b) const {
+    Julian result(*this);
+    result.date_ -= b.GetTotalDays();
+    return result;
 }
 
 /*

@@ -42,6 +42,9 @@
     <ClCompile Include="Eci.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Timespan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Coord.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Eci.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timespan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
