@@ -8,6 +8,10 @@ public:
     Globals(void);
     ~Globals(void);
 
+    static const double AE() {
+        return 1.0;
+    }
+
     static const double F() {
         /*
          * earth flattening
