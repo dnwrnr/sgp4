@@ -13,16 +13,30 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
      */
     const double theta = date_.ToLocalMeanSiderealTime(longitude);
 
+    /*
+     * take into account earth flattening
+     */
     const double c = 1.0 / sqrt(1.0 + Globals::F() * (Globals::F() - 2.0) * pow(sin(latitude), 2.0));
     const double s = pow(1.0 - Globals::F(), 2.0) * c;
     const double achcp = (Globals::XKMPER() * c + altitude) * cos(latitude);
 
+    /*
+     * X position in km
+     * Y position in km
+     * Z position in km
+     * W magnitude in km
+     */
     position_.SetX(achcp * cos(theta));
     position_.SetY(achcp * sin(theta));
-
     position_.SetZ((Globals::XKMPER() * s + altitude) * sin(latitude));
     position_.SetW(position_.GetMagnitude());
 
+    /*
+     * X velocity in km/s
+     * Y velocity in km/s
+     * Z velocity in km/s
+     * W magnitude in km/s
+     */
     velocity_.SetX(-mfactor * position_.GetY());
     velocity_.SetY(mfactor * position_.GetX());
     velocity_.SetZ(0.0);
