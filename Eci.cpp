@@ -50,3 +50,31 @@ Eci::Eci(const Julian &date, const Vector &position, const Vector &velocity)
 
 Eci::~Eci(void) {
 }
+
+CoordGeodetic Eci::ToGeodetic() const {
+
+    const double theta = Globals::AcTan(position_.GetY(), position_.GetX());
+    const double lon = Globals::Fmod2p(theta - date_.ToGreenwichSiderealTime());
+    const double r = sqrt((position_.GetX() * position_.GetX()) + (position_.GetY() * position_.GetY()));
+    const double e2 = Globals::F() * (2.0 - Globals::F());
+
+    double lat = Globals::AcTan(position_.GetZ(), r);
+    double phi = 0.0;
+    double c = 0.0;
+
+    do {
+        phi = lat;
+        const double sinphi = sin(phi);
+        c = 1 / sqrt(1 - e2 * sinphi * sinphi);
+        lat = Globals::AcTan(position_.GetZ() + Globals::XKMPER() * c * e2 * sinphi, r);
+    } while (fabs(lat - phi) >= 1e-10);
+
+    const double alt = r / cos(lat) - Globals::XKMPER() * c;
+
+    /*
+     * todo: check
+     */
+    //if (lat > pio2) geodetic->lat -= twopi;
+
+    return CoordGeodetic(lat, lon, alt);
+}

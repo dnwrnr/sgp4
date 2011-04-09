@@ -26,6 +26,8 @@ public:
         return date_;
     }
 
+    CoordGeodetic ToGeodetic() const;
+
 private:
     Julian date_;
     Vector position_;
