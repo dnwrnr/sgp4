@@ -176,7 +176,6 @@ bool Tle::IsValidPair(const std::string& line1, const std::string& line2) {
         return false;
 
     if (!IsValidLine(line2, 2))
-
         return false;
 
     return true;
@@ -251,8 +250,7 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
             /*
              * if pattern value is '+' then either a '+' or a ' '
              */
-            if (*line_itr != '+' && *line_itr != ' ')
-
+            if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ')
                 return false;
         }
 
@@ -298,7 +296,6 @@ void Tle::TrimLeft(std::string& str) {
 
         if (pos != std::string::npos)
             str.erase(0, pos);
-
         else
             str.clear();
     }
