@@ -65,9 +65,10 @@ public:
         return 2451545.0;
     }
 
-    static double Fmod2p(const double& arg);
-    static double Deg2Rad(const double& deg);
-    static double Rad2Deg(const double& rad);
+    static double Fmod2p(const double arg);
+    static double Deg2Rad(const double deg);
+    static double Rad2Deg(const double rad);
+    static double AcTan(const double sinx, const double cosx);
 };
 
 #endif
