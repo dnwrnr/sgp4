@@ -14,3 +14,10 @@ Vector Vector::Subtract(const Vector& vec) const {
             z_ - vec.z_,
             0.0);
 }
+
+double Vector::Dot(const Vector& vec) const {
+
+    return (x_ * vec.x_) +
+            (y_ * vec.y_) +
+            (z_ * vec.z_);
+}

@@ -75,9 +75,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
         az += 2.0 * Globals::PI();
 
     double el = asin(top_z / range.GetW());
-    double rate = (range.GetX() * range_rate.GetX() +
-            range.GetY() * range_rate.GetY() +
-            range.GetZ() * range_rate.GetZ()) / range.GetW();
+    double rate = range.Dot(range_rate) / range.GetW();
 
     /*
      * azimuth in radians

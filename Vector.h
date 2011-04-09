@@ -54,7 +54,8 @@ public:
     }
 
     double GetMagnitude() const;
-    Vector Subtract(const Vector& v) const;
+    Vector Subtract(const Vector& vec) const;
+    double Dot(const Vector& vec) const;
 
 protected:
     double x_;
