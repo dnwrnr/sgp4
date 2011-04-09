@@ -6,7 +6,15 @@
 class Vector {
 public:
 
-    Vector(double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0)
+    Vector(void)
+    : x_(0.0), y_(0.0), z_(0.0), w_(0.0) {
+    }
+
+    Vector(double x, double y, double z)
+    : x_(x), y_(y), z_(z), w_(0.0) {
+    }
+
+    Vector(double x, double y, double z, double w)
     : x_(x), y_(y), z_(z), w_(w) {
     }
 
@@ -46,6 +54,7 @@ public:
     }
 
     double GetMagnitude() const;
+    Vector Subtract(const Vector& v) const;
 
 protected:
     double x_;
