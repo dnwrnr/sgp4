@@ -6,16 +6,18 @@
  * in degrees!
  */
 Observer::Observer(const double latitude, const double longitude, const double altitude) {
+
     geo_.SetLatitude(Globals::Deg2Rad(latitude));
     geo_.SetLongitude(Globals::Deg2Rad(longitude));
     geo_.SetAltitude(altitude);
 
-    observers_eci_ = Eci(Julian(), geo_);
+    UpdateObserversEci(Julian());
 }
 
 Observer::Observer(const CoordGeodetic &geo)
-: geo_(geo), observers_eci_(Julian(), geo) {
+: geo_(geo) {
 
+    UpdateObserversEci(Julian());
 }
 
 Observer::~Observer(void) {
@@ -28,28 +30,28 @@ void Observer::UpdateObserversEci(const Julian &date) {
     }
 }
 
+/*
+ * calculate lookangle between the observer and the passed in Eci object
+ */
 CoordTopographic Observer::GetLookAngle(const Eci &eci) {
 
-    Julian date = eci.GetDate();
+    /*
+     * update the observers Eci to match the time of the Eci passed in
+     */
+    UpdateObserversEci(eci.GetDate());
 
     /*
-     * update observers eci value if the date is different to the eci passed in
+     * calculate differences
      */
-    UpdateObserversEci(date);
+    Vector range_rate = eci.GetVelocity().Subtract(observers_eci_.GetVelocity());
+    Vector range = eci.GetPosition().Subtract(observers_eci_.GetPosition());
 
-    Vector range_rate(eci.GetVelocity().GetX() - observers_eci_.GetVelocity().GetX(),
-            eci.GetVelocity().GetY() - observers_eci_.GetVelocity().GetY(),
-            eci.GetVelocity().GetZ() - observers_eci_.GetVelocity().GetZ());
+    range.SetW(range.GetMagnitude());
 
-    const double x = eci.GetPosition().GetX() - observers_eci_.GetPosition().GetX();
-    const double y = eci.GetPosition().GetY() - observers_eci_.GetPosition().GetY();
-    const double z = eci.GetPosition().GetZ() - observers_eci_.GetPosition().GetZ();
-    const double w = sqrt(pow(x, 2.0) + pow(y, 2.0) + pow(z, 2.0));
-
-    Vector range(x, y, z, w);
-
-    // The site's Local Mean Sidereal Time at the time of interest.
-    double theta = date.ToLocalMeanSiderealTime(geo_.GetLongitude());
+    /*
+     * Calculate Local Mean Sidereal Time for observers longitude
+     */
+    double theta = eci.GetDate().ToLocalMeanSiderealTime(geo_.GetLongitude());
 
     double sin_lat = sin(geo_.GetLatitude());
     double cos_lat = cos(geo_.GetLatitude());
@@ -77,10 +79,16 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
             range.GetY() * range_rate.GetY() +
             range.GetZ() * range_rate.GetZ()) / range.GetW();
 
-    CoordTopographic topo(az, // azimuth,   radians
-            el, // elevation, radians
-            range.GetW(), // range, km
-            rate); // rate,  km / sec
+    /*
+     * azimuth in radians
+     * elevation in radians
+     * range in km
+     * range rate in km/s
+     */
+    CoordTopographic topo(az,
+            el,
+            range.GetW(),
+            rate);
 
     return topo;
 }
