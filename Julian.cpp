@@ -111,11 +111,15 @@ bool Julian::operator<=(const Julian &date) const {
  * assignment
  */
 Julian& Julian::operator=(const Julian& b) {
-    date_ = b.date_;
+
+    if (this != &b) {
+        date_ = b.date_;
+    }
     return (*this);
 }
 
 Julian& Julian::operator=(const double b) {
+
     date_ = b;
     return (*this);
 }

@@ -24,10 +24,10 @@ public:
     bool operator>=(const Julian &date) const;
     bool operator<=(const Julian &date) const;
 
-    Julian& operator=(const Julian& b);
-Julian& operator=(const double b);
-Julian operator+(const Timespan& b) const;
-Julian operator-(const Timespan& b) const;
+    Julian & operator=(const Julian& b);
+    Julian & operator=(const double b);
+    Julian operator+(const Timespan& b) const;
+    Julian operator-(const Timespan& b) const;
 
     ~Julian() {
     };
