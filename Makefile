@@ -7,6 +7,7 @@ SOURCES=Coord.cpp \
 	Julian.cpp \
 	Observer.cpp \
 	SGDP4.cpp \
+        Timespan.cpp \
 	Tle.cpp \
 	Vector.cpp  \
 	main.cpp
