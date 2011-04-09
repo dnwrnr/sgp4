@@ -229,7 +229,7 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
     while (pattern_itr != pattern.end()) {
 
         if (isdigit(*pattern_itr) || *pattern_itr == ' ' ||
-                *pattern_itr == '.' || *pattern_itr == '-') {
+                *pattern_itr == '.') {
 
             /*
              * these characters should match exactly
@@ -251,6 +251,14 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
              * if pattern value is '+' then either a '+' or a ' '
              */
             if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ')
+                return false;
+
+        } else if (*pattern_itr == '-') {
+
+            /*
+             * if pattern value is '+' or a '+'
+             */
+            if (*line_itr != '+' && *line_itr != '-')
                 return false;
         }
 
