@@ -8,22 +8,31 @@ public:
     : lat_(0.0), lon_(0.0), alt_(0.0) {
     }
 
+    /*
+     * radians
+     */
     CoordGeodetic(double latitude, double longitude, double altitude)
     : lat_(latitude), lon_(longitude), alt_(altitude) {
     }
 
+    CoordGeodetic(const CoordGeodetic& g);
+
     virtual ~CoordGeodetic() {
     };
 
-    void SetLatitude(const double& latitude) {
+    CoordGeodetic & operator =(const CoordGeodetic& b);
+    bool operator ==(const CoordGeodetic& b) const;
+    bool operator !=(const CoordGeodetic& b) const;
+
+    void SetLatitude(const double latitude) {
         lat_ = latitude;
     }
 
-    void SetLongitude(const double& longitude) {
+    void SetLongitude(const double longitude) {
         lon_ = longitude;
     }
 
-    void SetAltitude(const double& altitude) {
+    void SetAltitude(const double altitude) {
         alt_ = altitude;
     }
 
@@ -65,22 +74,28 @@ public:
     : azimuth_(azimuth), elevation_(elevation), range_(range), range_rate_(range_rate) {
     }
 
+    CoordTopographic(const CoordTopographic& b);
+
     virtual ~CoordTopographic() {
     };
 
-    void SetAzimuth(const double& azimuth) {
+    CoordTopographic & operator =(const CoordTopographic& b);
+    bool operator ==(const CoordTopographic& b) const;
+    bool operator !=(const CoordTopographic& b) const;
+
+    void SetAzimuth(const double azimuth) {
         azimuth_ = azimuth;
     }
 
-    void SetElevation(const double& elevation) {
+    void SetElevation(const double elevation) {
         elevation_ = elevation;
     }
 
-    void SetRange(const double& range) {
+    void SetRange(const double range) {
         range_ = range;
     }
 
-    void SetRangeRate(const double& range_rate) {
+    void SetRangeRate(const double range_rate) {
         range_rate_ = range_rate;
     }
 
