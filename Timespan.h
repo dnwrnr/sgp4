@@ -9,6 +9,8 @@ public:
     virtual ~Timespan(void);
 
     double GetTotalDays() const;
+    double GetTotalHours() const;
+    double GetTotalMinutes() const;
 
     /*
      * overloaded operators

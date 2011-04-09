@@ -6,6 +6,7 @@ Timespan::Timespan(void) {
 }
 
 Timespan::Timespan(const double time_span) {
+    time_span_ = time_span;
 }
 
 Timespan::Timespan(const Timespan& b) {
@@ -14,6 +15,18 @@ Timespan::Timespan(const Timespan& b) {
 }
 
 Timespan::~Timespan(void) {
+}
+
+double Timespan::GetTotalDays() const {
+    return time_span_;
+}
+
+double Timespan::GetTotalHours() const {
+    return time_span_ * Globals::HR_PER_DAY();
+}
+
+double Timespan::GetTotalMinutes() const {
+    return time_span_ * Globals::MIN_PER_DAY();
 }
 
 Timespan& Timespan::operator =(const Timespan& b) {
@@ -111,8 +124,4 @@ bool Timespan::operator <=(const Timespan & b) const {
         return true;
     else
         return false;
-}
-
-double Timespan::GetTotalDays() const{
-    return time_span_ / Globals::MIN_PER_DAY();
 }
