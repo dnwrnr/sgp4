@@ -65,13 +65,15 @@ CoordGeodetic Eci::ToGeodetic() const {
     double lat = Globals::AcTan(position_.GetZ(), r);
     double phi = 0.0;
     double c = 0.0;
+    int cnt = 0;
 
     do {
         phi = lat;
         const double sinphi = sin(phi);
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
         lat = Globals::AcTan(position_.GetZ() + Globals::XKMPER() * c * e2 * sinphi, r);
-    } while (fabs(lat - phi) >= 1e-10);
+        cnt++;
+    } while (fabs(lat - phi) >= 1e-10 && cnt < 10);
 
     const double alt = r / cos(lat) - Globals::XKMPER() * c;
 
