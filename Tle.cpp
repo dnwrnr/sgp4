@@ -202,11 +202,12 @@ bool Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
 
     /*
      * last char in string is modulo 10 checksum
+     * edited out as checksum isnt consistent
+     *
+     * int chk = CheckSum(str);
+     * if (chk != (str[TLE_LEN_LINE_DATA - 1] - '0'))
+     *   return false;
      */
-    int chk = CheckSum(str);
-    if (chk != (str[TLE_LEN_LINE_DATA - 1] - '0'))
-
-        return false;
 
     return true;
 }
@@ -219,7 +220,7 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
     /*
      * check length of lines match
      */
-    if (pattern.length() != line.length()) {
+    if (line.length() < pattern.length()) {
         return false;
     }
 
@@ -284,7 +285,6 @@ int Tle::CheckSum(const std::string& str) {
         if (isdigit(ch))
             xsum += (ch - '0');
         else
-
             if (ch == '-')
             xsum++;
     }
