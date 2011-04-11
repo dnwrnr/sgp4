@@ -17,17 +17,25 @@
 /*
  * alternative XKE
  * affects final results
+ * aiaa-2006-6573
  * #define XKE      (60.0 / sqrt(XKMPER * XKMPER * XKMPER / MU))
+ * dundee
+ * #define XKE      (7.43669161331734132e-2)
  */
-#define XKE      (7.43669161331734132e-2)
+#define XKE      (60.0 / sqrt(XKMPER * XKMPER * XKMPER / MU))
+
 #define CK2      (0.5 * XJ2 * AE * AE)
 #define CK4      (-0.375 * XJ4 * AE * AE * AE * AE)
 /*
  * alternative QOMS2T
  * affects final results
- * #define #define QOMS2T   (pow(((Q0 - 78.0) / XKMPER), 4.0))
+ * aiaa-2006-6573
+ * #define QOMS2T   (pow(((Q0 - S0) / XKMPER), 4.0))
+ * dundee
+ * #define QOMS2T   (1.880279159015270643865e-9)
  */
-#define QOMS2T   (1.880279159015270643865e-9)
+#define QOMS2T   (pow(((Q0 - S0) / XKMPER), 4.0))
+
 #define S        (AE * (1.0 + S0 / XKMPER))
 #define PI       (3.14159265358979323846264338327950288419716939937510582)
 #define TWOPI    (2.0 * PI)
@@ -281,7 +289,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
     DeepSpaceSecular(tsince, xmdf, omgadf, xnode, e, xincl, xn);
 
     if (xn <= 0.0) {
-        throw new SatelliteException("Error: 2 (xn <= 0.0)");
+        throw new SatelliteException("Error: #2 (xn <= 0.0)");
     }
 
     a = pow(XKE / xn, TWOTHIRD) * pow(tempa, 2.0);
@@ -291,7 +299,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
      * fix tolerance for error recognition
      */
     if (e >= 1.0 || e < -0.001) {
-        throw new SatelliteException("Error: 1 (e >= 1.0 || e < -0.001)");
+        throw new SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
     }
     /*
      * fix tolerance to avoid a divide by zero
@@ -326,7 +334,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
     omega = omgadf;
 
     if (e < 0.0 || e > 1.0) {
-        throw new SatelliteException("Error: 3 (e < 0.0 || e > 1.0)");
+        throw new SatelliteException("Error: #3 (e < 0.0 || e > 1.0)");
     }
 
     /*
@@ -409,6 +417,22 @@ void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
     e = Eccentricity() - tempe;
     xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
 
+    if (xl <= 0.0) {
+        throw new SatelliteException("Error: #2 (xl <= 0.0)");
+    }
+
+    /*
+     * fix tolerance for error recognition
+     */
+    if (e >= 1.0 || e < -0.001) {
+        throw new SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
+    }
+    /*
+     * fix tolerance to avoid a divide by zero
+     */
+    if (e < 1.0e-6)
+        e = 1.0e-6;
+
     /*
      * using calculated values, find position and velocity
      * we can pass in constants from Initialize() as these dont change
@@ -432,14 +456,6 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
     double temp2;
     double temp3;
 
-    if (a < 1.0) {
-        throw new SatelliteException("Error: Satellite crashed (a < 1.0)");
-    }
-
-    if (e < -1.0e-3) {
-        throw new SatelliteException("Error: Modified eccentricity too low (e < -1.0e-3)");
-    }
-
     const double beta = sqrt(1.0 - e * e);
     const double xn = XKE / pow(a, 1.5);
     /*
@@ -452,10 +468,6 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
     const double xlt = xl + xll;
     const double ayn = e * sin(omega) + aynl;
     const double elsq = axn * axn + ayn * ayn;
-
-    if (elsq >= 1.0) {
-        throw new SatelliteException("Error: sqrt(e) >= 1 (elsq >= 1.0)");
-    }
 
     /*
      * solve keplers equation
@@ -521,6 +533,11 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
      */
     temp = 1.0 - elsq;
     const double pl = a * temp;
+
+    if (pl < 0.0) {
+        throw new SatelliteException("Error: #4 (pl < 0.0)");
+    }
+
     const double r = a * (1.0 - ecose);
     temp1 = 1.0 / r;
     const double rdot = XKE * sqrt(a) * esine * temp1;
@@ -547,8 +564,8 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
     const double rdotk = rdot - xn * temp1 * x1mth2 * sin2u;
     const double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
-    if (rk < 0.0) {
-        throw new SatelliteException("Error: satellite decayed (rk < 0.0)");
+    if (rk < 1.0) {
+        throw new SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
     }
 
     /*
