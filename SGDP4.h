@@ -32,7 +32,8 @@ private:
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio) const;
     void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const;
-    void DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) const;
+    void DeepSpaceIntegrator(const double delt, const double step2,
+            const double xndot, const double xnddt, const double xldot)const;
     void ResetGlobalVariables();
 
     bool first_run_;
@@ -152,6 +153,18 @@ private:
     mutable double d_xli_;
     mutable double d_xni_;
     mutable double d_atime_;
+    /*
+     * integrator values for epoch
+     */
+    double d_xndot_0_;
+    double d_xnddt_0_;
+    double d_xldot_0_;
+    /*
+     * itegrator values for current d_atime_
+     */
+    mutable double d_xndot_t_;
+    mutable double d_xnddt_t_;
+    mutable double d_xldot_t_;
 
     /*
      * XMO

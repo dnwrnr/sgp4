@@ -930,6 +930,10 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
         d_atime_ = 0.0;
         d_xni_ = RecoveredMeanMotion();
         d_xli_ = d_xlamo_;
+        /*
+         * precompute dot terms for epoch
+         */
+        DeepSpaceCalcDotTerms(d_xndot_0_, d_xnddt_0_, d_xldot_0_);
     }
 }
 
@@ -1084,12 +1088,8 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
 void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) const {
 
-    static const double STEP2 = 259200.0;
     static const double STEP = 720.0;
-
-    double xldot = 0.0;
-    double xndot = 0.0;
-    double xnddt = 0.0;
+    static const double STEP2 = 259200.0;
 
     xll += d_ssl_ * t;
     omgasm += d_ssg_ * t;
@@ -1103,7 +1103,7 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
     /*
      * 1st condition (if t is less than one time step from epoch)
      * 2nd condition (if d_atime_ and t are of opposite signs, so zero crossing required)
-     * 3rd condition (if t is closer to zero than d_atime_)
+     * 3rd condition (if t is closer to zero than d_atime_, only integrate away from zero)
      */
     if (fabs(t) < STEP ||
             t * d_atime_ <= 0.0 ||
@@ -1114,6 +1114,13 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
         d_atime_ = 0.0;
         d_xni_ = RecoveredMeanMotion();
         d_xli_ = d_xlamo_;
+
+        /*
+         * restore precomputed values for epoch
+         */
+        d_xndot_t_ = d_xndot_0_;
+        d_xnddt_t_ = d_xnddt_0_;
+        d_xldot_t_ = d_xldot_0_;
     }
 
     double ft = t - d_atime_;
@@ -1133,22 +1140,25 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
             delt = STEP;
 
         do {
-            DeepSpaceCalcIntegrator(delt, STEP2, xndot, xnddt, xldot);
+            /*
+             * integrate using current dot terms
+             */
+            DeepSpaceIntegrator(delt, STEP2, d_xndot_t_, d_xnddt_t_, d_xldot_t_);
+
+            /*
+             * calculate dot terms for next integration
+             */
+            DeepSpaceCalcDotTerms(d_xndot_t_, d_xnddt_t_, d_xldot_t_);
 
             ft = t - d_atime_;
         } while (fabs(ft) >= STEP);
     }
 
     /*
-     * calculate dot terms
-     */
-    DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
-
-    /*
      * integrator
      */
-    xn = d_xni_ + xndot * ft + xnddt * ft * ft * 0.5;
-    const double xl = d_xli_ + xldot * ft + xndot * ft * ft * 0.5;
+    xn = d_xni_ + d_xndot_t_ * ft + d_xnddt_t_ * ft * ft * 0.5;
+    const double xl = d_xli_ + d_xldot_t_ * ft + d_xndot_t_ * ft * ft * 0.5;
     const double temp = -xnodes + d_gsto_ + t * THDT;
 
     if (d_synchronous_flag_)
@@ -1215,12 +1225,8 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
 /*
  * deep space integrator for time period of delt
  */
-void SGDP4::DeepSpaceCalcIntegrator(const double& delt, const double& step2, double& xndot, double& xnddt, double& xldot) const {
-
-    /*
-     * calculate dot terms
-     */
-    DeepSpaceCalcDotTerms(xndot, xnddt, xldot);
+void SGDP4::DeepSpaceIntegrator(const double delt, const double step2,
+        const double xndot, const double xnddt, const double xldot) const {
 
     /*
      * integrator
@@ -1272,7 +1278,9 @@ void SGDP4::ResetGlobalVariables() {
             d_d5220_ = d_d5232_ = d_d5421_ = d_d5433_ = d_del1_ = d_del2_ =
             d_del3_ = 0.0;
 
-    d_xfact_ = d_xlamo_ = d_xli_ = d_xni_ = d_atime_ = 0.0;
+    d_xfact_ = d_xlamo_ = d_xli_ = d_xni_ = d_atime_ =
+            d_xndot_0_ = d_xnddt_0_ = d_xldot_0_ =
+            d_xndot_t_ = d_xnddt_t_ = d_xldot_t_ = 0.0;
 
     mean_anomoly_ = ascending_node_ = argument_perigee_ = eccentricity_ =
             inclination_ = mean_motion_ = bstar_ = recovered_semi_major_axis_ =
