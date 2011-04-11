@@ -1,4 +1,4 @@
-#include "SGDP4.h"
+#include "SGP4.h"
 
 #include "Vector.h"
 #include "SatelliteException.h"
@@ -42,14 +42,14 @@
 #define TWOTHIRD (2.0 / 3.0)
 #define THDT     (4.37526908801129966e-3)
 
-SGDP4::SGDP4(void) {
+SGP4::SGP4(void) {
     first_run_ = true;
 }
 
-SGDP4::~SGDP4(void) {
+SGP4::~SGP4(void) {
 }
 
-void SGDP4::SetTle(const Tle& tle) {
+void SGP4::SetTle(const Tle& tle) {
 
     /*
      * reset all constants etc
@@ -113,7 +113,7 @@ void SGDP4::SetTle(const Tle& tle) {
     Initialize(theta2, betao2, betao, eosq);
 }
 
-void SGDP4::Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq) {
+void SGP4::Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq) {
 
     if (Period() >= 225.0) {
         i_use_deep_space_ = true;
@@ -242,7 +242,7 @@ void SGDP4::Initialize(const double& theta2, const double& betao2, const double&
     first_run_ = false;
 }
 
-void SGDP4::FindPosition(Eci& eci, double tsince) const {
+void SGP4::FindPosition(Eci& eci, double tsince) const {
 
     if (i_use_deep_space_)
         FindPositionSDP4(eci, tsince);
@@ -250,14 +250,14 @@ void SGDP4::FindPosition(Eci& eci, double tsince) const {
         FindPositionSGP4(eci, tsince);
 }
 
-void SGDP4::FindPosition(Eci& eci, const Julian& date) const {
+void SGP4::FindPosition(Eci& eci, const Julian& date) const {
 
     const double tsince = date.SpanMin(Epoch());
 
     FindPosition(eci, tsince);
 }
 
-void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
+void SGP4::FindPositionSDP4(Eci& eci, double tsince) const {
 
     /*
      * the final values
@@ -368,7 +368,7 @@ void SGDP4::FindPositionSDP4(Eci& eci, double tsince) const {
 
 }
 
-void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
+void SGP4::FindPositionSGP4(Eci& eci, double tsince) const {
 
     /*
      * the final values
@@ -445,7 +445,7 @@ void SGDP4::FindPositionSGP4(Eci& eci, double tsince) const {
 
 }
 
-void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
+void SGP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
         const double& a, const double& omega, const double& xl, const double& xnode,
         const double& xincl, const double& xlcof, const double& aycof,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
@@ -605,7 +605,7 @@ void SGDP4::CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const
 /*
  * deep space initialization
  */
-void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
+void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
         const double& theta2, const double& betao2,
         const double& xmdot, const double& omgdot, const double& xnodot) {
 
@@ -937,7 +937,7 @@ void SGDP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const d
     }
 }
 
-void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
+void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
         double& pl, double& pgh, double& ph) const {
 
     static const double ZES = 0.01675;
@@ -990,7 +990,7 @@ void SGDP4::DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double
 /*
  * calculate lunar / solar periodics and apply
  */
-void SGDP4::DeepSpacePeriodics(const double& t, double& em,
+void SGP4::DeepSpacePeriodics(const double& t, double& em,
         double& xinc, double& omgasm, double& xnodes, double& xll) const {
 
     /*
@@ -1085,7 +1085,7 @@ void SGDP4::DeepSpacePeriodics(const double& t, double& em,
 /*
  * deep space secular effects
  */
-void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
+void SGP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
         double& xnodes, double& em, double& xinc, double& xn) const {
 
     static const double STEP = 720.0;
@@ -1170,7 +1170,7 @@ void SGDP4::DeepSpaceSecular(const double& t, double& xll, double& omgasm,
 /*
  * calculate dot terms
  */
-void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const {
+void SGP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const {
 
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
@@ -1225,7 +1225,7 @@ void SGDP4::DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) c
 /*
  * deep space integrator for time period of delt
  */
-void SGDP4::DeepSpaceIntegrator(const double delt, const double step2,
+void SGP4::DeepSpaceIntegrator(const double delt, const double step2,
         const double xndot, const double xnddt, const double xldot) const {
 
     /*
@@ -1240,7 +1240,7 @@ void SGDP4::DeepSpaceIntegrator(const double delt, const double step2,
     d_atime_ += delt;
 }
 
-void SGDP4::ResetGlobalVariables() {
+void SGP4::ResetGlobalVariables() {
 
     /*
      * common variables

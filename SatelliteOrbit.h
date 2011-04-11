@@ -2,7 +2,7 @@
 #define SATELLITEORBIT_H_
 
 #include "Tle.h"
-#include "SGDP4.h"
+#include "SGP4.h"
 
 class SatelliteOrbit {
 public:
@@ -16,7 +16,7 @@ public:
     unsigned int GetOrbitNumber(const Julian& jul) const;
 
 private:
-    SGDP4 sgdp4_;
+    SGP4 sgdp4_;
 };
 
 #endif

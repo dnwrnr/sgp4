@@ -81,7 +81,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Observer.cpp" />
     <ClCompile Include="SatelliteOrbit.cpp" />
-    <ClCompile Include="SGDP4.cpp" />
+    <ClCompile Include="SGP4.cpp" />
     <ClCompile Include="Timespan.cpp" />
     <ClCompile Include="Tle.cpp" />
     <ClCompile Include="Vector.cpp" />
@@ -94,7 +94,7 @@
     <ClInclude Include="Observer.h" />
     <ClInclude Include="SatelliteException.h" />
     <ClInclude Include="SatelliteOrbit.h" />
-    <ClInclude Include="SGDP4.h" />
+    <ClInclude Include="SGP4.h" />
     <ClInclude Include="Timespan.h" />
     <ClInclude Include="Tle.h" />
     <ClInclude Include="Vector.h" />

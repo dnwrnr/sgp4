@@ -4,10 +4,10 @@
 #include "Tle.h"
 #include "Eci.h"
 
-class SGDP4 {
+class SGP4 {
 public:
-    SGDP4(void);
-    virtual ~SGDP4(void);
+    SGP4(void);
+    virtual ~SGP4(void);
 
     void SetTle(const Tle& tle);
     void FindPosition(Eci& eci, double tsince) const;

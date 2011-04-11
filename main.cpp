@@ -1,6 +1,6 @@
 #include "Julian.h"
 #include "Tle.h"
-#include "SGDP4.h"
+#include "SGP4.h"
 #include "Globals.h"
 #include "Observer.h"
 #include "Coord.h"
@@ -22,7 +22,7 @@ void FindSatellite(const Julian& time_start, const Julian& time_end) {
 
 }
 
-void GeneratePassList(const CoordGeodetic& geo, const SGDP4& model, const Julian& date) {
+void GeneratePassList(const CoordGeodetic& geo, const SGP4& model, const Julian& date) {
     Observer obs(geo);
     Eci eci;
     model.FindPosition(eci, date);
@@ -52,7 +52,7 @@ int main() {
 
     CoordGeodetic geo(Globals::Deg2Rad(51.360242), Globals::Deg2Rad(0.101473), 0.07);
 
-    SGDP4 sgp4_model;
+    SGP4 sgp4_model;
     sgp4_model.SetTle(tle);
     Julian date;
 

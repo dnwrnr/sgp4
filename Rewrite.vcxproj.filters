@@ -33,9 +33,6 @@
     <ClCompile Include="Tle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SGDP4.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Observer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SatelliteOrbit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SGP4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,9 +65,6 @@
     <ClInclude Include="Tle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SGDP4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SatelliteException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SatelliteOrbit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SGP4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
