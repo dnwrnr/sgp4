@@ -13,6 +13,91 @@ public:
     void FindPosition(Eci& eci, double tsince) const;
     void FindPosition(Eci& eci, const Julian& date) const;
 
+    /*
+     * XMO
+     */
+    double MeanAnomoly() const {
+        return mean_anomoly_;
+    }
+
+    /*
+     * XNODEO
+     */
+    double AscendingNode() const {
+        return ascending_node_;
+    }
+
+    /*
+     * OMEGAO
+     */
+    double ArgumentPerigee() const {
+        return argument_perigee_;
+    }
+
+    /*
+     * EO
+     */
+    double Eccentricity() const {
+        return eccentricity_;
+    }
+
+    /*
+     * XINCL
+     */
+    double Inclination() const {
+        return inclination_;
+    }
+
+    /*
+     * XNO
+     */
+    double MeanMotion() const {
+        return mean_motion_;
+    }
+
+    /*
+     * BSTAR
+     */
+    double BStar() const {
+        return bstar_;
+    }
+
+    /*
+     * AODP
+     */
+    double RecoveredSemiMajorAxis() const {
+        return recovered_semi_major_axis_;
+    }
+
+    /*
+     * XNODP
+     */
+    double RecoveredMeanMotion() const {
+        return recovered_mean_motion_;
+    }
+
+    /*
+     * PERIGE
+     */
+    double Perigee() const {
+        return perigee_;
+    }
+
+    double Period() const {
+        return period_;
+    }
+
+    /*
+     * EPOCH
+     */
+    Julian Epoch() const {
+        return epoch_;
+    }
+
+    unsigned int OrbitNumber() const {
+        return orbit_number_;
+    }
+
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
@@ -167,87 +252,6 @@ private:
     mutable double d_xldot_t_;
 
     /*
-     * XMO
-     */
-    double MeanAnomoly() const {
-        return mean_anomoly_;
-    }
-
-    /*
-     * XNODEO
-     */
-    double AscendingNode() const {
-        return ascending_node_;
-    }
-
-    /*
-     * OMEGAO
-     */
-    double ArgumentPerigee() const {
-        return argument_perigee_;
-    }
-
-    /*
-     * EO
-     */
-    double Eccentricity() const {
-        return eccentricity_;
-    }
-
-    /*
-     * XINCL
-     */
-    double Inclination() const {
-        return inclination_;
-    }
-
-    /*
-     * XNO
-     */
-    double MeanMotion() const {
-        return mean_motion_;
-    }
-
-    /*
-     * BSTAR
-     */
-    double BStar() const {
-        return bstar_;
-    }
-
-    /*
-     * AODP
-     */
-    double RecoveredSemiMajorAxis() const {
-        return recovered_semi_major_axis_;
-    }
-
-    /*
-     * XNODP
-     */
-    double RecoveredMeanMotion() const {
-        return recovered_mean_motion_;
-    }
-
-    /*
-     * PERIGE
-     */
-    double Perigee() const {
-        return perigee_;
-    }
-
-    double Period() const {
-        return period_;
-    }
-
-    /*
-     * EPOCH
-     */
-    Julian Epoch() const {
-        return epoch_;
-    }
-
-    /*
      * these variables are set at the very start
      * and should not be changed after that
      */
@@ -263,6 +267,7 @@ private:
     double perigee_;
     double period_;
     Julian epoch_;
+    unsigned int orbit_number_;
 };
 
 #endif
