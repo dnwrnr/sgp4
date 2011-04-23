@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdlib>
 
 void RunTle(Tle tle, double start, double end, double inc) {
     double current = start;
