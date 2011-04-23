@@ -11,6 +11,7 @@ public:
     Eci() {
     };
     Eci(const Julian &date, const CoordGeodetic &geo);
+    Eci(const Julian &date, const Vector &position);
     Eci(const Julian &date, const Vector &position, const Vector &velocity);
     virtual ~Eci(void);
 

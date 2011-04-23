@@ -83,6 +83,7 @@
     <ClCompile Include="RunTest.cpp" />
     <ClCompile Include="SatelliteOrbit.cpp" />
     <ClCompile Include="SGP4.cpp" />
+    <ClCompile Include="SolarPosition.cpp" />
     <ClCompile Include="Timespan.cpp" />
     <ClCompile Include="Tle.cpp" />
     <ClCompile Include="Vector.cpp" />
@@ -97,6 +98,7 @@
     <ClInclude Include="SatelliteException.h" />
     <ClInclude Include="SatelliteOrbit.h" />
     <ClInclude Include="SGP4.h" />
+    <ClInclude Include="SolarPosition.h" />
     <ClInclude Include="Timespan.h" />
     <ClInclude Include="Tle.h" />
     <ClInclude Include="Vector.h" />

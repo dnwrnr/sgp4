@@ -43,6 +43,11 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
     velocity_.SetW(velocity_.GetMagnitude());
 }
 
+Eci::Eci(const Julian &date, const Vector &position)
+: date_(date), position_(position) {
+
+}
+
 Eci::Eci(const Julian &date, const Vector &position, const Vector &velocity)
 : date_(date), position_(position), velocity_(velocity) {
 

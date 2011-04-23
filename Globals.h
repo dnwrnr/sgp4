@@ -26,6 +26,10 @@ public:
         return 1.00273790934;
     }
 
+    static const double AU() {
+        return 1.49597870691e8;
+    }
+
     static const double XKMPER() {
         return 6378.135;
     }
