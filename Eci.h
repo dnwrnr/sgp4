@@ -1,7 +1,7 @@
 #ifndef ECI_H_
 #define ECI_H_
 
-#include "Coord.h"
+#include "CoordGeodetic.h"
 #include "Vector.h"
 #include "Julian.h"
 

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Coord.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Julian.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,9 +22,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tle.cpp">
@@ -48,11 +42,17 @@
     <ClCompile Include="SGP4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CoordGeodetic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoordTopographic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RunTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Coord.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Julian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +81,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SGP4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoordGeodetic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoordTopographic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

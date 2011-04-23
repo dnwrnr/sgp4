@@ -74,12 +74,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Coord.cpp" />
+    <ClCompile Include="CoordGeodetic.cpp" />
+    <ClCompile Include="CoordTopographic.cpp" />
     <ClCompile Include="Eci.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Julian.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="Observer.cpp" />
+    <ClCompile Include="RunTest.cpp" />
     <ClCompile Include="SatelliteOrbit.cpp" />
     <ClCompile Include="SGP4.cpp" />
     <ClCompile Include="Timespan.cpp" />
@@ -87,7 +88,8 @@
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Coord.h" />
+    <ClInclude Include="CoordGeodetic.h" />
+    <ClInclude Include="CoordTopographic.h" />
     <ClInclude Include="Eci.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Julian.h" />

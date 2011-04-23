@@ -1,9 +1,10 @@
 #include "Julian.h"
 #include "Tle.h"
-#include "SGDP4.h"
+#include "SGP4.h"
 #include "Globals.h"
 #include "Observer.h"
-#include "Coord.h"
+#include "CoordGeodetic.h"
+#include "CoordTopographic.h"
 
 #include <list>
 #include <string>
@@ -14,11 +15,11 @@
 
 void RunTle(Tle tle, double start, double end, double inc) {
     double current = start;
-    SGDP4 model;
+    SGP4 model;
     model.SetTle(tle);
     bool running = true;
     bool first_run = true;
-    std::cout << "  " << std::setprecision(0) << tle.GetNoradNumber() << "  xx" << std::endl;
+    std::cout << "  " << std::setprecision(0) << tle.NoradNumber() << "  xx" << std::endl;
     while (running) {
         try {
             double val;
@@ -142,7 +143,7 @@ void RunTest(const char* infile) {
          */
         if (!got_first_line) {
 
-            if (Tle::IsValidLine(line, Tle::LINE_ONE)) {
+            if (Tle::IsValidLine(line, 1)) {
                 /*
                  * store line and now read in second line
                  */
@@ -180,7 +181,7 @@ void RunTest(const char* infile) {
             /*
              * following line must be the second line
              */
-            if (Tle::IsValidLine(line2, Tle::LINE_TWO)) {
+            if (Tle::IsValidLine(line2, 2)) {
                 Tle tle("Test", line1, line2);
                 RunTle(tle, 0.0, 1440.0, 120.0);
             } else {

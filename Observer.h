@@ -1,7 +1,8 @@
 #ifndef OBSERVER_H_
 #define OBSERVER_H_
 
-#include "Coord.h"
+#include "CoordGeodetic.h"
+#include "CoordTopographic.h"
 #include "Julian.h"
 #include "Eci.h"
 

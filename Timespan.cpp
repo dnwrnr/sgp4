@@ -5,6 +5,9 @@
 Timespan::Timespan(void) {
 }
 
+/*
+ * time_span is days and fraction of a day
+ */
 Timespan::Timespan(const double time_span) {
     time_span_ = time_span;
 }

@@ -15,8 +15,10 @@ public:
 
     unsigned int GetOrbitNumber(const Julian& jul) const;
 
+    static double Footprint(const double& altitude);
+
 private:
-    SGP4 sgdp4_;
+    SGP4 sgp4_;
 };
 
 #endif
