@@ -10,7 +10,6 @@ SOURCES=CoordGeodetic.cpp \
 	Julian.cpp \
 	Observer.cpp \
 	SGP4.cpp \
-	SatelliteOrbit.cpp \
         Timespan.cpp \
 	Tle.cpp \
 	Vector.cpp
