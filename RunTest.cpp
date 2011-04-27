@@ -184,7 +184,7 @@ void RunTest(const char* infile) {
              */
             if (Tle::IsValidLine(line2, 2)) {
                 Tle tle("Test", line1, line2);
-                RunTle(tle, 0.0, 1440.0, 120.0);
+                RunTle(tle, start, end, inc);
             } else {
                 std::cerr << "Error: Badly formatted second line:" << std::endl;
                 std::cerr << line2 << std::endl;
