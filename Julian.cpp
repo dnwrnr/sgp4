@@ -313,3 +313,34 @@ double Julian::ToGreenwichSiderealTime() const {
 double Julian::ToLocalMeanSiderealTime(const double& lon) const {
     return fmod(ToGreenwichSiderealTime() + lon, Globals::TWOPI());
 }
+
+void Julian::GetDateTime(struct DateTimeComponents* datetime) const {
+    
+    double jdAdj = GetDate() + 0.5;
+    int Z = (int) jdAdj;
+    double F = jdAdj - Z;
+
+    int A = 0;
+
+    if (Z < 2299161) {
+        A = static_cast<int>(Z);
+    } else {
+        int a = static_cast<int>((Z - 1867216.25) / 36524.25);
+        A = static_cast<int>(Z + 1 + a - static_cast<int>(a / 4));
+    }
+
+    int B = A + 1524;
+    int C = static_cast<int>((B - 122.1) / 365.25);
+    int D = static_cast<int>(365.25 * C);
+    int E = static_cast<int>((B - D) / 30.6001);
+
+    datetime->hours = static_cast<int>(F * 24.0);
+    F -= datetime->hours / 24.0;
+    datetime->minutes = static_cast<int>(F * 1440.0);
+    F -= datetime->minutes / 1440.0;
+    datetime->seconds = F * 86400.0;
+
+    datetime->days = B - D - static_cast<int>(30.6001 * E);
+    datetime->months = E < 14 ? E - 1 : E - 13;
+    datetime->years = datetime->months > 2 ? C - 4716 : C - 4715;
+ }

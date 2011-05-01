@@ -32,6 +32,17 @@ public:
     ~Julian() {
     };
 
+    struct DateTimeComponents {
+        int years;
+        int months;
+        int days;
+        int hours;
+        int minutes;
+        double seconds;
+    };
+
+    void GetDateTime(struct DateTimeComponents* datetime) const;
+
     time_t ToTime() const;
     double ToGreenwichSiderealTime() const;
     double ToLocalMeanSiderealTime(const double& lon) const;
