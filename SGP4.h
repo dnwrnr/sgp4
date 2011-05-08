@@ -10,8 +10,8 @@ public:
     virtual ~SGP4(void);
 
     void SetTle(const Tle& tle);
-    void FindPosition(Eci& eci, double tsince) const;
-    void FindPosition(Eci& eci, const Julian& date) const;
+    void FindPosition(Eci* eci, double tsince) const;
+    void FindPosition(Eci* eci, const Julian& date) const;
 
     /*
      * XMO
@@ -103,20 +103,20 @@ private:
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
-    void DeepSpaceCalculateLunarSolarTerms(const double t, double& pe, double& pinc,
-            double& pl, double& pgh, double& ph) const;
-    void DeepSpacePeriodics(const double& t, double& em, double& xinc,
-            double& omgasm, double& xnodes, double& xll) const;
-    void DeepSpaceSecular(const double& t, double& xll, double& omgasm,
-            double& xnodes, double& em, double& xinc, double& xn) const;
-    void FindPositionSDP4(Eci& eci, double tsince) const;
-    void FindPositionSGP4(Eci& eci, double tsince) const;
-    void CalculateFinalPositionVelocity(Eci& eci, const double& tsince, const double& e,
+    void DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double* pinc,
+            double* pl, double* pgh, double* ph) const;
+    void DeepSpacePeriodics(const double& t, double* em, double* xinc,
+            double* omgasm, double* xnodes, double* xll) const;
+    void DeepSpaceSecular(const double& t, double* xll, double* omgasm,
+            double* xnodes, double* em, double* xinc, double* xn) const;
+    void FindPositionSDP4(Eci* eci, double tsince) const;
+    void FindPositionSGP4(Eci* eci, double tsince) const;
+    void CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio) const;
-    void DeepSpaceCalcDotTerms(double& xndot, double& xnddt, double& xldot) const;
+    void DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) const;
     void DeepSpaceIntegrator(const double delt, const double step2,
             const double xndot, const double xnddt, const double xldot)const;
     void ResetGlobalVariables();

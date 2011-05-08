@@ -36,7 +36,7 @@ void RunTle(Tle tle, double start, double end, double inc) {
                  */
                 val = current;
             }
-            model.FindPosition(eci, val);
+            model.FindPosition(&eci, val);
 
             Vector position = eci.GetPosition();
             Vector velocity = eci.GetVelocity();
