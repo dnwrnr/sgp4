@@ -168,15 +168,16 @@ void Tle::Initialize() {
  */
 bool Tle::IsValidPair(const std::string& line1, const std::string& line2) {
 
-    if (atoi(line1.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM).c_str()) !=
-            atoi(line2.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM).c_str()))
-        return false;
-
     if (!IsValidLine(line1, 1))
         return false;
 
     if (!IsValidLine(line2, 2))
         return false;
+
+    if (atoi(line1.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM).c_str()) !=
+            atoi(line2.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM).c_str()))
+        return false;
+
 
     return true;
 }
@@ -186,7 +187,7 @@ bool Tle::IsValidPair(const std::string& line1, const std::string& line2) {
  */
 bool Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
 
-    static const std::string line1_pattern = "1 NNNNNC NNNNAAAA NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN";
+    static const std::string line1_pattern = "1 NNNNNC XXXXXXXX NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN";
     static const std::string line2_pattern = "2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN";
 
     /*
@@ -249,15 +250,15 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
         } else if (*pattern_itr == '+') {
 
             /*
-             * if pattern value is '+' then either a '+' or a ' '
+             * if pattern value is '+' then either a '+' or '-' or ' ' or '0'
              */
-            if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ')
+            if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ' && *line_itr != '0')
                 return false;
 
         } else if (*pattern_itr == '-') {
 
             /*
-             * if pattern value is '+' or a '+'
+             * if pattern value is '+' or '-'
              */
             if (*line_itr != '+' && *line_itr != '-')
                 return false;
