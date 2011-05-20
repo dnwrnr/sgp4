@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <iomanip>
+#include <cstring>
 
 SGP4::SGP4(void) {
 
