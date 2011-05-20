@@ -122,8 +122,8 @@ private:
     void ResetGlobalVariables();
 
     bool first_run_;
-    bool i_use_simple_model_;
-    bool i_use_deep_space_;
+    bool use_simple_model_;
+    bool use_deep_space_;
 
     /*
      * variables are constants that wont be modified outside init

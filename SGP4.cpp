@@ -117,10 +117,10 @@ void SGP4::SetTle(const Tle& tle) {
 void SGP4::Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq) {
 
     if (Period() >= 225.0) {
-        i_use_deep_space_ = true;
+        use_deep_space_ = true;
     } else {
-        i_use_deep_space_ = false;
-        i_use_simple_model_ = false;
+        use_deep_space_ = false;
+        use_simple_model_ = false;
         /*
          * for perigee less than 220 kilometers, the simple_model flag is set and
          * the equations are truncated to linear variation in sqrt a and
@@ -128,7 +128,7 @@ void SGP4::Initialize(const double& theta2, const double& betao2, const double& 
          * delta omega term and the delta m term are dropped
          */
         if (Perigee() < 220.0) {
-            i_use_simple_model_ = true;
+            use_simple_model_ = true;
         }
     }
 
@@ -197,7 +197,7 @@ void SGP4::Initialize(const double& theta2, const double& betao2, const double& 
     i_aycof_ = 0.25 * i_a3ovk2_ * i_sinio_;
     i_x7thm1_ = 7.0 * theta2 - 1.0;
 
-    if (i_use_deep_space_) {
+    if (use_deep_space_) {
 
         d_gsto_ = Epoch().ToGreenwichSiderealTime();
 
@@ -224,7 +224,7 @@ void SGP4::Initialize(const double& theta2, const double& betao2, const double& 
         n_delmo_ = pow(1.0 + i_eta_ * (cos(MeanAnomoly())), 3.0);
         n_sinmo_ = sin(MeanAnomoly());
 
-        if (!i_use_simple_model_) {
+        if (!use_simple_model_) {
             const double c1sq = i_c1_ * i_c1_;
             n_d2_ = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
             const double temp = n_d2_ * tsi * i_c1_ / 3.0;
@@ -245,7 +245,7 @@ void SGP4::Initialize(const double& theta2, const double& betao2, const double& 
 
 void SGP4::FindPosition(Eci* eci, double tsince) const {
 
-    if (i_use_deep_space_)
+    if (use_deep_space_)
         FindPositionSDP4(eci, tsince);
     else
         FindPositionSGP4(eci, tsince);
@@ -398,7 +398,7 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
     omega = omgadf;
     double xmp = xmdf;
 
-    if (!i_use_simple_model_) {
+    if (!use_simple_model_) {
         const double delomg = n_omgcof_ * tsince;
         const double delm = n_xmcof_ * (pow(1.0 + i_eta_ * cos(xmdf), 3.0) - n_delmo_);
         const double temp = delomg + delm;
@@ -1247,8 +1247,8 @@ void SGP4::ResetGlobalVariables() {
      * common variables
      */
     first_run_ = true;
-    i_use_simple_model_ = false;
-    i_use_deep_space_ = false;
+    use_simple_model_ = false;
+    use_deep_space_ = false;
 
     i_cosio_ = i_sinio_ = i_eta_ = i_t2cof_ = i_a3ovk2_ = i_x1mth2_ =
             i_x3thm1_ = i_x7thm1_ = i_aycof_ = i_xlcof_ = i_xnodcf_ = i_c1_ =
