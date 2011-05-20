@@ -160,10 +160,10 @@ void SGP4::Initialize() {
     common_consts_.omgdot = -0.5 * temp1 * x1m5th +
             0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
             temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
-    const double xhdot1_ = -temp1 * common_consts_.cosio;
-    common_consts_.xnodot = xhdot1_ + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 *
+    const double xhdot1 = -temp1 * common_consts_.cosio;
+    common_consts_.xnodot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 *
             (3.0 - 7.0 * theta2)) * common_consts_.cosio;
-    common_consts_.xnodcf = 3.5 * betao2 * xhdot1_ * common_consts_.c1;
+    common_consts_.xnodcf = 3.5 * betao2 * xhdot1 * common_consts_.c1;
     common_consts_.t2cof = 1.5 * common_consts_.c1;
 
     if (fabs(common_consts_.cosio + 1.0) > 1.5e-12)
