@@ -93,9 +93,141 @@ public:
     Julian Epoch() const {
         return epoch_;
     }
-    
+
+    struct CommonConstants {
+        double cosio;
+        double sinio;
+        double eta;
+        double t2cof;
+        double a3ovk2;
+        double x1mth2;
+        double x3thm1;
+        double x7thm1;
+        double aycof;
+        double xlcof;
+        double xnodcf;
+        double c1;
+        double c4;
+        double omgdot; // secular rate of omega (radians/sec)
+        double xnodot; // secular rate of xnode (radians/sec)
+        double xmdot; // secular rate of xmo (radians/sec)
+    };
+
+    struct NearSpaceConstants {
+        double c5;
+        double omgcof;
+        double xmcof;
+        double delmo;
+        double sinmo;
+        double d2;
+        double d3;
+        double d4;
+        double t3cof;
+        double t4cof;
+        double t5cof;
+    };
+
+    struct DeepSpaceConstants {
+        double gsto;
+        double zmol;
+        double zmos;
+        /*
+         * whether the deep space orbit is
+         * geopotential resonance for 12 hour orbits
+         */
+        bool resonance_flag;
+        /*
+         * whether the deep space orbit is
+         * 24h synchronous resonance
+         */
+        bool synchronous_flag;
+        /*
+         * lunar / solar constants for epoch
+         * applied during DeepSpaceSecular()
+         */
+        double sse;
+        double ssi;
+        double ssl;
+        double ssg;
+        double ssh;
+        /*
+         * lunar / solar constants
+         * used during DeepSpaceCalculateLunarSolarTerms()
+         */
+        double se2;
+        double si2;
+        double sl2;
+        double sgh2;
+        double sh2;
+        double se3;
+        double si3;
+        double sl3;
+        double sgh3;
+        double sh3;
+        double sl4;
+        double sgh4;
+        double ee2;
+        double e3;
+        double xi2;
+        double xi3;
+        double xl2;
+        double xl3;
+        double xl4;
+        double xgh2;
+        double xgh3;
+        double xgh4;
+        double xh2;
+        double xh3;
+        /*
+         * used during DeepSpaceCalcDotTerms()
+         */
+        double d2201;
+        double d2211;
+        double d3210;
+        double d3222;
+        double d4410;
+        double d4422;
+        double d5220;
+        double d5232;
+        double d5421;
+        double d5433;
+        double del1;
+        double del2;
+        double del3;
+    };
+
+    struct IntegratorConstants {
+        /*
+         * integrator constants
+         */
+        double xfact;
+        double xlamo;
+
+        /*
+         * integrator values for epoch
+         */
+        double xndot_0;
+        double xnddt_0;
+        double xldot_0;
+    };
+
+    struct IntegratorParams {
+        /*
+         * integrator values
+         */
+        double xli;
+        double xni;
+        double atime;
+        /*
+         * itegrator values for current d_atime_
+         */
+        double xndot_t;
+        double xnddt_t;
+        double xldot_t;
+    };
+
 private:
-    void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
+    void Initialize();
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
@@ -121,131 +253,11 @@ private:
     bool use_simple_model_;
     bool use_deep_space_;
 
-    /*
-     * variables are constants that wont be modified outside init
-     */
-    double i_cosio_;
-    double i_sinio_;
-    double i_eta_;
-    double i_t2cof_;
-    double i_a3ovk2_;
-    double i_x1mth2_;
-    double i_x3thm1_;
-    double i_x7thm1_;
-    double i_aycof_;
-    double i_xlcof_;
-    double i_xnodcf_;
-    double i_c1_;
-    double i_c4_;
-    double i_omgdot_; // secular rate of omega (radians/sec)
-    double i_xnodot_; // secular rate of xnode (radians/sec)
-    double i_xmdot_; // secular rate of xmo (radians/sec)
-    /*
-     * sgp4 constant
-     */
-    double n_c5_;
-    double n_omgcof_;
-    double n_xmcof_;
-    double n_delmo_;
-    double n_sinmo_;
-    double n_d2_;
-    double n_d3_;
-    double n_d4_;
-    double n_t3cof_;
-    double n_t4cof_;
-    double n_t5cof_;
-    /*
-     * sdp4 constant
-     */
-    double d_gsto_;
-    double d_zmol_;
-    double d_zmos_;
-    /*
-     * whether the deep space orbit is
-     * geopotential resonance for 12 hour orbits
-     */
-    bool d_resonance_flag_;
-    /*
-     * whether the deep space orbit is
-     * 24h synchronous resonance
-     */
-    bool d_synchronous_flag_;
-    /*
-     * lunar / solar constants for epoch
-     * applied during DeepSpaceSecular()
-     */
-    double d_sse_;
-    double d_ssi_;
-    double d_ssl_;
-    double d_ssg_;
-    double d_ssh_;
-    /*
-     * lunar / solar constants
-     * used during DeepSpaceCalculateLunarSolarTerms()
-     */
-    double d_se2_;
-    double d_si2_;
-    double d_sl2_;
-    double d_sgh2_;
-    double d_sh2_;
-    double d_se3_;
-    double d_si3_;
-    double d_sl3_;
-    double d_sgh3_;
-    double d_sh3_;
-    double d_sl4_;
-    double d_sgh4_;
-    double d_ee2_;
-    double d_e3_;
-    double d_xi2_;
-    double d_xi3_;
-    double d_xl2_;
-    double d_xl3_;
-    double d_xl4_;
-    double d_xgh2_;
-    double d_xgh3_;
-    double d_xgh4_;
-    double d_xh2_;
-    double d_xh3_;
-    /*
-     * used during DeepSpaceCalcDotTerms()
-     */
-    double d_d2201_;
-    double d_d2211_;
-    double d_d3210_;
-    double d_d3222_;
-    double d_d4410_;
-    double d_d4422_;
-    double d_d5220_;
-    double d_d5232_;
-    double d_d5421_;
-    double d_d5433_;
-    double d_del1_;
-    double d_del2_;
-    double d_del3_;
-    /*
-     * integrator constants
-     */
-    double d_xfact_;
-    double d_xlamo_;
-    /*
-     * integrator values
-     */
-    mutable double d_xli_;
-    mutable double d_xni_;
-    mutable double d_atime_;
-    /*
-     * integrator values for epoch
-     */
-    double d_xndot_0_;
-    double d_xnddt_0_;
-    double d_xldot_0_;
-    /*
-     * itegrator values for current d_atime_
-     */
-    mutable double d_xndot_t_;
-    mutable double d_xnddt_t_;
-    mutable double d_xldot_t_;
+    struct CommonConstants common_consts_;
+    struct NearSpaceConstants nearspace_consts_;
+    struct DeepSpaceConstants deepspace_consts_;
+    struct IntegratorConstants integrator_consts_;
+    mutable struct IntegratorParams integrator_params_;
 
     /*
      * these variables are set at the very start
