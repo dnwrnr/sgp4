@@ -43,7 +43,8 @@
 #define THDT     (4.37526908801129966e-3)
 
 SGP4::SGP4(void) {
-    first_run_ = true;
+
+    Reset();
 }
 
 SGP4::~SGP4(void) {
@@ -54,7 +55,7 @@ void SGP4::SetTle(const Tle& tle) {
     /*
      * reset all constants etc
      */
-    ResetGlobalVariables();
+    Reset();
 
     /*
      * extract and format tle data
@@ -1241,7 +1242,7 @@ void SGP4::DeepSpaceIntegrator(const double delt, const double step2,
     d_atime_ += delt;
 }
 
-void SGP4::ResetGlobalVariables() {
+void SGP4::Reset() {
 
     /*
      * common variables

@@ -119,7 +119,7 @@ private:
     void DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) const;
     void DeepSpaceIntegrator(const double delt, const double step2,
             const double xndot, const double xnddt, const double xldot)const;
-    void ResetGlobalVariables();
+    void Reset();
 
     bool first_run_;
     bool use_simple_model_;
