@@ -68,7 +68,6 @@ void SGP4::SetTle(const Tle& tle) {
     mean_motion_ = tle.MeanMotion() * TWOPI / Globals::MIN_PER_DAY();
     bstar_ = tle.BStar();
     epoch_ = tle.Epoch();
-    orbit_number_ = tle.OrbitNumber();
 
     /*
      * error checks
@@ -1289,6 +1288,4 @@ void SGP4::Reset() {
             recovered_mean_motion_ = perigee_ = period_ = 0.0;
 
     epoch_ = Julian();
-
-    orbit_number_ = 0;
 }

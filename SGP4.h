@@ -93,11 +93,7 @@ public:
     Julian Epoch() const {
         return epoch_;
     }
-
-    unsigned int OrbitNumber() const {
-        return orbit_number_;
-    }
-
+    
 private:
     void Initialize(const double& theta2, const double& betao2, const double& betao, const double& eosq);
     void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
@@ -267,7 +263,6 @@ private:
     double perigee_;
     double period_;
     Julian epoch_;
-    unsigned int orbit_number_;
 };
 
 #endif
