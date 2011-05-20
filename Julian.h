@@ -48,15 +48,15 @@ public:
     double ToLocalMeanSiderealTime(const double& lon) const;
 
     double FromJan1_00h_1900() const {
-        return date_ - Globals::EPOCH_JAN1_00H_1900();
+        return date_ - kEPOCH_JAN1_00H_1900;
     }
 
     double FromJan1_12h_1900() const {
-        return date_ - Globals::EPOCH_JAN1_12H_1900();
+        return date_ - kEPOCH_JAN1_12H_1900;
     }
 
     double FromJan1_12h_2000() const {
-        return date_ - Globals::EPOCH_JAN1_12H_2000();
+        return date_ - kEPOCH_JAN1_12H_2000;
     }
 
     void GetComponent(int& year, int& month, double& dom) const;
@@ -70,15 +70,15 @@ public:
     }
 
     void AddHour(double hr) {
-        date_ += (hr / Globals::HR_PER_DAY());
+        date_ += (hr / kHOURS_PER_DAY);
     }
 
     void AddMin(double min) {
-        date_ += (min / Globals::MIN_PER_DAY());
+        date_ += (min / kMINUTES_PER_DAY);
     }
 
     void AddSec(double sec) {
-        date_ += (sec / Globals::SEC_PER_DAY());
+        date_ += (sec / kSECONDS_PER_DAY);
     }
 
     double SpanDay(const Julian& b) const {
@@ -86,15 +86,15 @@ public:
     }
 
     double SpanHour(const Julian& b) const {
-        return SpanDay(b) * Globals::HR_PER_DAY();
+        return SpanDay(b) * kHOURS_PER_DAY;
     }
 
     double SpanMin(const Julian& b) const {
-        return SpanDay(b) * Globals::MIN_PER_DAY();
+        return SpanDay(b) * kMINUTES_PER_DAY;
     }
 
     double SpanSec(const Julian& b) const {
-        return SpanDay(b) * Globals::SEC_PER_DAY();
+        return SpanDay(b) * kSECONDS_PER_DAY;
     }
 
     static bool IsLeapYear(int y) {

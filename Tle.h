@@ -59,14 +59,14 @@ public:
         if (in_degrees)
             return inclination_;
         else
-            return Globals::Deg2Rad(inclination_);
+            return DegreesToRadians(inclination_);
     }
 
     double RightAscendingNode(const bool in_degrees)const {
         if (in_degrees)
             return right_ascending_node_;
         else
-            return Globals::Deg2Rad(right_ascending_node_);
+            return DegreesToRadians(right_ascending_node_);
     }
 
     double Eccentricity()const {
@@ -77,14 +77,14 @@ public:
         if (in_degrees)
             return argument_perigee_;
         else
-            return Globals::Deg2Rad(argument_perigee_);
+            return DegreesToRadians(argument_perigee_);
     }
 
     double MeanAnomaly(const bool in_degrees)const {
         if (in_degrees)
             return mean_anomaly_;
         else
-            return Globals::Deg2Rad(mean_anomaly_);
+            return DegreesToRadians(mean_anomaly_);
     }
 
     double MeanMotion()const {

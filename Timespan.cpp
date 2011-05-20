@@ -25,11 +25,11 @@ double Timespan::GetTotalDays() const {
 }
 
 double Timespan::GetTotalHours() const {
-    return time_span_ * Globals::HR_PER_DAY();
+    return time_span_ * kHOURS_PER_DAY;
 }
 
 double Timespan::GetTotalMinutes() const {
-    return time_span_ * Globals::MIN_PER_DAY();
+    return time_span_ * kMINUTES_PER_DAY;
 }
 
 Timespan& Timespan::operator =(const Timespan& b) {

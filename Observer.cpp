@@ -7,8 +7,8 @@
  */
 Observer::Observer(const double latitude, const double longitude, const double altitude) {
 
-    geo_.SetLatitude(Globals::Deg2Rad(latitude));
-    geo_.SetLongitude(Globals::Deg2Rad(longitude));
+    geo_.SetLatitude(DegreesToRadians(latitude));
+    geo_.SetLongitude(DegreesToRadians(longitude));
     geo_.SetAltitude(altitude);
 
     UpdateObserversEci(Julian());
@@ -69,10 +69,10 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     double az = atan(-top_e / top_s);
 
     if (top_s > 0.0)
-        az += Globals::PI();
+        az += kPI;
 
     if (az < 0.0)
-        az += 2.0 * Globals::PI();
+        az += 2.0 * kPI;
 
     double el = asin(top_z / range.GetW());
     double rate = range.Dot(range_rate) / range.GetW();

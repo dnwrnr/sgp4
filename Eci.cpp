@@ -3,7 +3,7 @@
 Eci::Eci(const Julian &date, const CoordGeodetic &geo)
 : date_(date) {
 
-    static const double mfactor = Globals::TWOPI() * (Globals::OMEGA_E() / Globals::SEC_PER_DAY());
+    static const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
     const double latitude = geo.GetLatitude();
     const double longitude = geo.GetLongitude();
     const double altitude = geo.GetAltitude();
@@ -16,9 +16,9 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
     /*
      * take into account earth flattening
      */
-    const double c = 1.0 / sqrt(1.0 + Globals::F() * (Globals::F() - 2.0) * pow(sin(latitude), 2.0));
-    const double s = pow(1.0 - Globals::F(), 2.0) * c;
-    const double achcp = (Globals::XKMPER() * c + altitude) * cos(latitude);
+    const double c = 1.0 / sqrt(1.0 + kF * (kF - 2.0) * pow(sin(latitude), 2.0));
+    const double s = pow(1.0 - kF, 2.0) * c;
+    const double achcp = (kXKMPER * c + altitude) * cos(latitude);
 
     /*
      * X position in km
@@ -28,7 +28,7 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
      */
     position_.SetX(achcp * cos(theta));
     position_.SetY(achcp * sin(theta));
-    position_.SetZ((Globals::XKMPER() * s + altitude) * sin(latitude));
+    position_.SetZ((kXKMPER * s + altitude) * sin(latitude));
     position_.SetW(position_.GetMagnitude());
 
     /*
@@ -58,16 +58,16 @@ Eci::~Eci(void) {
 
 CoordGeodetic Eci::ToGeodetic() const {
 
-    const double theta = Globals::AcTan(position_.GetY(), position_.GetX());
+    const double theta = AcTan(position_.GetY(), position_.GetX());
     /*
      * changes lon to 0>= and <360
      * const double lon = Globals::Fmod2p(theta - date_.ToGreenwichSiderealTime());
      */
-    const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), Globals::TWOPI());
+    const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kTWOPI);
     const double r = sqrt((position_.GetX() * position_.GetX()) + (position_.GetY() * position_.GetY()));
-    static const double e2 = Globals::F() * (2.0 - Globals::F());
+    static const double e2 = kF * (2.0 - kF);
 
-    double lat = Globals::AcTan(position_.GetZ(), r);
+    double lat = AcTan(position_.GetZ(), r);
     double phi = 0.0;
     double c = 0.0;
     int cnt = 0;
@@ -76,11 +76,11 @@ CoordGeodetic Eci::ToGeodetic() const {
         phi = lat;
         const double sinphi = sin(phi);
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
-        lat = Globals::AcTan(position_.GetZ() + Globals::XKMPER() * c * e2 * sinphi, r);
+        lat = AcTan(position_.GetZ() + kXKMPER * c * e2 * sinphi, r);
         cnt++;
     } while (fabs(lat - phi) >= 1e-10 && cnt < 10);
 
-    const double alt = r / cos(lat) - Globals::XKMPER() * c;
+    const double alt = r / cos(lat) - kXKMPER * c;
 
     return CoordGeodetic(lat, lon, alt);
 }

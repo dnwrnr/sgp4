@@ -6,42 +6,6 @@
 #include <cmath>
 #include <iomanip>
 
-#define AE       (1.0)
-#define Q0       (120.0)
-#define S0       (78.0)
-#define MU       (398600.8)
-#define XKMPER   (6378.135)
-#define XJ2      (1.082616e-3)
-#define XJ3      (-2.53881e-6)
-#define XJ4      (-1.65597e-6)
-/*
- * alternative XKE
- * affects final results
- * aiaa-2006-6573
- * #define XKE      (60.0 / sqrt(XKMPER * XKMPER * XKMPER / MU))
- * dundee
- * #define XKE      (7.43669161331734132e-2)
- */
-#define XKE      (60.0 / sqrt(XKMPER * XKMPER * XKMPER / MU))
-
-#define CK2      (0.5 * XJ2 * AE * AE)
-#define CK4      (-0.375 * XJ4 * AE * AE * AE * AE)
-/*
- * alternative QOMS2T
- * affects final results
- * aiaa-2006-6573
- * #define QOMS2T   (pow(((Q0 - S0) / XKMPER), 4.0))
- * dundee
- * #define QOMS2T   (1.880279159015270643865e-9)
- */
-#define QOMS2T   (pow(((Q0 - S0) / XKMPER), 4.0))
-
-#define S        (AE * (1.0 + S0 / XKMPER))
-#define PI       (3.14159265358979323846264338327950288419716939937510582)
-#define TWOPI    (2.0 * PI)
-#define TWOTHIRD (2.0 / 3.0)
-#define THDT     (4.37526908801129966e-3)
-
 SGP4::SGP4(void) {
 
     Reset();
@@ -65,7 +29,7 @@ void SGP4::SetTle(const Tle& tle) {
     argument_perigee_ = tle.ArgumentPerigee(false);
     eccentricity_ = tle.Eccentricity();
     inclination_ = tle.Inclination(false);
-    mean_motion_ = tle.MeanMotion() * TWOPI / Globals::MIN_PER_DAY();
+    mean_motion_ = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
     bstar_ = tle.BStar();
     epoch_ = tle.Epoch();
 
@@ -76,7 +40,7 @@ void SGP4::SetTle(const Tle& tle) {
         throw new SatelliteException("Eccentricity out of range");
     }
 
-    if (inclination_ < 0.0 || eccentricity_ > PI) {
+    if (inclination_ < 0.0 || eccentricity_ > kPI) {
         throw new SatelliteException("Inclination out of range");
     }
 
@@ -94,7 +58,7 @@ void SGP4::Initialize() {
      * recover original mean motion (xnodp) and semimajor axis (aodp)
      * from input elements
      */
-    const double a1 = pow(XKE / MeanMotion(), TWOTHIRD);
+    const double a1 = pow(kXKE / MeanMotion(), kTWOTHIRD);
     common_consts_.cosio = cos(Inclination());
     common_consts_.sinio = sin(Inclination());
     const double theta2 = common_consts_.cosio * common_consts_.cosio;
@@ -102,7 +66,7 @@ void SGP4::Initialize() {
     const double eosq = Eccentricity() * Eccentricity();
     const double betao2 = 1.0 - eosq;
     const double betao = sqrt(betao2);
-    const double temp = (1.5 * CK2) * common_consts_.x3thm1 / (betao * betao2);
+    const double temp = (1.5 * kCK2) * common_consts_.x3thm1 / (betao * betao2);
     const double del1 = temp / (a1 * a1);
     const double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
     const double del0 = temp / (a0 * a0);
@@ -118,8 +82,8 @@ void SGP4::Initialize() {
     /*
      * find perigee and period
      */
-    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - AE) * XKMPER;
-    period_ = TWOPI / RecoveredMeanMotion();
+    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
+    period_ = kTWOPI / RecoveredMeanMotion();
 
 
 
@@ -149,15 +113,15 @@ void SGP4::Initialize() {
      * for perigee below 156km, the values of
      * s4 and qoms2t are altered
      */
-    double s4 = S;
-    double qoms24 = QOMS2T;
+    double s4 = kS;
+    double qoms24 = kQOMS2T;
     if (Perigee() < 156.0) {
         s4 = Perigee() - 78.0;
         if (Perigee() < 98.0) {
             s4 = 20.0;
         }
-        qoms24 = pow((120.0 - s4) * AE / XKMPER, 4.0);
-        s4 = s4 / XKMPER + AE;
+        qoms24 = pow((120.0 - s4) * kAE / kXKMPER, 4.0);
+        s4 = s4 / kXKMPER + kAE;
     }
 
     /*
@@ -173,22 +137,22 @@ void SGP4::Initialize() {
     const double coef1 = coef / pow(psisq, 3.5);
     const double c2 = coef1 * RecoveredMeanMotion() * (RecoveredSemiMajorAxis() *
             (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
-            0.75 * CK2 * tsi / psisq *
+            0.75 * kCK2 * tsi / psisq *
             common_consts_.x3thm1 * (8.0 + 3.0 * etasq *
             (8.0 + etasq)));
     common_consts_.c1 = BStar() * c2;
-    common_consts_.a3ovk2 = -XJ3 / CK2 * pow(AE, 3.0);
+    common_consts_.a3ovk2 = -kXJ3 / kCK2 * pow(kAE, 3.0);
     common_consts_.x1mth2 = 1.0 - theta2;
     common_consts_.c4 = 2.0 * RecoveredMeanMotion() * coef1 * RecoveredSemiMajorAxis() * betao2 *
             (common_consts_.eta * (2.0 + 0.5 * etasq) + Eccentricity() * (0.5 + 2.0 * etasq) -
-            2.0 * CK2 * tsi / (RecoveredSemiMajorAxis() * psisq) *
+            2.0 * kCK2 * tsi / (RecoveredSemiMajorAxis() * psisq) *
             (-3.0 * common_consts_.x3thm1 * (1.0 - 2.0 * eeta + etasq *
             (1.5 - 0.5 * eeta)) + 0.75 * common_consts_.x1mth2 * (2.0 * etasq - eeta *
             (1.0 + etasq)) * cos(2.0 * ArgumentPerigee())));
     const double theta4 = theta2 * theta2;
-    const double temp1 = 3.0 * CK2 * pinvsq * RecoveredMeanMotion();
-    const double temp2 = temp1 * CK2 * pinvsq;
-    const double temp3 = 1.25 * CK4 * pinvsq * pinvsq * RecoveredMeanMotion();
+    const double temp1 = 3.0 * kCK2 * pinvsq * RecoveredMeanMotion();
+    const double temp2 = temp1 * kCK2 * pinvsq;
+    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * RecoveredMeanMotion();
     common_consts_.xmdot = RecoveredMeanMotion() + 0.5 * temp1 * betao *
             common_consts_.x3thm1 + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
@@ -222,7 +186,7 @@ void SGP4::Initialize() {
 
         double c3 = 0.0;
         if (Eccentricity() > 1.0e-4) {
-            c3 = coef * tsi * common_consts_.a3ovk2 * RecoveredMeanMotion() * AE *
+            c3 = coef * tsi * common_consts_.a3ovk2 * RecoveredMeanMotion() * kAE *
                     common_consts_.sinio / Eccentricity();
         }
 
@@ -232,7 +196,7 @@ void SGP4::Initialize() {
 
         nearspace_consts_.xmcof = 0.0;
         if (Eccentricity() > 1.0e-4)
-            nearspace_consts_.xmcof = -TWOTHIRD * coef * BStar() * AE / eeta;
+            nearspace_consts_.xmcof = -kTWOTHIRD * coef * BStar() * kAE / eeta;
 
         nearspace_consts_.delmo = pow(1.0 + common_consts_.eta * (cos(MeanAnomoly())), 3.0);
         nearspace_consts_.sinmo = sin(MeanAnomoly());
@@ -306,7 +270,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
         throw new SatelliteException("Error: #2 (xn <= 0.0)");
     }
 
-    a = pow(XKE / xn, TWOTHIRD) * pow(tempa, 2.0);
+    a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
     e = e - tempe;
 
     /*
@@ -340,8 +304,8 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
      */
     if (xincl < 0.0) {
         xincl = -xincl;
-        xnode += PI;
-        omgadf = omgadf - PI;
+        xnode += kPI;
+        omgadf = omgadf - kPI;
     }
 
     xl = xmam + omgadf + xnode;
@@ -471,7 +435,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     double temp3;
 
     const double beta = sqrt(1.0 - e * e);
-    const double xn = XKE / pow(a, 1.5);
+    const double xn = kXKE / pow(a, 1.5);
     /*
      * long period periodics
      */
@@ -491,7 +455,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
      * - The fmod saves reduction of angle to +/-2pi in sin/cos() and prevents
      * convergence problems.
      */
-    const double capu = fmod(xlt - xnode, TWOPI);
+    const double capu = fmod(xlt - xnode, kTWOPI);
     double epw = capu;
 
     double sinepw = 0.0;
@@ -554,8 +518,8 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
 
     const double r = a * (1.0 - ecose);
     temp1 = 1.0 / r;
-    const double rdot = XKE * sqrt(a) * esine * temp1;
-    const double rfdot = XKE * sqrt(pl) * temp1;
+    const double rdot = kXKE * sqrt(a) * esine * temp1;
+    const double rfdot = kXKE * sqrt(pl) * temp1;
     temp2 = a * temp1;
     const double betal = sqrt(temp);
     temp3 = 1.0 / (1.0 + betal);
@@ -565,7 +529,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     const double sin2u = 2.0 * sinu * cosu;
     const double cos2u = 2.0 * cosu * cosu - 1.0;
     temp = 1.0 / pl;
-    temp1 = CK2 * temp;
+    temp1 = kCK2 * temp;
     temp2 = temp1 * temp;
 
     /*
@@ -602,13 +566,13 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     /*
      * position and velocity
      */
-    const double x = rk * ux * XKMPER;
-    const double y = rk * uy * XKMPER;
-    const double z = rk * uz * XKMPER;
+    const double x = rk * ux * kXKMPER;
+    const double y = rk * uy * kXKMPER;
+    const double z = rk * uz * kXKMPER;
     Vector position(x, y, z);
-    const double xdot = (rdotk * ux + rfdotk * vx) * XKMPER / 60.0;
-    const double ydot = (rdotk * uy + rfdotk * vy) * XKMPER / 60.0;
-    const double zdot = (rdotk * uz + rfdotk * vz) * XKMPER / 60.0;
+    const double xdot = (rdotk * ux + rfdotk * vx) * kXKMPER / 60.0;
+    const double ydot = (rdotk * uy + rfdotk * vy) * kXKMPER / 60.0;
+    const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
     Julian julian = Epoch();
@@ -663,7 +627,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     const double jday = Epoch().FromJan1_12h_1900();
 
     const double xnodce = 4.5236020 - 9.2422029e-4 * jday;
-    const double xnodce_temp = fmod(xnodce, TWOPI);
+    const double xnodce_temp = fmod(xnodce, kTWOPI);
     const double stem = sin(xnodce_temp);
     const double ctem = cos(xnodce_temp);
     const double zcosil = 0.91375164 - 0.03568096 * ctem;
@@ -672,15 +636,15 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
     const double c = 4.7199672 + 0.22997150 * jday;
     const double gam = 5.8351514 + 0.0019443680 * jday;
-    deepspace_consts_.zmol = Globals::Fmod2p(c - gam);
+    deepspace_consts_.zmol = Fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     zx = atan2(zx, zy);
-    zx = fmod(gam + zx - xnodce, TWOPI);
+    zx = fmod(gam + zx - xnodce, kTWOPI);
 
     const double zcosgl = cos(zx);
     const double zsingl = sin(zx);
-    deepspace_consts_.zmos = Globals::Fmod2p(6.2565837 + 0.017201977 * jday);
+    deepspace_consts_.zmos = Fmod2p(6.2565837 + 0.017201977 * jday);
 
     /*
      * do solar terms
@@ -751,7 +715,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
          * with
          * shdq = (-zn * s2 * (z21 + z23)) / sinio
          */
-        if (Inclination() < 5.2359877e-2 || Inclination() > PI - 5.2359877e-2) {
+        if (Inclination() < 5.2359877e-2 || Inclination() > kPI - 5.2359877e-2) {
             shdq = 0.0;
         } else {
             shdq = (-zn * s2 * (z21 + z23)) / sinio;
@@ -834,7 +798,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         deepspace_consts_.del1 = deepspace_consts_.del1 * f311 * g310 * Q31 * aqnv;
 
         integrator_consts_.xlamo = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - deepspace_consts_.gsto;
-        bfact = xmdot + xpidot - THDT;
+        bfact = xmdot + xpidot - kTHDT;
         bfact += deepspace_consts_.ssl + deepspace_consts_.ssg + deepspace_consts_.ssh;
 
     } else if (RecoveredMeanMotion() < 8.26e-3 || RecoveredMeanMotion() > 9.24e-3 || Eccentricity() < 0.5) {
@@ -931,7 +895,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         deepspace_consts_.d5433 = temp * f543 * g533;
 
         integrator_consts_.xlamo = MeanAnomoly() + AscendingNode() + AscendingNode() - deepspace_consts_.gsto - deepspace_consts_.gsto;
-        bfact = xmdot + xnodot + xnodot - THDT - THDT;
+        bfact = xmdot + xnodot + xnodot - kTHDT - kTHDT;
         bfact = bfact + deepspace_consts_.ssl + deepspace_consts_.ssh + deepspace_consts_.ssh;
     }
 
@@ -1060,9 +1024,9 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
             alfdp += dalf;
             betdp += dbet;
 
-            (*xnodes) = fmod((*xnodes), TWOPI);
+            (*xnodes) = fmod((*xnodes), kTWOPI);
             if ((*xnodes) < 0.0)
-                (*xnodes) += TWOPI;
+                (*xnodes) += kTWOPI;
 
             double xls = (*xll) + (*omgasm) + cosis * (*xnodes);
             double dls = pl + pgh - pinc * (*xnodes) * sinis;
@@ -1075,18 +1039,18 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
 
             (*xnodes) = atan2(alfdp, betdp);
             if ((*xnodes) < 0.0)
-                (*xnodes) += TWOPI;
+                (*xnodes) += kTWOPI;
 
             /*
              * Get perturbed xnodes in to same quadrant as original.
              * RAAN is in the range of 0 to 360 degrees
              * atan2 is in the range of -180 to 180 degrees
              */
-            if (fabs(oldxnodes - (*xnodes)) > PI) {
+            if (fabs(oldxnodes - (*xnodes)) > kPI) {
                 if ((*xnodes) < oldxnodes)
-                    (*xnodes) += TWOPI;
+                    (*xnodes) += kTWOPI;
                 else
-                    (*xnodes) = (*xnodes) - TWOPI;
+                    (*xnodes) = (*xnodes) - kTWOPI;
             }
 
             (*xll) += pl;
@@ -1172,7 +1136,7 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
      */
     (*xn) = integrator_params_.xni + integrator_params_.xndot_t * ft + integrator_params_.xnddt_t * ft * ft * 0.5;
     const double xl = integrator_params_.xli + integrator_params_.xldot_t * ft + integrator_params_.xndot_t * ft * ft * 0.5;
-    const double temp = -(*xnodes) + deepspace_consts_.gsto + t * THDT;
+    const double temp = -(*xnodes) + deepspace_consts_.gsto + t * kTHDT;
 
     if (deepspace_consts_.synchronous_flag)
         (*xll) = xl + temp - (*omgasm);
