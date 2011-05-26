@@ -45,18 +45,18 @@ void RunTle(Tle tle, double start, double end, double inc) {
             std::cout.width(17);
             std::cout << val << " ";
             std::cout.width(16);
-            std::cout << position.GetX() << " ";
+            std::cout << position.x << " ";
             std::cout.width(16);
-            std::cout << position.GetY() << " ";
+            std::cout << position.y << " ";
             std::cout.width(16);
-            std::cout << position.GetZ() << " ";
+            std::cout << position.z << " ";
             std::cout << std::setprecision(9) << std::fixed;
             std::cout.width(14);
-            std::cout << velocity.GetX() << " ";
+            std::cout << velocity.x << " ";
             std::cout.width(14);
-            std::cout << velocity.GetY() << " ";
+            std::cout << velocity.y << " ";
             std::cout.width(14);
-            std::cout << velocity.GetZ() << std::endl;
+            std::cout << velocity.z << std::endl;
 
         } catch (std::exception* ex) {
             std::cout << ex->what() << std::endl;

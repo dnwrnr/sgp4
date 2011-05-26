@@ -3,65 +3,32 @@
 
 #include <cmath>
 
-class Vector {
+struct Vector {
 public:
 
     Vector(void)
-    : x_(0.0), y_(0.0), z_(0.0), w_(0.0) {
+    : x(0.0), y(0.0), z(0.0), w(0.0) {
     }
 
-    Vector(double x, double y, double z)
-    : x_(x), y_(y), z_(z), w_(0.0) {
+    Vector(double x_in, double y_in, double z_in)
+    : x(x_in), y(y_in), z(z_in), w(0.0) {
     }
 
-    Vector(double x, double y, double z, double w)
-    : x_(x), y_(y), z_(z), w_(w) {
+    Vector(double x_in, double y_in, double z_in, double w_in)
+    : x(x_in), y(y_in), z(z_in), w(w_in) {
     }
 
     virtual ~Vector() {
     };
 
-    void SetX(const double& x) {
-        x_ = x;
-    }
-
-    void SetY(const double& y) {
-        y_ = y;
-    }
-
-    void SetZ(const double& z) {
-        z_ = z;
-    }
-
-    void SetW(const double& w) {
-        w_ = w;
-    }
-
-    double GetX() const {
-        return x_;
-    }
-
-    double GetY() const {
-        return y_;
-    }
-
-    double GetZ() const {
-        return z_;
-    }
-
-    double GetW() const {
-        return w_;
-    }
-
     double GetMagnitude() const;
     Vector Subtract(const Vector& vec) const;
     double Dot(const Vector& vec) const;
 
-protected:
-    double x_;
-    double y_;
-    double z_;
-    double w_;
+    double x;
+    double y;
+    double z;
+    double w;
 };
 
 #endif

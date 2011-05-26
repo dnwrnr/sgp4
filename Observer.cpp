@@ -46,7 +46,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     Vector range_rate = eci.GetVelocity().Subtract(observers_eci_.GetVelocity());
     Vector range = eci.GetPosition().Subtract(observers_eci_.GetPosition());
 
-    range.SetW(range.GetMagnitude());
+    range.w = range.GetMagnitude();
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
@@ -58,14 +58,14 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     double sin_theta = sin(theta);
     double cos_theta = cos(theta);
 
-    double top_s = sin_lat * cos_theta * range.GetX() +
-            sin_lat * sin_theta * range.GetY() -
-            cos_lat * range.GetZ();
-    double top_e = -sin_theta * range.GetX() +
-            cos_theta * range.GetY();
-    double top_z = cos_lat * cos_theta * range.GetX() +
-            cos_lat * sin_theta * range.GetY() +
-            sin_lat * range.GetZ();
+    double top_s = sin_lat * cos_theta * range.x +
+            sin_lat * sin_theta * range.y -
+            cos_lat * range.z;
+    double top_e = -sin_theta * range.x +
+            cos_theta * range.y;
+    double top_z = cos_lat * cos_theta * range.x +
+            cos_lat * sin_theta * range.y +
+            sin_lat * range.z;
     double az = atan(-top_e / top_s);
 
     if (top_s > 0.0)
@@ -74,8 +74,8 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     if (az < 0.0)
         az += 2.0 * kPI;
 
-    double el = asin(top_z / range.GetW());
-    double rate = range.Dot(range_rate) / range.GetW();
+    double el = asin(top_z / range.w);
+    double rate = range.Dot(range_rate) / range.w;
 
     /*
      * azimuth in radians
@@ -85,7 +85,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
      */
     CoordTopographic topo(az,
             el,
-            range.GetW(),
+            range.w,
             rate);
 
     return topo;

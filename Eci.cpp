@@ -26,10 +26,10 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
      * Z position in km
      * W magnitude in km
      */
-    position_.SetX(achcp * cos(theta));
-    position_.SetY(achcp * sin(theta));
-    position_.SetZ((kXKMPER * s + altitude) * sin(latitude));
-    position_.SetW(position_.GetMagnitude());
+    position_.x = achcp * cos(theta);
+    position_.y = achcp * sin(theta);
+    position_.z = (kXKMPER * s + altitude) * sin(latitude);
+    position_.w = position_.GetMagnitude();
 
     /*
      * X velocity in km/s
@@ -37,10 +37,10 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
      * Z velocity in km/s
      * W magnitude in km/s
      */
-    velocity_.SetX(-mfactor * position_.GetY());
-    velocity_.SetY(mfactor * position_.GetX());
-    velocity_.SetZ(0.0);
-    velocity_.SetW(velocity_.GetMagnitude());
+    velocity_.x = -mfactor * position_.y;
+    velocity_.y = mfactor * position_.x;
+    velocity_.z = 0.0;
+    velocity_.w = velocity_.GetMagnitude();
 }
 
 Eci::Eci(const Julian &date, const Vector &position)
@@ -58,16 +58,16 @@ Eci::~Eci(void) {
 
 CoordGeodetic Eci::ToGeodetic() const {
 
-    const double theta = AcTan(position_.GetY(), position_.GetX());
+    const double theta = AcTan(position_.y, position_.x);
     /*
      * changes lon to 0>= and <360
      * const double lon = Globals::Fmod2p(theta - date_.ToGreenwichSiderealTime());
      */
     const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kTWOPI);
-    const double r = sqrt((position_.GetX() * position_.GetX()) + (position_.GetY() * position_.GetY()));
+    const double r = sqrt((position_.x * position_.x) + (position_.y * position_.y));
     static const double e2 = kF * (2.0 - kF);
 
-    double lat = AcTan(position_.GetZ(), r);
+    double lat = AcTan(position_.z, r);
     double phi = 0.0;
     double c = 0.0;
     int cnt = 0;
@@ -76,7 +76,7 @@ CoordGeodetic Eci::ToGeodetic() const {
         phi = lat;
         const double sinphi = sin(phi);
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
-        lat = AcTan(position_.GetZ() + kXKMPER * c * e2 * sinphi, r);
+        lat = AcTan(position_.z + kXKMPER * c * e2 * sinphi, r);
         cnt++;
     } while (fabs(lat - phi) >= 1e-10 && cnt < 10);
 

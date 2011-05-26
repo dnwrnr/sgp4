@@ -1,7 +1,7 @@
 #include "Vector.h"
 
 double Vector::GetMagnitude() const {
-    return sqrt(x_ * x_ + y_ * y_ + z_ * z_);
+    return sqrt(x * x + y * y + z * z);
 }
 
 /*
@@ -9,15 +9,15 @@ double Vector::GetMagnitude() const {
  * and return result
  */
 Vector Vector::Subtract(const Vector& vec) const {
-    return Vector(x_ - vec.x_,
-            y_ - vec.y_,
-            z_ - vec.z_,
+    return Vector(x - vec.x,
+            y - vec.y,
+            z - vec.z,
             0.0);
 }
 
 double Vector::Dot(const Vector& vec) const {
 
-    return (x_ * vec.x_) +
-            (y_ * vec.y_) +
-            (z_ * vec.z_);
+    return (x * vec.x) +
+            (y * vec.y) +
+            (z * vec.z);
 }
