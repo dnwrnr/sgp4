@@ -7,9 +7,9 @@
  */
 Observer::Observer(const double latitude, const double longitude, const double altitude) {
 
-    geo_.SetLatitude(DegreesToRadians(latitude));
-    geo_.SetLongitude(DegreesToRadians(longitude));
-    geo_.SetAltitude(altitude);
+    geo_.latitude = DegreesToRadians(latitude);
+    geo_.longitude = DegreesToRadians(longitude);
+    geo_.altitude = altitude;
 
     UpdateObserversEci(Julian());
 }
@@ -51,10 +51,10 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    double theta = eci.GetDate().ToLocalMeanSiderealTime(geo_.GetLongitude());
+    double theta = eci.GetDate().ToLocalMeanSiderealTime(geo_.longitude);
 
-    double sin_lat = sin(geo_.GetLatitude());
-    double cos_lat = cos(geo_.GetLatitude());
+    double sin_lat = sin(geo_.latitude);
+    double cos_lat = cos(geo_.latitude);
     double sin_theta = sin(theta);
     double cos_theta = cos(theta);
 

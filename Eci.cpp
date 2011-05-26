@@ -4,9 +4,9 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
 : date_(date) {
 
     static const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
-    const double latitude = geo.GetLatitude();
-    const double longitude = geo.GetLongitude();
-    const double altitude = geo.GetAltitude();
+    const double latitude = geo.latitude;
+    const double longitude = geo.longitude;
+    const double altitude = geo.altitude;
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude

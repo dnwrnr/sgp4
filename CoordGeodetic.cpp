@@ -2,17 +2,17 @@
 
 CoordGeodetic::CoordGeodetic(const CoordGeodetic& b) {
 
-    lat_ = b.lat_;
-    lon_ = b.lon_;
-    alt_ = b.alt_;
+    latitude = b.latitude;
+    longitude = b.longitude;
+    altitude = b.altitude;
 }
 
 CoordGeodetic& CoordGeodetic::operator =(const CoordGeodetic& b) {
 
     if (this != &b) {
-        lat_ = b.lat_;
-        lon_ = b.lon_;
-        alt_ = b.alt_;
+        latitude = b.latitude;
+        longitude = b.longitude;
+        altitude = b.altitude;
     }
 
     return (*this);
@@ -20,9 +20,9 @@ CoordGeodetic& CoordGeodetic::operator =(const CoordGeodetic& b) {
 
 bool CoordGeodetic::operator ==(const CoordGeodetic& b) const {
 
-    if (lat_ == b.lat_ &&
-            lon_ == b.lon_ &&
-            alt_ == b.alt_) {
+    if (latitude == b.latitude &&
+            longitude == b.longitude &&
+            altitude == b.altitude) {
         return true;
     } else {
         return false;
@@ -31,9 +31,9 @@ bool CoordGeodetic::operator ==(const CoordGeodetic& b) const {
 
 bool CoordGeodetic::operator !=(const CoordGeodetic& b) const {
 
-    if (lat_ == b.lat_ &&
-            lon_ == b.lon_ &&
-            alt_ == b.alt_) {
+    if (latitude == b.latitude &&
+            longitude == b.longitude &&
+            altitude == b.altitude) {
         return false;
     } else {
         return true;
