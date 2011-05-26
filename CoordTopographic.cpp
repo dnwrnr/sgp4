@@ -2,19 +2,19 @@
 
 CoordTopographic::CoordTopographic(const CoordTopographic& b) {
 
-    azimuth_ = b.azimuth_;
-    elevation_ = b.elevation_;
-    range_ = b.range_;
-    range_rate_ = b.range_rate_;
+    azimuth = b.azimuth;
+    elevation = b.elevation;
+    range = b.range;
+    range_rate = b.range_rate;
 }
 
 CoordTopographic& CoordTopographic::operator =(const CoordTopographic& b) {
 
     if (this != &b) {
-        azimuth_ = b.azimuth_;
-        elevation_ = b.elevation_;
-        range_ = b.range_;
-        range_rate_ = b.range_rate_;
+        azimuth = b.azimuth;
+        elevation = b.elevation;
+        range = b.range;
+        range_rate = b.range_rate;
     }
 
     return (*this);
@@ -22,10 +22,10 @@ CoordTopographic& CoordTopographic::operator =(const CoordTopographic& b) {
 
 bool CoordTopographic::operator ==(const CoordTopographic& b) const {
 
-    if (azimuth_ == b.azimuth_ &&
-            elevation_ == b.elevation_ &&
-            range_ == b.range_ &&
-            range_rate_ == b.range_rate_) {
+    if (azimuth == b.azimuth &&
+            elevation == b.elevation &&
+            range == b.range &&
+            range_rate == b.range_rate) {
         return true;
     } else {
         return false;
@@ -34,10 +34,10 @@ bool CoordTopographic::operator ==(const CoordTopographic& b) const {
 
 bool CoordTopographic::operator !=(const CoordTopographic& b) const {
 
-    if (azimuth_ == b.azimuth_ &&
-            elevation_ == b.elevation_ &&
-            range_ == b.range_ &&
-            range_rate_ == b.range_rate_) {
+    if (azimuth == b.azimuth &&
+            elevation == b.elevation &&
+            range == b.range &&
+            range_rate == b.range_rate) {
         return false;
     } else {
         return true;
