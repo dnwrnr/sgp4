@@ -199,6 +199,8 @@ bool Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
     } else if (2 == line_number) {
         if (!ValidateLine(str, line2_pattern))
             return false;
+    } else {
+        return false;
     }
 
     /*
