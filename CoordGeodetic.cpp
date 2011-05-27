@@ -1,5 +1,7 @@
 #include "CoordGeodetic.h"
 
+#include "Globals.h"
+
 #include <sstream>
 #include <iomanip>
 
@@ -46,8 +48,8 @@ bool CoordGeodetic::operator !=(const CoordGeodetic& b) const {
 std::ostream& operator<< (std::ostream& stream, const CoordGeodetic& geo) {
     std::stringstream out;
     out << std::right << std::fixed << std::setprecision(2);
-    out << "Lat: " << std::setw(7) << geo.latitude;
-    out << ", Lon: " << std::setw(7) << geo.longitude;
+    out << "Lat: " << std::setw(7) << RadiansToDegrees(geo.latitude);
+    out << ", Lon: " << std::setw(7) << RadiansToDegrees(geo.longitude);
     out << ", Alt: " << std::setw(9) << geo.altitude;
     stream << out.str();
     return stream;
