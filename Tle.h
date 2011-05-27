@@ -100,8 +100,6 @@ public:
      */
     static bool IsValidPair(const std::string& line1, const std::string& line2);
     static bool IsValidLine(const std::string& str, unsigned char line_number);
-    static void TrimLeft(std::string& str);
-    static void TrimRight(std::string& str);
 
 private:
     /*

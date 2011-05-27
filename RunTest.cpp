@@ -128,8 +128,8 @@ void RunTest(const char* infile) {
         /*
          * trim spaces
          */
-        Tle::TrimLeft(line);
-        Tle::TrimRight(line);
+        TrimLeft(line);
+        TrimRight(line);
 
         /*
          * skip blank lines or lines starting with #

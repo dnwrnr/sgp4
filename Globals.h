@@ -2,6 +2,7 @@
 #define GLOBALS_H_
 
 #include <cmath>
+#include <string>
 
 const double kAE = 1.0;
 const double kQ0 = 120.0;
@@ -97,6 +98,9 @@ inline double AcTan(const double sinx, const double cosx) {
     }
 }
 
+void TrimLeft(std::string& str);
+void TrimRight(std::string& str);
+void Trim(std::string& str);
 
 #endif
 
