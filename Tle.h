@@ -31,7 +31,7 @@ public:
     /*
      * get tle values
      */
-    double NoradNumber() const {
+    unsigned int NoradNumber() const {
         return norad_number_;
     }
 
@@ -132,7 +132,7 @@ private:
     /*
      * extracted values all in native units
      */
-    double norad_number_;
+    unsigned int norad_number_;
     std::string international_designator_;
     Julian epoch_;
     double mean_motion_dot_;
