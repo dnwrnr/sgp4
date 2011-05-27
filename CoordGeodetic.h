@@ -1,6 +1,8 @@
 #ifndef COORDGEODETIC_H_
 #define COORDGEODETIC_H_
 
+#include <iostream>
+
 struct CoordGeodetic {
 public:
 
@@ -23,6 +25,8 @@ public:
     CoordGeodetic & operator =(const CoordGeodetic& b);
     bool operator ==(const CoordGeodetic& b) const;
     bool operator !=(const CoordGeodetic& b) const;
+    
+    friend std::ostream& operator<< (std::ostream& stream, const CoordGeodetic& geo);
     
     /*
      * radians (north positive, south negative)

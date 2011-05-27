@@ -1,6 +1,8 @@
 #ifndef COORDTOPOGRAPHIC_H_
 #define COORDTOPOGRAPHIC_H_
 
+#include <iostream>
+
 struct CoordTopographic {
 public:
 
@@ -20,6 +22,8 @@ public:
     CoordTopographic & operator =(const CoordTopographic& b);
     bool operator ==(const CoordTopographic& b) const;
     bool operator !=(const CoordTopographic& b) const;
+    
+    friend std::ostream& operator<< (std::ostream& stream, const CoordTopographic& topo);
 
     /*
      * radians

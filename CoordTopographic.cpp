@@ -1,5 +1,8 @@
 #include "CoordTopographic.h"
 
+#include <sstream>
+#include <iomanip>
+
 CoordTopographic::CoordTopographic(const CoordTopographic& b) {
 
     azimuth = b.azimuth;
@@ -44,6 +47,15 @@ bool CoordTopographic::operator !=(const CoordTopographic& b) const {
     }
 }
 
-
+std::ostream& operator<< (std::ostream& stream, const CoordTopographic& topo) {
+    std::stringstream out;
+    out << std::right << std::fixed << std::setprecision(2);
+    out << "Az: " << std::setw(7) << topo.azimuth;
+    out << ", El: " << std::setw(7) << topo.elevation;
+    out << ", Range: " << std::setw(9) << topo.range;
+    out << ", RangeRate: " << std::setw(6) << topo.range_rate;
+    stream << out.str();
+    return stream;
+}
 
 
