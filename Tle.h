@@ -98,6 +98,9 @@ public:
     /*
      * helper / validation methods
      */
+    static unsigned int GetLineLength() {
+        return TLE_LEN_LINE_DATA;
+    }
     static bool IsValidPair(const std::string& line1, const std::string& line2);
     static bool IsValidLine(const std::string& str, unsigned char line_number);
 
