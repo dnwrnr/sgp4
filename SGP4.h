@@ -7,6 +7,7 @@
 class SGP4 {
 public:
     SGP4(void);
+    SGP4(const Tle& tle);
     virtual ~SGP4(void);
 
     void SetTle(const Tle& tle);

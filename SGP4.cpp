@@ -12,6 +12,11 @@ SGP4::SGP4(void) {
     Reset();
 }
 
+SGP4::SGP4(const Tle& tle) {
+
+    SetTle(tle);
+}
+
 SGP4::~SGP4(void) {
 }
 
