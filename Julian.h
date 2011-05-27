@@ -5,6 +5,7 @@
 #include "Timespan.h"
 
 #include <ctime>
+#include <iostream>
 
 class Julian {
 public:
@@ -13,6 +14,9 @@ public:
     Julian(const time_t t);
     Julian(int year, double day);
     Julian(int year, int mon, int day, int hour, int min, double sec);
+
+    ~Julian() {
+    };
 
     /*
      * comparison operators
@@ -29,8 +33,7 @@ public:
     Julian operator+(const Timespan& b) const;
     Julian operator-(const Timespan& b) const;
 
-    ~Julian() {
-    };
+    friend std::ostream & operator<<(std::ostream& stream, const Julian& julian);
 
     struct DateTimeComponents {
         int years;

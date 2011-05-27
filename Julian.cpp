@@ -5,6 +5,8 @@
 #include <ctime>
 #include <cassert>
 #include <cstring>
+#include <sstream>
+#include <iomanip>
 
 #ifdef WIN32
 #include <windows.h>
@@ -137,6 +139,21 @@ Julian Julian::operator-(const Timespan& b) const {
     Julian result(*this);
     result.date_ -= b.GetTotalDays();
     return result;
+}
+
+std::ostream& operator<< (std::ostream& stream, const Julian& julian) {
+    std::stringstream out;
+    struct Julian::DateTimeComponents datetime;
+    julian.GetDateTime(&datetime);
+    out << std::right << std::fixed << std::setprecision(3) << std::setfill('0');
+    out << std::setw(4) << datetime.years << "-";
+    out << std::setw(2) << datetime.months << "-";
+    out << std::setw(2) << datetime.days << " ";
+    out << std::setw(2) << datetime.hours << ":";
+    out << std::setw(2) << datetime.minutes << ":";
+    out << std::setw(6) << datetime.seconds;
+    stream << out.str();
+    return stream;
 }
 
 /*

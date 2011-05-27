@@ -17,6 +17,7 @@ int main() {
     sgp4.FindPosition(&eci, now);
     CoordTopographic topo = obs.GetLookAngle(eci);
     CoordGeodetic geo = eci.ToGeodetic();
+    std::cout << now << " ";
     std::cout << topo << " ";
     std::cout << geo << std::endl;
   };
