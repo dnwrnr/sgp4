@@ -3,6 +3,7 @@ Release\*
 Debug\*
 *.o
 RunTest
+SatTrack
 *.txt
 *.orig
 *.a
