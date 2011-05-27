@@ -39,4 +39,4 @@ ${SATTRACK}: ${SGP4LIB} ${SATTRACKOBJECTS}
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o ${SGP4LIB} ${TESTPROG}
+	rm -rf *.o ${SGP4LIB} ${TESTPROG} ${SATTRACK}
