@@ -15,6 +15,7 @@
 #endif
 
 Julian::Julian() {
+    
 #ifdef WIN32
     SYSTEMTIME st;
     GetSystemTime(&st);
@@ -39,6 +40,7 @@ Julian::Julian() {
 }
 
 Julian::Julian(const Julian& jul) {
+
     date_ = jul.date_;
 }
 
@@ -46,6 +48,7 @@ Julian::Julian(const Julian& jul) {
  * create julian date given time_t value
  */
 Julian::Julian(const time_t t) {
+
     struct tm ptm;
 #if WIN32
     assert(gmtime_s(&ptm, &t));
@@ -66,6 +69,7 @@ Julian::Julian(const time_t t) {
  * create julian date from year and day of year
  */
 Julian::Julian(int year, double day) {
+
     Initialize(year, day);
 }
 
@@ -79,6 +83,7 @@ Julian::Julian(int year, double day) {
  * sec: 0-59.99
  */
 Julian::Julian(int year, int mon, int day, int hour, int min, double sec) {
+
     Initialize(year, mon, day, hour, min, sec);
 }
 
@@ -86,26 +91,32 @@ Julian::Julian(int year, int mon, int day, int hour, int min, double sec) {
  * comparison
  */
 bool Julian::operator==(const Julian &date) const {
+
     return date_ == date.date_ ? true : false;
 }
 
 bool Julian::operator!=(const Julian &date) const {
+
     return date_ == date.date_ ? false : true;
 }
 
 bool Julian::operator>(const Julian &date) const {
+
     return date_ > date.date_ ? true : false;
 }
 
 bool Julian::operator<(const Julian &date) const {
+
     return date_ < date.date_ ? true : false;
 }
 
 bool Julian::operator>=(const Julian &date) const {
+
     return date_ >= date.date_ ? true : false;
 }
 
 bool Julian::operator<=(const Julian &date) const {
+
     return date_ <= date.date_ ? true : false;
 }
 
@@ -130,28 +141,31 @@ Julian& Julian::operator=(const double b) {
  * arithmetic
  */
 Julian Julian::operator+(const Timespan& b) const {
+
     Julian result(*this);
     result.date_ += b.GetTotalDays();
     return result;
 }
 
 Julian Julian::operator-(const Timespan& b) const {
+
     Julian result(*this);
     result.date_ -= b.GetTotalDays();
     return result;
 }
 
-std::ostream& operator<< (std::ostream& stream, const Julian& julian) {
+std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
+    
     std::stringstream out;
     struct Julian::DateTimeComponents datetime;
-    julian.GetDateTime(&datetime);
-    out << std::right << std::fixed << std::setprecision(3) << std::setfill('0');
+    julian.ToGregorian(&datetime);
+    out << std::right << std::fixed << std::setprecision(7) << std::setfill('0');
     out << std::setw(4) << datetime.years << "-";
     out << std::setw(2) << datetime.months << "-";
     out << std::setw(2) << datetime.days << " ";
     out << std::setw(2) << datetime.hours << ":";
     out << std::setw(2) << datetime.minutes << ":";
-    out << std::setw(6) << datetime.seconds;
+    out << std::setw(10) << datetime.seconds;
     stream << out.str();
     return stream;
 }
@@ -161,16 +175,13 @@ std::ostream& operator<< (std::ostream& stream, const Julian& julian) {
  */
 void Julian::Initialize(int year, double day) {
 
-    // Now calculate Julian date
     year--;
 
-    // Centuries are not leap years unless they divide by 400
     int A = (year / 100);
     int B = 2 - A + (A / 4);
 
-    // 1720994.5 = Oct 30, year -1
-    double new_years = (int) (365.25 * year) +
-            (int) (30.6001 * 14) +
+    double new_years = static_cast<int> (365.25 * year) +
+            static_cast<int> (30.6001 * 14) +
             1720994.5 + B;
 
     date_ = new_years + day;
@@ -186,6 +197,7 @@ void Julian::Initialize(int year, double day) {
  * sec: 0-59.99
  */
 void Julian::Initialize(int year, int mon, int day, int hour, int min, double sec) {
+
     // Calculate N, the day of the year (1..366)
     int N;
     int F1 = (int) ((275.0 * mon) / 9.0);
@@ -205,81 +217,19 @@ void Julian::Initialize(int year, int mon, int day, int hour, int min, double se
 }
 
 /*
- * gets year, month and day of month from julian date
- */
-void Julian::GetComponent(int& year, int& month, double& dom) const {
-
-    double jdAdj = GetDate() + 0.5;
-    int Z = (int) jdAdj; // integer part
-    double F = jdAdj - Z; // fractional part
-    double alpha = (int) ((Z - 1867216.25) / 36524.25);
-    double A = Z + 1 + alpha - (int) (alpha / 4.0);
-    double B = A + 1524.0;
-    int C = (int) ((B - 122.1) / 365.25);
-    int D = (int) (C * 365.25);
-    int E = (int) ((B - D) / 30.6001);
-
-    dom = B - D - (int) (E * 30.6001) + F;
-    month = (E < 13.5) ? (E - 1) : (E - 13);
-    year = (month > 2.5) ? (C - 4716) : (C - 4715);
-}
-
-/*
  * converts time to time_t
  * note: resolution to seconds only
  */
 time_t Julian::ToTime() const {
 
-    int nYear;
-    int nMonth;
-    double dblDay;
-
-    GetComponent(nYear, nMonth, dblDay);
-
-    // dblDay is the fractional Julian Day (i.e., 29.5577).
-    // Save the whole number day in nDOM and convert dblDay to
-    // the fractional portion of day.
-    int nDOM = (int) dblDay;
-
-    dblDay = dblDay - nDOM;
-
-    const int SEC_PER_MIN = 60;
-    const int SEC_PER_HR = 60 * SEC_PER_MIN;
-    const int SEC_PER_DAY = 24 * SEC_PER_HR;
-
-    int secs = (int) ((dblDay * SEC_PER_DAY) + 0.5);
-
-    // Create a "struct tm" type.
-    // NOTE:
-    // The "struct tm" type has a 1-second resolution. Any fractional
-    // component of the "seconds" time value is discarded.
-    struct tm tGMT;
-    memset(&tGMT, 0, sizeof (tGMT));
-
-    tGMT.tm_year = nYear - 1900; // 2001 is 101
-    tGMT.tm_mon = nMonth - 1; // January is 0
-    tGMT.tm_mday = nDOM; // First day is 1
-    tGMT.tm_hour = secs / SEC_PER_HR;
-    tGMT.tm_min = (secs % SEC_PER_HR) / SEC_PER_MIN;
-    tGMT.tm_sec = (secs % SEC_PER_HR) % SEC_PER_MIN;
-    tGMT.tm_isdst = 0; // No conversion desired
-
-    time_t tEpoch = mktime(&tGMT);
-
-    if (tEpoch != -1) {
-        // Valid time_t value returned from mktime().
-        // mktime() expects a local time which means that tEpoch now needs
-        // to be adjusted by the difference between this time zone and GMT.
-        //		tEpoch = tEpoch - _timezone;
-    }
-
-    return tEpoch;
+    return static_cast<time_t> ((date_ - 2440587.5) * 86400.0);
 }
 
 /*
  * Greenwich Mean Sidereal Time
  */
 double Julian::ToGreenwichSiderealTime() const {
+    
 #if 0
     double theta;
     double tut1;
@@ -328,10 +278,11 @@ double Julian::ToGreenwichSiderealTime() const {
  * Local Mean Sideral Time
  */
 double Julian::ToLocalMeanSiderealTime(const double& lon) const {
+
     return fmod(ToGreenwichSiderealTime() + lon, kTWOPI);
 }
 
-void Julian::GetDateTime(struct DateTimeComponents* datetime) const {
+void Julian::ToGregorian(struct DateTimeComponents* datetime) const {
 
     double jdAdj = GetDate() + 0.5;
     int Z = (int) jdAdj;

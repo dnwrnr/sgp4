@@ -44,7 +44,7 @@ public:
         double seconds;
     };
 
-    void GetDateTime(struct DateTimeComponents* datetime) const;
+    void ToGregorian(struct DateTimeComponents* datetime) const;
 
     time_t ToTime() const;
     double ToGreenwichSiderealTime() const;
@@ -61,8 +61,6 @@ public:
     double FromJan1_12h_2000() const {
         return date_ - kEPOCH_JAN1_12H_2000;
     }
-
-    void GetComponent(int& year, int& month, double& dom) const;
 
     double GetDate() const {
         return date_;
