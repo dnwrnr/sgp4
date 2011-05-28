@@ -52,14 +52,6 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
         loop_count++;
     };
 
-    /*
-     * convert time to whole seconds
-     */
-    if(finding_aos)
-        middle_time = floor(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
-    else
-        middle_time = ceil(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
-
     return middle_time;
 }
 
@@ -146,6 +138,14 @@ int main() {
      * generate 10 day schedule
      */
     AOSLOS(geo, sgp4, start_date, end_date);
+
+    /*
+     * convert time to whole seconds
+     */
+    //if(finding_aos)
+    //    middle_time = floor(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
+    //else
+    //    middle_time = ceil(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
 
     return 0;
 #if 0
