@@ -1,6 +1,7 @@
 #include "Observer.h"
 #include "SGP4.h"
 
+#include <cmath>
 #include <iostream>
 
 Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& initial_time1, const Julian& initial_time2, bool finding_aos) {
@@ -18,6 +19,9 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
 
     while (searching && loop_count < 25) {
 
+        /*
+         * find position
+         */
         sgp4.FindPosition(&eci, middle_time);
         CoordTopographic topo = obs.GetLookAngle(eci);
 
@@ -47,6 +51,14 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
         middle_time = time1 + (time2.GetDate() - time1.GetDate()) / 2.0;
         loop_count++;
     };
+
+    /*
+     * convert time to whole seconds
+     */
+    if(finding_aos)
+        middle_time = floor(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
+    else
+        middle_time = ceil(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
 
     return middle_time;
 }
@@ -92,8 +104,8 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
             }
         } else {
             /*
-             * if satellite now below horizon and have found previous AOS
-             * find LOS
+             * if satellite now below horizon and have previously
+             * found AOS, find LOS
              */
             if (found_aos) {
 
@@ -108,6 +120,9 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
         previous_time = current_time;
     }
 
+    /*
+     * is satellite still above horizon at end of search period
+     */
     if (found_aos && !found_los) {
 
         los_time = end_time;

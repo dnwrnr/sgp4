@@ -34,13 +34,13 @@ ${SGP4LIB}: ${OBJECTS}
 	${AR} -rcs -o $@ ${OBJECTS}
 
 ${TESTPROG}: ${SGP4LIB} ${TESTPROGOBJECTS}
-	$(CC) ${TESTPROGOBJECTS} $(LDFLAGS) -static -L. -lsgp4 -o $@
+	$(CC) ${TESTPROGOBJECTS} $(LDFLAGS) -L. -lsgp4 -o $@
 
 ${SATTRACK}: ${SGP4LIB} ${SATTRACKOBJECTS}
-	${CC} ${SATTRACKOBJECTS} ${LDFLAGS} -static -L. -lsgp4 -o $@
+	${CC} ${SATTRACKOBJECTS} ${LDFLAGS} -L. -lsgp4 -o $@
 
 ${PASSPREDICT}: ${SGP4LIB} ${PASSPREDICTOBJECTS}
-	${CC} ${PASSPREDICTOBJECTS} ${LDFLAGS} -static -L. -lsgp4 -o $@
+	${CC} ${PASSPREDICTOBJECTS} ${LDFLAGS} -L. -lsgp4 -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
