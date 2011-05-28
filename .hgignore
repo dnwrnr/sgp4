@@ -4,6 +4,7 @@ Debug\*
 *.o
 RunTest
 SatTrack
+PassPredict
 *.txt
 *.orig
 *.a
