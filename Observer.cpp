@@ -11,13 +11,13 @@ Observer::Observer(const double latitude, const double longitude, const double a
     geo_.longitude = DegreesToRadians(longitude);
     geo_.altitude = altitude;
 
-    UpdateObserversEci(Julian());
+    observers_eci_ = Eci(Julian(), geo_);
 }
 
 Observer::Observer(const CoordGeodetic &geo)
 : geo_(geo) {
 
-    UpdateObserversEci(Julian());
+    observers_eci_ = Eci(Julian(), geo_);
 }
 
 Observer::~Observer(void) {
@@ -25,6 +25,9 @@ Observer::~Observer(void) {
 
 void Observer::UpdateObserversEci(const Julian &date) {
 
+    /*
+     * if date has changed, update for new date
+     */
     if (observers_eci_.GetDate() != date) {
         observers_eci_ = Eci(date, geo_);
     }
@@ -37,6 +40,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci) {
 
     /*
      * update the observers Eci to match the time of the Eci passed in
+     * if necessary
      */
     UpdateObserversEci(eci.GetDate());
 
