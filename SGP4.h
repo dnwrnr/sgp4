@@ -3,6 +3,7 @@
 
 #include "Tle.h"
 #include "Eci.h"
+#include "SatelliteException.h"
 
 class SGP4 {
 public:

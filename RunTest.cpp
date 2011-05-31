@@ -58,8 +58,8 @@ void RunTle(Tle tle, double start, double end, double inc) {
             std::cout.width(14);
             std::cout << velocity.z << std::endl;
 
-        } catch (std::exception* ex) {
-            std::cout << ex->what() << std::endl;
+        } catch (SatelliteException& e) {
+            std::cout << e.what() << std::endl;
             running = false;
         }
         if ((first_run && current == 0.0) || !first_run) {
@@ -144,15 +144,15 @@ void RunTest(const char* infile) {
          */
         if (!got_first_line) {
 
-            if (Tle::IsValidLine(line, 1)) {
+            try {
+                Tle::IsValidLine(line, 1);
                 /*
                  * store line and now read in second line
                  */
                 got_first_line = true;
                 line1 = line;
-
-            } else {
-                std::cerr << "Error: Badly formatted first line:" << std::endl;
+            } catch (TleException& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
             }
         } else {
@@ -182,12 +182,13 @@ void RunTest(const char* infile) {
             /*
              * following line must be the second line
              */
-            if (Tle::IsValidLine(line2, 2)) {
+            try {
+                Tle::IsValidLine(line2, 2);
                 Tle tle("Test", line1, line2);
                 RunTle(tle, start, end, inc);
-            } else {
-                std::cerr << "Error: Badly formatted second line:" << std::endl;
-                std::cerr << line2 << std::endl;
+            } catch (TleException& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                std::cerr << line << std::endl;
             }
         }
     }

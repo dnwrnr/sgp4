@@ -5,7 +5,6 @@
 
 Tle::Tle(const std::string& line_one, const std::string& line_two) {
 
-    name_.erase();
     line_one_ = line_one;
     line_two_ = line_two;
 
@@ -57,7 +56,9 @@ std::string Tle::ExpToDecimal(const std::string& str) {
     static const int START_EXP = 6;
     static const int LENGTH_EXP = 2;
 
-    assert(8 == str.length());
+    if ((LENGTH_SIGN + LENGTH_MANTISSA + LENGTH_EXP) != str.length()) {
+        throw TleException("Invalid string length for exponential conversion.");
+    }
 
     std::string value = str.substr(START_SIGN, LENGTH_SIGN);
     value += ".";
@@ -88,16 +89,16 @@ void Tle::Initialize() {
     /*
      * check the two lines are valid
      */
-    assert(IsValidPair(line_one_, line_two_));
+    IsValidPair(line_one_, line_two_);
 
     /*
      * line 1
      */
 
-    temp = line_one_.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM).c_str();
+    temp = ExtractNoradNumber(line_one_, 1);
     norad_number_ = atoi(temp.c_str());
     /*
-     * if blank use norad number
+     * if blank use norad number for name
      */
     if (name_.empty())
         name_ = temp;
@@ -113,7 +114,6 @@ void Tle::Initialize() {
         year += 2000;
     else
         year += 1900;
-
     epoch_ = Julian(year, day);
 
     if (line_one_[TLE1_COL_MEANMOTIONDT] == '-') {
@@ -164,43 +164,49 @@ void Tle::Initialize() {
 
 /*
  * check the two lines have matching norad numbers
- * and that the lines themselves are valid
+ * and that the lines themselves are equal
  */
-bool Tle::IsValidPair(const std::string& line1, const std::string& line2) {
+void Tle::IsValidPair(const std::string& line1, const std::string& line2) {
 
-    if (!IsValidLine(line1, 1))
-        return false;
+    /*
+     * validate each line
+     */
+    IsValidLine(line1, 1);
+    IsValidLine(line2, 2);
 
-    if (!IsValidLine(line2, 2))
-        return false;
+    /*
+     * extract norad numbers
+     */
+    std::string norad_1 = ExtractNoradNumber(line1, 1);
+    std::string norad_2 = ExtractNoradNumber(line2, 2);
 
-    if (atoi(line1.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM).c_str()) !=
-            atoi(line2.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM).c_str()))
-        return false;
-
-
-    return true;
+    /*
+     * make sure they match
+     */
+    if (norad_1.compare(norad_2) != 0)
+        throw TleException("Norad numbers do not match.");
 }
 
 /*
  * validate a line
  */
-bool Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
+void Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
 
-    static const std::string line1_pattern = "1 NNNNNC XXXXXXXX NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN";
+    /*
+     * validation patterns
+     */
+    static const std::string line1_pattern = "1 NNNNNC NNNNNXXX NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN";
     static const std::string line2_pattern = "2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN";
 
     /*
      * validate line against the pattern
      */
     if (1 == line_number) {
-        if (!ValidateLine(str, line1_pattern))
-            return false;
+        ValidateLine(str, line1_pattern);
     } else if (2 == line_number) {
-        if (!ValidateLine(str, line2_pattern))
-            return false;
+        ValidateLine(str, line2_pattern);
     } else {
-        return false;
+        throw TleException("Invalid line number to check.");
     }
 
     /*
@@ -211,20 +217,23 @@ bool Tle::IsValidLine(const std::string& str, const unsigned char line_number) {
      * if (chk != (str[TLE_LEN_LINE_DATA - 1] - '0'))
      *   return false;
      */
+}
 
-    return true;
+bool Tle::IsValidLineLength(const std::string& str) {
+
+    return str.length() == GetLineLength() ? true : false;
 }
 
 /*
  * validate line given a pattern
  */
-bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
+void Tle::ValidateLine(const std::string& line, const std::string& pattern) {
 
     /*
-     * check length of lines match
+     * check length of line
      */
-    if (line.length() < pattern.length()) {
-        return false;
+    if (!IsValidLineLength(line)) {
+        throw TleException("Invalid line length.");
     }
 
     std::string::const_iterator pattern_itr = pattern.begin();
@@ -236,47 +245,67 @@ bool Tle::ValidateLine(const std::string& line, const std::string& pattern) {
                 *pattern_itr == '.') {
 
             /*
-             * these characters should match exactly
+             * should match exactly
              */
-            if (*pattern_itr != *line_itr)
-                return false;
+            if (*pattern_itr != *line_itr) {
+                throw TleException("Invalid character.");
+            }
 
         } else if (*pattern_itr == 'N') {
 
             /*
-             * if pattern value is 'N' then either a number or a ' '
+             * 'N' = number or ' '
              */
-            if (!isdigit(*line_itr) && *line_itr != ' ')
-                return false;
+            if (!isdigit(*line_itr) && *line_itr != ' ') {
+                throw TleException("Invalid character.");
+            }
 
         } else if (*pattern_itr == '+') {
 
             /*
-             * if pattern value is '+' then either a '+' or '-' or ' ' or '0'
+             * '+' = '+' or '-' or ' ' or '0'
              */
-            if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ' && *line_itr != '0')
-                return false;
+            if (*line_itr != '+' && *line_itr != '-' && *line_itr != ' ' && *line_itr != '0') {
+                throw TleException("Invalid character.");
+            }
 
         } else if (*pattern_itr == '-') {
 
             /*
-             * if pattern value is '+' or '-'
+             * '-' = '+' or '-'
              */
-            if (*line_itr != '+' && *line_itr != '-')
-                return false;
+            if (*line_itr != '+' && *line_itr != '-') {
+                throw TleException("Invalid character.");
+            }
+
+        } else if (*pattern_itr == 'C') {
+
+            /*
+             * 'C' = 'U' or 'S'
+             */
+            if (*line_itr != 'U' && *line_itr != 'S') {
+                throw TleException("Invalid character.");
+            }
+
+        } else if (*pattern_itr == 'X') {
+
+            /*
+             * 'X' = A-Z or ' '
+             */
+            if (!(*line_itr >= 'A' || *line_itr <= 'Z') && *line_itr != ' ') {
+                throw TleException("Invalid character.");
+            }
         }
 
         pattern_itr++;
         line_itr++;
     }
-
-    return true;
 }
 
 /*
  * compute checksum
  */
-int Tle::CheckSum(const std::string& str) {
+int Tle::CheckSum(const std::string & str) {
 
     size_t len = str.size() - 1;
     int xsum = 0;
@@ -293,4 +322,29 @@ int Tle::CheckSum(const std::string& str) {
     }
 
     return (xsum % 10);
+}
+
+std::string Tle::ExtractNoradNumber(const std::string& str, const unsigned char line_number) {
+
+    std::string norad_number;
+
+    /*
+     * check length
+     */
+    if (!IsValidLineLength(str)) {
+        throw TleException("Invalid line length.");
+    }
+
+    /*
+     * extract string
+     */
+    if (1 == line_number) {
+        norad_number = str.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+    } else if (2 == line_number) {
+        norad_number = str.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM);
+    } else {
+        throw TleException("Invalid line number to check.");
+    }
+
+    return norad_number;
 }

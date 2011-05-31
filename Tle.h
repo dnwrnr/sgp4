@@ -3,6 +3,7 @@
 
 #include "Globals.h"
 #include "Julian.h"
+#include "TleException.h"
 
 #include <iostream>
 
@@ -101,8 +102,8 @@ public:
     static unsigned int GetLineLength() {
         return TLE_LEN_LINE_DATA;
     }
-    static bool IsValidPair(const std::string& line1, const std::string& line2);
-    static bool IsValidLine(const std::string& str, unsigned char line_number);
+    static void IsValidPair(const std::string& line1, const std::string& line2);
+    static void IsValidLine(const std::string& str, unsigned char line_number);
 
 private:
     /*
@@ -116,11 +117,15 @@ private:
     /*
      * validate a line against a pattern
      */
-    static bool ValidateLine(const std::string& line, const std::string& pattern);
+    static void ValidateLine(const std::string& line, const std::string& pattern);
     /*
      * compute checksum
      */
     static int CheckSum(const std::string& str);
+
+    static std::string ExtractNoradNumber(const std::string& str, const unsigned char line_number);
+
+    static bool IsValidLineLength(const std::string& str);
 
 private:
     /*

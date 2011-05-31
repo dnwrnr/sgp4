@@ -159,13 +159,13 @@ std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
     std::stringstream out;
     struct Julian::DateTimeComponents datetime;
     julian.ToGregorian(&datetime);
-    out << std::right << std::fixed << std::setprecision(7) << std::setfill('0');
+    out << std::right << std::fixed << std::setprecision(3) << std::setfill('0');
     out << std::setw(4) << datetime.years << "-";
     out << std::setw(2) << datetime.months << "-";
     out << std::setw(2) << datetime.days << " ";
     out << std::setw(2) << datetime.hours << ":";
     out << std::setw(2) << datetime.minutes << ":";
-    out << std::setw(10) << datetime.seconds;
+    out << std::setw(6) << datetime.seconds << " UTC";
     stream << out.str();
     return stream;
 }

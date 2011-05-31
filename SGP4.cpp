@@ -43,11 +43,11 @@ void SGP4::SetTle(const Tle& tle) {
      * error checks
      */
     if (eccentricity_ < 0.0 || eccentricity_ > 1.0 - 1.0e-3) {
-        throw new SatelliteException("Eccentricity out of range");
+        throw SatelliteException("Eccentricity out of range");
     }
 
     if (inclination_ < 0.0 || eccentricity_ > kPI) {
-        throw new SatelliteException("Inclination out of range");
+        throw SatelliteException("Inclination out of range");
     }
 
     Initialize();
@@ -273,7 +273,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     DeepSpaceSecular(tsince, &xmdf, &omgadf, &xnode, &e, &xincl, &xn);
 
     if (xn <= 0.0) {
-        throw new SatelliteException("Error: #2 (xn <= 0.0)");
+        throw SatelliteException("Error: #2 (xn <= 0.0)");
     }
 
     a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
@@ -283,7 +283,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
      * fix tolerance for error recognition
      */
     if (e >= 1.0 || e < -0.001) {
-        throw new SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
+        throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
     }
     /*
      * fix tolerance to avoid a divide by zero
@@ -318,7 +318,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     omega = omgadf;
 
     if (e < 0.0 || e > 1.0) {
-        throw new SatelliteException("Error: #3 (e < 0.0 || e > 1.0)");
+        throw SatelliteException("Error: #3 (e < 0.0 || e > 1.0)");
     }
 
     /*
@@ -402,14 +402,14 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
     xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
 
     if (xl <= 0.0) {
-        throw new SatelliteException("Error: #2 (xl <= 0.0)");
+        throw SatelliteException("Error: #2 (xl <= 0.0)");
     }
 
     /*
      * fix tolerance for error recognition
      */
     if (e >= 1.0 || e < -0.001) {
-        throw new SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
+        throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
     }
     /*
      * fix tolerance to avoid a divide by zero
@@ -519,7 +519,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     const double pl = a * temp;
 
     if (pl < 0.0) {
-        throw new SatelliteException("Error: #4 (pl < 0.0)");
+        throw SatelliteException("Error: #4 (pl < 0.0)");
     }
 
     const double r = a * (1.0 - ecose);
@@ -549,7 +549,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     const double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
     if (rk < 1.0) {
-        throw new SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
+        throw SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
     }
 
     /*
