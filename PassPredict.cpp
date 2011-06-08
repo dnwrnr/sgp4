@@ -4,6 +4,82 @@
 #include <cmath>
 #include <iostream>
 
+double FindMaxElevation(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& aos, const Julian& los) {
+
+    Observer obs(user_geo);
+    Eci eci;
+
+    double max_elevation = -99.9;
+    /*
+     * time step in seconds
+     */
+    double time_step = 180.0;
+    /*
+     * still searching for max elevation
+     */
+    bool searching = true;
+    /*
+     * fine tune the max elevation value
+     */
+    bool fine_tune = false;
+
+    Julian current_time = aos;
+    while (current_time < los && searching) {
+
+        /*
+         * find position
+         */
+        sgp4.FindPosition(&eci, current_time);
+        CoordTopographic topo = obs.GetLookAngle(eci);
+
+        /*
+         * keep updating max elevation
+         */
+        if (topo.elevation > max_elevation) {
+
+            max_elevation = topo.elevation;
+        } else if (!fine_tune) {
+            /*
+             * passed max elevation
+             * max elevation happened in the last 6 minutes
+             * go back and fine tune max elevation value
+             */
+            current_time.AddSec(-2.0 * time_step);
+            /*
+             * dont go back before aos
+             */
+            if (current_time < aos)
+                current_time = aos;
+
+            /*
+             * 1 second increment
+             */
+            time_step = 1.0;
+            fine_tune = true;
+
+            /*
+             * reset elevation
+             */
+            max_elevation = -99.9;
+            
+        } else {
+            /*
+             * found max elevation
+             */
+
+            searching = false;
+        }
+
+        if (searching) {
+            current_time.AddSec(time_step);
+            if (current_time > los)
+                current_time = los;
+        }
+    };
+
+    return max_elevation;
+}
+
 Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& initial_time1, const Julian& initial_time2, bool finding_aos) {
 
     Observer obs(user_geo);
@@ -68,7 +144,8 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
     bool found_aos = false;
     bool found_los = false;
 
-    for (Julian current_time = start_time; current_time <= end_time; current_time.AddMin(1.0)) {
+    Julian current_time = start_time;
+    while (current_time < end_time) {
 
         sgp4.FindPosition(&eci, current_time);
         CoordTopographic topo = obs.GetLookAngle(eci);
@@ -104,13 +181,18 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
                 los_time = FindCrossingPoint(user_geo, sgp4, previous_time, current_time, false);
                 found_aos = false;
                 found_los = false;
-                std::cout << "AOS: " << aos_time << ", LOS: " << los_time << std::endl;
+                double max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
+                std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << RadiansToDegrees(max_elevation) << std::endl;
             }
         }
 
         first_run = false;
         previous_time = current_time;
-    }
+
+        current_time.AddMin(1.0);
+        if (current_time > end_time)
+            current_time = end_time;
+    };
 
     /*
      * is satellite still above horizon at end of search period
@@ -118,16 +200,17 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
     if (found_aos && !found_los) {
 
         los_time = end_time;
-        std::cout << "AOS: " << aos_time << ", LOS: " << los_time << std::endl;
+        double max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
+        std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << RadiansToDegrees(max_elevation) << std::endl;
     }
 }
 
 int main() {
 
     CoordGeodetic geo(51.37322, 0.089607, 0.05);
-    Tle tle("STS 134                 ",
-            "1 37577U 11020A   11146.50425755  .00016213  00000-0  10821-3 0   213",
-            "2 37577  51.6484 271.9502 0003400 321.9646 127.1023 15.75523823  1551");
+    Tle tle("GIOVE-B                 ",
+            "1 32781U 08020A   11158.03814084  .00000088  00000-0  10000-3 0  4620",
+            "2 32781  55.9142 172.9458 0022365 228.3743 131.4697  1.70953903 19437");
     SGP4 sgp4(tle);
 
     Julian start_date;
@@ -139,28 +222,5 @@ int main() {
      */
     AOSLOS(geo, sgp4, start_date, end_date);
 
-    /*
-     * convert time to whole seconds
-     */
-    //if(finding_aos)
-    //    middle_time = floor(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
-    //else
-    //    middle_time = ceil(middle_time.GetDate() * kSECONDS_PER_DAY) / kSECONDS_PER_DAY;
-
     return 0;
-#if 0
-    Eci eci;
-
-    while (1) {
-        Julian now;
-        sgp4.FindPosition(&eci, now);
-        CoordTopographic topo = obs.GetLookAngle(eci);
-        CoordGeodetic geo = eci.ToGeodetic();
-        std::cout << now << " ";
-        std::cout << topo << " ";
-        std::cout << geo << std::endl;
-    };
-
-    return 0;
-#endif
 }
