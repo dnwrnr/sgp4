@@ -33,6 +33,8 @@ public:
     Julian operator+(const Timespan& b) const;
     Julian operator-(const Timespan& b) const;
 
+    Timespan operator-(const Julian& b) const;
+
     friend std::ostream & operator<<(std::ostream& stream, const Julian& julian);
 
     struct DateTimeComponents {

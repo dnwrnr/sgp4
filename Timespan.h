@@ -11,6 +11,7 @@ public:
     double GetTotalDays() const;
     double GetTotalHours() const;
     double GetTotalMinutes() const;
+    double GetTotalSeconds() const;
 
     /*
      * overloaded operators

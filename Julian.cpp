@@ -15,7 +15,7 @@
 #endif
 
 Julian::Julian() {
-    
+
 #ifdef WIN32
     SYSTEMTIME st;
     GetSystemTime(&st);
@@ -154,8 +154,14 @@ Julian Julian::operator-(const Timespan& b) const {
     return result;
 }
 
+Timespan Julian::operator-(const Julian& b) const {
+
+    Timespan result(date_ - b.date_);
+    return result;
+}
+
 std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
-    
+
     std::stringstream out;
     struct Julian::DateTimeComponents datetime;
     julian.ToGregorian(&datetime);
@@ -229,7 +235,7 @@ time_t Julian::ToTime() const {
  * Greenwich Mean Sidereal Time
  */
 double Julian::ToGreenwichSiderealTime() const {
-    
+
 #if 0
     double theta;
     double tut1;

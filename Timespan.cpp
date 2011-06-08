@@ -32,6 +32,10 @@ double Timespan::GetTotalMinutes() const {
     return time_span_ * kMINUTES_PER_DAY;
 }
 
+double Timespan::GetTotalSeconds() const {
+    return time_span_ * kSECONDS_PER_DAY;
+}
+
 Timespan& Timespan::operator =(const Timespan& b) {
 
     if (this != &b) {
