@@ -97,7 +97,7 @@ bool Julian::operator==(const Julian &date) const {
 
 bool Julian::operator!=(const Julian &date) const {
 
-    return date_ == date.date_ ? false : true;
+    return !(*this == date);
 }
 
 bool Julian::operator>(const Julian &date) const {
@@ -140,24 +140,34 @@ Julian& Julian::operator=(const double b) {
 /*
  * arithmetic
  */
-Julian Julian::operator+(const Timespan& b) const {
+Julian Julian::operator +(const Timespan& b) const {
 
-    Julian result(*this);
-    result.date_ += b.GetTotalDays();
-    return result;
+    return Julian(*this) += b;
 }
 
 Julian Julian::operator-(const Timespan& b) const {
 
-    Julian result(*this);
-    result.date_ -= b.GetTotalDays();
-    return result;
+    return Julian(*this) -= b;
 }
 
 Timespan Julian::operator-(const Julian& b) const {
 
-    Timespan result(date_ - b.date_);
-    return result;
+    return Timespan(date_ - b.date_);
+}
+
+/*
+ * compound assignment
+ */
+Julian & Julian::operator +=(const Timespan& b) {
+
+    date_ += b;
+    return (*this);
+}
+
+Julian & Julian::operator -=(const Timespan& b) {
+
+    date_ -= b;
+    return (*this);
 }
 
 std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
@@ -165,13 +175,13 @@ std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
     std::stringstream out;
     struct Julian::DateTimeComponents datetime;
     julian.ToGregorian(&datetime);
-    out << std::right << std::fixed << std::setprecision(3) << std::setfill('0');
+    out << std::right << std::fixed << std::setprecision(6) << std::setfill('0');
     out << std::setw(4) << datetime.years << "-";
     out << std::setw(2) << datetime.months << "-";
     out << std::setw(2) << datetime.days << " ";
     out << std::setw(2) << datetime.hours << ":";
     out << std::setw(2) << datetime.minutes << ":";
-    out << std::setw(6) << datetime.seconds << " UTC";
+    out << std::setw(9) << datetime.seconds << " UTC";
     stream << out.str();
     return stream;
 }

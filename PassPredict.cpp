@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 
+const int kPASS_TIME_STEP = 180; // time step in seconds, when searching for aos/los
+
 double FindMaxElevation(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& aos, const Julian& los) {
 
     Observer obs(user_geo);
@@ -61,7 +63,7 @@ double FindMaxElevation(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian&
              * reset elevation
              */
             max_elevation = -99.9;
-            
+
         } else {
             /*
              * found max elevation
@@ -120,7 +122,7 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
         /*
          * when two times are within a second, stop
          */
-        if (((time2.GetDate() - time1.GetDate()) * kSECONDS_PER_DAY) < 1.0) {
+        if (((time2.GetDate() - time1.GetDate()) * kSECONDS_PER_DAY) < 0.5) {
             searching = false;
         }
 
@@ -136,6 +138,9 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
     Observer obs(user_geo);
     Eci eci;
 
+    Timespan time_step;
+    time_step.AddMinutes(kPASS_TIME_STEP);
+
     bool first_run = true;
     Julian previous_time = start_time;
 
@@ -147,6 +152,7 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
     Julian current_time = start_time;
     while (current_time < end_time) {
 
+        // find position
         sgp4.FindPosition(&eci, current_time);
         CoordTopographic topo = obs.GetLookAngle(eci);
 
@@ -189,7 +195,7 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
         first_run = false;
         previous_time = current_time;
 
-        current_time.AddMin(1.0);
+        current_time += time_step;
         if (current_time > end_time)
             current_time = end_time;
     };

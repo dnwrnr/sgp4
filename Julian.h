@@ -18,9 +18,7 @@ public:
     ~Julian() {
     };
 
-    /*
-     * comparison operators
-     */
+    // comparison operators
     bool operator==(const Julian &date) const;
     bool operator!=(const Julian &date) const;
     bool operator>(const Julian &date) const;
@@ -28,16 +26,16 @@ public:
     bool operator>=(const Julian &date) const;
     bool operator<=(const Julian &date) const;
 
-    // asign Julian
-    Julian & operator=(const Julian& b);
-    // assign double
-    Julian & operator=(const double b);
-    // add Timespan
-    Julian operator+(const Timespan& b) const;
-    // subtract Timespan
-    Julian operator-(const Timespan& b) const;
-    // subtracting two Julians produces a Timespan
-    Timespan operator-(const Julian& b) const;
+    // assignment
+    Julian& operator =(const Julian& b);
+    Julian& operator =(const double b);
+    // arithmetic
+    Julian operator +(const Timespan& b) const;
+    Julian operator -(const Timespan& b) const;
+    Timespan operator -(const Julian& b) const;
+    // compound assignment
+    Julian & operator +=(const Timespan& b);
+    Julian & operator -=(const Timespan& b);
 
     friend std::ostream & operator<<(std::ostream& stream, const Julian& julian);
 

@@ -38,6 +38,9 @@ public:
     bool operator>=(const Timespan& b) const;
     bool operator<=(const Timespan& b) const;
 
+    friend double& operator +=(double& a, const Timespan& b);
+    friend double& operator -=(double& a, const Timespan& b);
+
 private:
     /*
      * stores value in minutes

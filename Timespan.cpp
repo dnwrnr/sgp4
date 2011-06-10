@@ -6,7 +6,7 @@ Timespan::Timespan()
 : time_span_(0.0) {
 }
 
-Timespan::Timespan(const double b){
+Timespan::Timespan(const double b) {
 
     time_span_ = b;
 }
@@ -145,4 +145,16 @@ bool Timespan::operator <=(const Timespan & b) const {
         return true;
     else
         return false;
+}
+
+double& operator +=(double& a, const Timespan& b) {
+
+    a += b.time_span_;
+    return a;
+}
+
+double& operator -=(double& a, const Timespan& b) {
+
+    a -= b.time_span_;
+    return a;
 }
