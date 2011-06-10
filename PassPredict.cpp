@@ -138,10 +138,10 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
     Observer obs(user_geo);
     Eci eci;
 
-    Timespan time_step;
-    time_step.AddMinutes(kPASS_TIME_STEP);
+    Timespan time_step(0, 0, 0, kPASS_TIME_STEP);
 
     bool first_run = true;
+    bool end_of_pass = false;
     Julian previous_time = start_time;
 
     Julian aos_time;
@@ -187,17 +187,27 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
                 los_time = FindCrossingPoint(user_geo, sgp4, previous_time, current_time, false);
                 found_aos = false;
                 found_los = false;
+                end_of_pass = true;
                 double max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
                 std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << RadiansToDegrees(max_elevation) << std::endl;
+
             }
         }
 
         first_run = false;
         previous_time = current_time;
 
-        current_time += time_step;
+        // at end of pass, move time along by 20 minutes
+        if (end_of_pass)
+            current_time += Timespan(0, 0, 20, 0);
+        else
+            current_time += time_step;
+
+        // check we dont go past end time
         if (current_time > end_time)
             current_time = end_time;
+
+        end_of_pass = false;
     };
 
     /*

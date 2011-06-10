@@ -6,6 +6,12 @@ Timespan::Timespan()
 : time_span_(0.0) {
 }
 
+Timespan::Timespan(const unsigned int days, const unsigned int hours,
+        const unsigned int minutes, const double seconds) {
+
+    SetValue(days, hours, minutes, seconds);
+}
+
 Timespan::Timespan(const double b) {
 
     time_span_ = b;
@@ -18,16 +24,25 @@ Timespan::Timespan(const Timespan& b) {
 Timespan::~Timespan(void) {
 }
 
-void Timespan::AddDays(const double days) {
-    time_span_ += days;
+void Timespan::SetValue(const unsigned int days, const unsigned int hours,
+        const unsigned int minutes, const double seconds) {
+
+    time_span_ = static_cast<double> (days);
+    AddHours(hours);
+    AddMinutes(minutes);
+    AddSeconds(seconds);
 }
 
-void Timespan::AddHours(const double hours) {
-    time_span_ += (hours / kHOURS_PER_DAY);
+void Timespan::AddDays(const unsigned int days) {
+    time_span_ += static_cast<double> (days);
 }
 
-void Timespan::AddMinutes(const double minutes) {
-    time_span_ += (minutes / kMINUTES_PER_DAY);
+void Timespan::AddHours(const unsigned int hours) {
+    time_span_ += (static_cast<double> (hours) / kHOURS_PER_DAY);
+}
+
+void Timespan::AddMinutes(const unsigned int minutes) {
+    time_span_ += (static_cast<double> (minutes) / kMINUTES_PER_DAY);
 }
 
 void Timespan::AddSeconds(const double seconds) {

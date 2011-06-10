@@ -4,13 +4,18 @@
 class Timespan {
 public:
     Timespan();
+    Timespan(const unsigned int days, const unsigned int hours,
+            const unsigned int minutes, const double seconds);
     Timespan(const double b);
     Timespan(const Timespan& b);
     virtual ~Timespan(void);
 
-    void AddDays(const double days);
-    void AddHours(const double hours);
-    void AddMinutes(const double minutes);
+    void SetValue(const unsigned int days, const unsigned int hours,
+            const unsigned int minutes, const double seconds);
+
+    void AddDays(const unsigned int days);
+    void AddHours(const unsigned int hours);
+    void AddMinutes(const unsigned int minutes);
     void AddSeconds(const double seconds);
 
     double GetTotalDays() const;
