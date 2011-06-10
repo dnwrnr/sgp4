@@ -146,7 +146,7 @@ public:
 
         DeepSpaceConstants()
         : gsto(0.0), zmol(0.0), zmos(0.0), resonance_flag(false),
-        synchronous_flag(false)(0.0), sse(0.0), ssi(0.0), ssl(0.0), ssg(0.0),
+        synchronous_flag(false), sse(0.0), ssi(0.0), ssl(0.0), ssg(0.0),
         ssh(0.0), se2(0.0), si2(0.0), sl2(0.0), sgh2(0.0), sh2(0.0), se3(0.0),
         si3(0.0), sl3(0.0), sgh3(0.0), sh3(0.0), sl4(0.0), sgh4(0.0), ee2(0.0),
         e3(0.0), xi2(0.0), xi3(0.0), xl2(0.0), xl3(0.0), xl4(0.0), xgh2(0.0),
