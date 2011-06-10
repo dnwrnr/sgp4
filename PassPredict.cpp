@@ -91,7 +91,7 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
     Julian time1 = initial_time1;
     Julian time2 = initial_time2;
 
-    Julian middle_time = time1 + (time2.GetDate() - time1.GetDate()) / 2.0;
+    Julian middle_time = time1 + (time2 - time1) / 2.0;
 
     while (searching && loop_count < 25) {
 
@@ -124,7 +124,7 @@ Julian FindCrossingPoint(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian
             searching = false;
         }
 
-        middle_time = time1 + (time2.GetDate() - time1.GetDate()) / 2.0;
+        middle_time = time1 + (time2 - time1) / 2.0;
         loop_count++;
     };
 

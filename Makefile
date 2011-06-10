@@ -1,6 +1,6 @@
 CC=g++
 AR=ar
-CFLAGS=-c -Wall -O2 -pedantic -ansi
+CFLAGS=-c -Wall -g -pedantic -ansi
 LDFLAGS=
 
 SOURCES=CoordGeodetic.cpp \

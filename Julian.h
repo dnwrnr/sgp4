@@ -28,16 +28,26 @@ public:
     bool operator>=(const Julian &date) const;
     bool operator<=(const Julian &date) const;
 
+    // asign Julian
     Julian & operator=(const Julian& b);
+    // assign double
     Julian & operator=(const double b);
+    // add Timespan
     Julian operator+(const Timespan& b) const;
+    // subtract Timespan
     Julian operator-(const Timespan& b) const;
-
+    // subtracting two Julians produces a Timespan
     Timespan operator-(const Julian& b) const;
 
     friend std::ostream & operator<<(std::ostream& stream, const Julian& julian);
 
     struct DateTimeComponents {
+
+        DateTimeComponents()
+        : years(0), months(0), days(0),
+        hours(0), minutes(0), seconds(0.0) {
+        }
+
         int years;
         int months;
         int days;
@@ -82,22 +92,6 @@ public:
 
     void AddSec(double sec) {
         date_ += (sec / kSECONDS_PER_DAY);
-    }
-
-    double SpanDay(const Julian& b) const {
-        return date_ - b.date_;
-    }
-
-    double SpanHour(const Julian& b) const {
-        return SpanDay(b) * kHOURS_PER_DAY;
-    }
-
-    double SpanMin(const Julian& b) const {
-        return SpanDay(b) * kMINUTES_PER_DAY;
-    }
-
-    double SpanSec(const Julian& b) const {
-        return SpanDay(b) * kSECONDS_PER_DAY;
     }
 
     static bool IsLeapYear(int y) {

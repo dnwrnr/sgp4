@@ -3,26 +3,34 @@
 
 class Timespan {
 public:
-    Timespan(void);
-    Timespan(const double time_span);
+    Timespan();
+    Timespan(const double b);
     Timespan(const Timespan& b);
     virtual ~Timespan(void);
+
+    void AddDays(const double days);
+    void AddHours(const double hours);
+    void AddMinutes(const double minutes);
+    void AddSeconds(const double seconds);
 
     double GetTotalDays() const;
     double GetTotalHours() const;
     double GetTotalMinutes() const;
     double GetTotalSeconds() const;
 
-    /*
-     * overloaded operators
-     */
+    // assignment
     Timespan & operator=(const Timespan& b);
+    // arithmetic
     Timespan operator+(const Timespan& b) const;
     Timespan operator-(const Timespan& b) const;
-    Timespan operator+() const;
-    Timespan operator-() const;
-    const Timespan & operator+=(const Timespan& b);
-    const Timespan & operator-=(const Timespan& b);
+    Timespan operator/(const double b) const;
+    Timespan operator*(const double b) const;
+    // compound arithmetic
+    Timespan & operator+=(const Timespan& b);
+    Timespan & operator-=(const Timespan& b);
+    Timespan & operator/=(const double b);
+    Timespan & operator*=(const double b);
+    // comparison
     bool operator==(const Timespan& b) const;
     bool operator!=(const Timespan& b) const;
     bool operator>(const Timespan& b) const;

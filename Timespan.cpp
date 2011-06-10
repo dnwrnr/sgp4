@@ -2,22 +2,36 @@
 
 #include "Globals.h"
 
-Timespan::Timespan(void) {
+Timespan::Timespan()
+: time_span_(0.0) {
 }
 
-/*
- * time_span is days and fraction of a day
- */
-Timespan::Timespan(const double time_span) {
-    time_span_ = time_span;
+Timespan::Timespan(const double b){
+
+    time_span_ = b;
 }
 
 Timespan::Timespan(const Timespan& b) {
-
     time_span_ = b.time_span_;
 }
 
 Timespan::~Timespan(void) {
+}
+
+void Timespan::AddDays(const double days) {
+    time_span_ += days;
+}
+
+void Timespan::AddHours(const double hours) {
+    time_span_ += (hours / kHOURS_PER_DAY);
+}
+
+void Timespan::AddMinutes(const double minutes) {
+    time_span_ += (minutes / kMINUTES_PER_DAY);
+}
+
+void Timespan::AddSeconds(const double seconds) {
+    time_span_ += (seconds / kSECONDS_PER_DAY);
 }
 
 double Timespan::GetTotalDays() const {
@@ -40,49 +54,52 @@ Timespan& Timespan::operator =(const Timespan& b) {
 
     if (this != &b) {
         time_span_ = b.time_span_;
-
     }
     return (*this);
 }
 
 Timespan Timespan::operator +(const Timespan& b) const {
 
-    Timespan result(*this);
-    result.time_span_ += b.GetTotalDays();
-    return result;
+    return Timespan(*this) += b;
 }
 
 Timespan Timespan::operator -(const Timespan& b) const {
 
-    Timespan result(*this);
-    result.time_span_ -= b.GetTotalDays();
-    return result;
+    return Timespan(*this) -= b;
 }
 
-const Timespan & Timespan::operator+=(const Timespan& b) {
+Timespan Timespan::operator/(const double b) const {
+
+    return Timespan(*this) /= b;
+}
+
+Timespan Timespan::operator*(const double b) const {
+
+    return Timespan(*this) *= b;
+}
+
+Timespan & Timespan::operator+=(const Timespan& b) {
 
     time_span_ += b.time_span_;
     return (*this);
 }
 
-const Timespan & Timespan::operator-=(const Timespan& b) {
+Timespan & Timespan::operator-=(const Timespan& b) {
 
     time_span_ -= b.time_span_;
     return (*this);
 }
 
-Timespan Timespan::operator +() const {
+Timespan & Timespan::operator/=(const double b) {
 
-    Timespan result(*this);
-    result.time_span_ = +result.time_span_;
-    return result;
+    time_span_ /= b;
+    return (*this);
 }
 
-Timespan Timespan::operator -() const {
+Timespan & Timespan::operator*=(const double b) {
 
-    Timespan result(*this);
-    result.time_span_ = -result.time_span_;
-    return result;
+    time_span_ *= b;
+    return (*this);
 }
 
 bool Timespan::operator ==(const Timespan& b) const {
@@ -95,10 +112,7 @@ bool Timespan::operator ==(const Timespan& b) const {
 
 bool Timespan::operator !=(const Timespan& b) const {
 
-    if (time_span_ == b.time_span_)
-        return false;
-    else
-        return true;
+    return !(*this == b);
 }
 
 bool Timespan::operator>(const Timespan& b) const {

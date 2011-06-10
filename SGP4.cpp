@@ -236,9 +236,9 @@ void SGP4::FindPosition(Eci* eci, double tsince) const {
 
 void SGP4::FindPosition(Eci* eci, const Julian& date) const {
 
-    const double tsince = date.SpanMin(Epoch());
+    Timespan diff = date - Epoch();
 
-    FindPosition(eci, tsince);
+    FindPosition(eci, diff.GetTotalMinutes());
 }
 
 void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
@@ -581,8 +581,9 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
-    Julian julian = Epoch();
-    julian.AddMin(tsince);
+    Timespan diff;
+    diff.AddMinutes(tsince);
+    Julian julian = Epoch() + diff;
     (*eci) = Eci(julian, position, velocity);
 }
 
