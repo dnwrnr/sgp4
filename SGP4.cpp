@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <iomanip>
-#include <cstring>
 
 SGP4::SGP4(void) {
 
@@ -1232,12 +1231,6 @@ void SGP4::Reset() {
     first_run_ = true;
     use_simple_model_ = false;
     use_deep_space_ = false;
-
-    memset(&common_consts_, 0, sizeof (common_consts_));
-    memset(&nearspace_consts_, 0, sizeof (nearspace_consts_));
-    memset(&deepspace_consts_, 0, sizeof (deepspace_consts_));
-    memset(&integrator_consts_, 0, sizeof (integrator_consts_));
-    memset(&integrator_params_, 0, sizeof (integrator_params_));
 
     mean_anomoly_ = ascending_node_ = argument_perigee_ = eccentricity_ =
             inclination_ = mean_motion_ = bstar_ = recovered_semi_major_axis_ =

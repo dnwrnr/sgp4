@@ -97,6 +97,13 @@ public:
     }
 
     struct CommonConstants {
+
+        CommonConstants()
+        : cosio(0.0), sinio(0.0), eta(0.0), t2cof(0.0), a3ovk2(0.0),
+        x1mth2(0.0), x3thm1(0.0), x7thm1(0.0), aycof(0.0), xlcof(0.0),
+        xnodcf(0.0), c1(0.0), c4(0.0), omgdot(0.0), xnodot(0.0), xmdot(0.0) {
+        }
+
         double cosio;
         double sinio;
         double eta;
@@ -116,6 +123,12 @@ public:
     };
 
     struct NearSpaceConstants {
+
+        NearSpaceConstants()
+        : c5(0.0), omgcof(0.0), xmcof(0.0), delmo(0.0), sinmo(0.0), d2(0.0),
+        d3(0.0), d4(0.0), t3cof(0.0), t4cof(0.0), t5cof(0.0) {
+        }
+
         double c5;
         double omgcof;
         double xmcof;
@@ -130,6 +143,18 @@ public:
     };
 
     struct DeepSpaceConstants {
+
+        DeepSpaceConstants()
+        : gsto(0.0), zmol(0.0), zmos(0.0), resonance_flag(false),
+        synchronous_flag(false)(0.0), sse(0.0), ssi(0.0), ssl(0.0), ssg(0.0),
+        ssh(0.0), se2(0.0), si2(0.0), sl2(0.0), sgh2(0.0), sh2(0.0), se3(0.0),
+        si3(0.0), sl3(0.0), sgh3(0.0), sh3(0.0), sl4(0.0), sgh4(0.0), ee2(0.0),
+        e3(0.0), xi2(0.0), xi3(0.0), xl2(0.0), xl3(0.0), xl4(0.0), xgh2(0.0),
+        xgh3(0.0), xgh4(0.0), xh2(0.0), xh3(0.0), d2201(0.0), d2211(0.0),
+        d3210(0.0), d3222(0.0), d4410(0.0), d4422(0.0), d5220(0.0), d5232(0.0),
+        d5421(0.0), d5433(0.0), del1(0.0), del2(0.0), del3(0.0) {
+        }
+
         double gsto;
         double zmol;
         double zmos;
@@ -199,6 +224,11 @@ public:
     };
 
     struct IntegratorConstants {
+
+        IntegratorConstants() : xfact(0.0), xlamo(0.0), xndot_0(0.0),
+        xnddt_0(0.0), xldot_0(0.0) {
+        }
+
         /*
          * integrator constants
          */
@@ -214,6 +244,11 @@ public:
     };
 
     struct IntegratorParams {
+
+        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0),
+        xndot_t(0.0), xnddt_t(0.0), xldot_t(0.0) {
+        }
+
         /*
          * integrator values
          */
