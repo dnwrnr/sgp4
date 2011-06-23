@@ -586,6 +586,12 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     (*eci) = Eci(julian, position, velocity);
 }
 
+static inline double EvaluateCubicPolynomial(const double x, const double constant,
+        const double linear, const double squared, const double cubed) {
+
+    return constant + x * (linear + x * (squared + x * cubed));
+}
+
 /*
  * deep space initialization
  */
@@ -815,8 +821,6 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
          */
         deepspace_consts_.resonance_flag = true;
 
-        const double eoc = Eccentricity() * eosq;
-
         double g211;
         double g310;
         double g322;
@@ -827,23 +831,23 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
 
         if (Eccentricity() <= 0.65) {
-            g211 = 3.616 - 13.247 * Eccentricity() + 16.290 * eosq;
-            g310 = -19.302 + 117.390 * Eccentricity() - 228.419 * eosq + 156.591 * eoc;
-            g322 = -18.9068 + 109.7927 * Eccentricity() - 214.6334 * eosq + 146.5816 * eoc;
-            g410 = -41.122 + 242.694 * Eccentricity() - 471.094 * eosq + 313.953 * eoc;
-            g422 = -146.407 + 841.880 * Eccentricity() - 1629.014 * eosq + 1083.435 * eoc;
-            g520 = -532.114 + 3017.977 * Eccentricity() - 5740.032 * eosq + 3708.276 * eoc;
+            g211 = EvaluateCubicPolynomial(Eccentricity(), 3.616, -13.247, +16.290, 0.0);
+            g310 = EvaluateCubicPolynomial(Eccentricity(), -19.302, 117.390, -228.419, 156.591);
+            g322 = EvaluateCubicPolynomial(Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
+            g410 = EvaluateCubicPolynomial(Eccentricity(), -41.122, 242.694, -471.094, 313.953);
+            g422 = EvaluateCubicPolynomial(Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
+            g520 = EvaluateCubicPolynomial(Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
         } else {
-            g211 = -72.099 + 331.819 * Eccentricity() - 508.738 * eosq + 266.724 * eoc;
-            g310 = -346.844 + 1582.851 * Eccentricity() - 2415.925 * eosq + 1246.113 * eoc;
-            g322 = -342.585 + 1554.908 * Eccentricity() - 2366.899 * eosq + 1215.972 * eoc;
-            g410 = -1052.797 + 4758.686 * Eccentricity() - 7193.992 * eosq + 3651.957 * eoc;
-            g422 = -3581.69 + 16178.11 * Eccentricity() - 24462.77 * eosq + 12422.52 * eoc;
+            g211 = EvaluateCubicPolynomial(Eccentricity(), -72.099, 331.819, -508.738, 266.724);
+            g310 = EvaluateCubicPolynomial(Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
+            g322 = EvaluateCubicPolynomial(Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
+            g410 = EvaluateCubicPolynomial(Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
+            g422 = EvaluateCubicPolynomial(Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
 
             if (Eccentricity() <= 0.715) {
-                g520 = 1464.74 - 4664.75 * Eccentricity() + 3763.64 * eosq;
+                g520 = EvaluateCubicPolynomial(Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
             } else {
-                g520 = -5149.66 + 29936.92 * Eccentricity() - 54087.36 * eosq + 31324.56 * eoc;
+                g520 = EvaluateCubicPolynomial(Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
             }
         }
 
@@ -852,13 +856,13 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         double g532;
 
         if (Eccentricity() < 0.7) {
-            g533 = -919.2277 + 4988.61 * Eccentricity() - 9064.77 * eosq + 5542.21 * eoc;
-            g521 = -822.71072 + 4568.6173 * Eccentricity() - 8491.4146 * eosq + 5337.524 * eoc;
-            g532 = -853.666 + 4690.25 * Eccentricity() - 8624.77 * eosq + 5341.4 * eoc;
+            g533 = EvaluateCubicPolynomial(Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
+            g521 = EvaluateCubicPolynomial(Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
+            g532 = EvaluateCubicPolynomial(Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
         } else {
-            g533 = -37995.78 + 161616.52 * Eccentricity() - 229838.2 * eosq + 109377.94 * eoc;
-            g521 = -51752.104 + 218913.95 * Eccentricity() - 309468.16 * eosq + 146349.42 * eoc;
-            g532 = -40023.88 + 170470.89 * Eccentricity() - 242699.48 * eosq + 115605.82 * eoc;
+            g533 = EvaluateCubicPolynomial(Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
+            g521 = EvaluateCubicPolynomial(Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
+            g532 = EvaluateCubicPolynomial(Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
         }
 
         const double sini2 = sinio * sinio;
@@ -906,6 +910,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     }
 
     if (initialize_integrator) {
+
         /*
          * initialize integrator
          */
@@ -948,6 +953,7 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
      * calculate lunar terms for time t
      */
     zm = deepspace_consts_.zmol + ZNL * t;
+
     if (first_run_)
         zm = deepspace_consts_.zmol;
     zf = zm + 2.0 * ZEL * sin(zm);
