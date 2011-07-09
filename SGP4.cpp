@@ -6,14 +6,10 @@
 #include <cmath>
 #include <iomanip>
 
-SGP4::SGP4(void) {
+SGP4::SGP4(const Tle& tle)
+: elements_(tle) {
 
-    Reset();
-}
-
-SGP4::SGP4(const Tle& tle) {
-
-    SetTle(tle);
+    Initialize();
 }
 
 SGP4::~SGP4(void) {
@@ -22,83 +18,40 @@ SGP4::~SGP4(void) {
 void SGP4::SetTle(const Tle& tle) {
 
     /*
-     * reset all constants etc
-     */
-    Reset();
-
-    /*
      * extract and format tle data
      */
-    mean_anomoly_ = tle.MeanAnomaly(false);
-    ascending_node_ = tle.RightAscendingNode(false);
-    argument_perigee_ = tle.ArgumentPerigee(false);
-    eccentricity_ = tle.Eccentricity();
-    inclination_ = tle.Inclination(false);
-    mean_motion_ = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
-    bstar_ = tle.BStar();
-    epoch_ = tle.Epoch();
-
-    /*
-     * error checks
-     */
-    if (eccentricity_ < 0.0 || eccentricity_ > 1.0 - 1.0e-3) {
-        throw SatelliteException("Eccentricity out of range");
-    }
-
-    if (inclination_ < 0.0 || eccentricity_ > kPI) {
-        throw SatelliteException("Inclination out of range");
-    }
+    elements_ = OrbitalElements(tle);
 
     Initialize();
 }
 
 void SGP4::Initialize() {
 
-
-
-
-
+    /*
+     * reset all constants etc
+     */
+    Reset();
 
     /*
-     * recover original mean motion (xnodp) and semimajor axis (aodp)
-     * from input elements
+     * error checks
      */
-    const double a1 = pow(kXKE / MeanMotion(), kTWOTHIRD);
-    common_consts_.cosio = cos(Inclination());
-    common_consts_.sinio = sin(Inclination());
+    if (elements_.Eccentricity() < 0.0 || elements_.Eccentricity() > 1.0 - 1.0e-3) {
+        throw SatelliteException("Eccentricity out of range");
+    }
+
+    if (elements_.Inclination() < 0.0 || elements_.Inclination() > kPI) {
+        throw SatelliteException("Inclination out of range");
+    }
+
+    common_consts_.cosio = cos(elements_.Inclination());
+    common_consts_.sinio = sin(elements_.Inclination());
     const double theta2 = common_consts_.cosio * common_consts_.cosio;
     common_consts_.x3thm1 = 3.0 * theta2 - 1.0;
-    const double eosq = Eccentricity() * Eccentricity();
+    const double eosq = elements_.Eccentricity() * elements_.Eccentricity();
     const double betao2 = 1.0 - eosq;
     const double betao = sqrt(betao2);
-    const double temp = (1.5 * kCK2) * common_consts_.x3thm1 / (betao * betao2);
-    const double del1 = temp / (a1 * a1);
-    const double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
-    const double del0 = temp / (a0 * a0);
 
-    recovered_mean_motion_ = MeanMotion() / (1.0 + del0);
-    /*
-     * alternative way to calculate
-     * doesnt affect final results
-     * recovered_semi_major_axis_ = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
-     */
-    recovered_semi_major_axis_ = a0 / (1.0 - del0);
-
-    /*
-     * find perigee and period
-     */
-    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
-    period_ = kTWOPI / RecoveredMeanMotion();
-
-
-
-
-
-
-
-
-
-    if (Period() >= 225.0) {
+    if (elements_.Period() >= 225.0) {
         use_deep_space_ = true;
     } else {
         use_deep_space_ = false;
@@ -109,7 +62,7 @@ void SGP4::Initialize() {
          * quadratic variation in mean anomly. also, the c3 term, the
          * delta omega term and the delta m term are dropped
          */
-        if (Perigee() < 220.0) {
+        if (elements_.Perigee() < 220.0) {
             use_simple_model_ = true;
         }
     }
@@ -120,9 +73,9 @@ void SGP4::Initialize() {
      */
     double s4 = kS;
     double qoms24 = kQOMS2T;
-    if (Perigee() < 156.0) {
-        s4 = Perigee() - 78.0;
-        if (Perigee() < 98.0) {
+    if (elements_.Perigee() < 156.0) {
+        s4 = elements_.Perigee() - 78.0;
+        if (elements_.Perigee() < 98.0) {
             s4 = 20.0;
         }
         qoms24 = pow((120.0 - s4) * kAE / kXKMPER, 4.0);
@@ -132,33 +85,33 @@ void SGP4::Initialize() {
     /*
      * generate constants
      */
-    const double pinvsq = 1.0 / (RecoveredSemiMajorAxis() * RecoveredSemiMajorAxis() * betao2 * betao2);
-    const double tsi = 1.0 / (RecoveredSemiMajorAxis() - s4);
-    common_consts_.eta = RecoveredSemiMajorAxis() * Eccentricity() * tsi;
+    const double pinvsq = 1.0 / (elements_.RecoveredSemiMajorAxis() * elements_.RecoveredSemiMajorAxis() * betao2 * betao2);
+    const double tsi = 1.0 / (elements_.RecoveredSemiMajorAxis() - s4);
+    common_consts_.eta = elements_.RecoveredSemiMajorAxis() * elements_.Eccentricity() * tsi;
     const double etasq = common_consts_.eta * common_consts_.eta;
-    const double eeta = Eccentricity() * common_consts_.eta;
+    const double eeta = elements_.Eccentricity() * common_consts_.eta;
     const double psisq = fabs(1.0 - etasq);
     const double coef = qoms24 * pow(tsi, 4.0);
     const double coef1 = coef / pow(psisq, 3.5);
-    const double c2 = coef1 * RecoveredMeanMotion() * (RecoveredSemiMajorAxis() *
+    const double c2 = coef1 * elements_.RecoveredMeanMotion() * (elements_.RecoveredSemiMajorAxis() *
             (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
             0.75 * kCK2 * tsi / psisq *
             common_consts_.x3thm1 * (8.0 + 3.0 * etasq *
             (8.0 + etasq)));
-    common_consts_.c1 = BStar() * c2;
+    common_consts_.c1 = elements_.BStar() * c2;
     common_consts_.a3ovk2 = -kXJ3 / kCK2 * pow(kAE, 3.0);
     common_consts_.x1mth2 = 1.0 - theta2;
-    common_consts_.c4 = 2.0 * RecoveredMeanMotion() * coef1 * RecoveredSemiMajorAxis() * betao2 *
-            (common_consts_.eta * (2.0 + 0.5 * etasq) + Eccentricity() * (0.5 + 2.0 * etasq) -
-            2.0 * kCK2 * tsi / (RecoveredSemiMajorAxis() * psisq) *
+    common_consts_.c4 = 2.0 * elements_.RecoveredMeanMotion() * coef1 * elements_.RecoveredSemiMajorAxis() * betao2 *
+            (common_consts_.eta * (2.0 + 0.5 * etasq) + elements_.Eccentricity() * (0.5 + 2.0 * etasq) -
+            2.0 * kCK2 * tsi / (elements_.RecoveredSemiMajorAxis() * psisq) *
             (-3.0 * common_consts_.x3thm1 * (1.0 - 2.0 * eeta + etasq *
             (1.5 - 0.5 * eeta)) + 0.75 * common_consts_.x1mth2 * (2.0 * etasq - eeta *
-            (1.0 + etasq)) * cos(2.0 * ArgumentPerigee())));
+            (1.0 + etasq)) * cos(2.0 * elements_.ArgumentPerigee())));
     const double theta4 = theta2 * theta2;
-    const double temp1 = 3.0 * kCK2 * pinvsq * RecoveredMeanMotion();
+    const double temp1 = 3.0 * kCK2 * pinvsq * elements_.RecoveredMeanMotion();
     const double temp2 = temp1 * kCK2 * pinvsq;
-    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * RecoveredMeanMotion();
-    common_consts_.xmdot = RecoveredMeanMotion() + 0.5 * temp1 * betao *
+    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * elements_.RecoveredMeanMotion();
+    common_consts_.xmdot = elements_.RecoveredMeanMotion() + 0.5 * temp1 * betao *
             common_consts_.x3thm1 + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
     const double x1m5th = 1.0 - 5.0 * theta2;
@@ -181,7 +134,7 @@ void SGP4::Initialize() {
 
     if (use_deep_space_) {
 
-        deepspace_consts_.gsto = Epoch().ToGreenwichSiderealTime();
+        deepspace_consts_.gsto = elements_.Epoch().ToGreenwichSiderealTime();
 
         DeepSpaceInitialize(eosq, common_consts_.sinio, common_consts_.cosio, betao,
                 theta2, betao2,
@@ -190,29 +143,29 @@ void SGP4::Initialize() {
     } else {
 
         double c3 = 0.0;
-        if (Eccentricity() > 1.0e-4) {
-            c3 = coef * tsi * common_consts_.a3ovk2 * RecoveredMeanMotion() * kAE *
-                    common_consts_.sinio / Eccentricity();
+        if (elements_.Eccentricity() > 1.0e-4) {
+            c3 = coef * tsi * common_consts_.a3ovk2 * elements_.RecoveredMeanMotion() * kAE *
+                    common_consts_.sinio / elements_.Eccentricity();
         }
 
-        nearspace_consts_.c5 = 2.0 * coef1 * RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
+        nearspace_consts_.c5 = 2.0 * coef1 * elements_.RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
                 (etasq + eeta) + eeta * etasq);
-        nearspace_consts_.omgcof = BStar() * c3 * cos(ArgumentPerigee());
+        nearspace_consts_.omgcof = elements_.BStar() * c3 * cos(elements_.ArgumentPerigee());
 
         nearspace_consts_.xmcof = 0.0;
-        if (Eccentricity() > 1.0e-4)
-            nearspace_consts_.xmcof = -kTWOTHIRD * coef * BStar() * kAE / eeta;
+        if (elements_.Eccentricity() > 1.0e-4)
+            nearspace_consts_.xmcof = -kTWOTHIRD * coef * elements_.BStar() * kAE / eeta;
 
-        nearspace_consts_.delmo = pow(1.0 + common_consts_.eta * (cos(MeanAnomoly())), 3.0);
-        nearspace_consts_.sinmo = sin(MeanAnomoly());
+        nearspace_consts_.delmo = pow(1.0 + common_consts_.eta * (cos(elements_.MeanAnomoly())), 3.0);
+        nearspace_consts_.sinmo = sin(elements_.MeanAnomoly());
 
         if (!use_simple_model_) {
             const double c1sq = common_consts_.c1 * common_consts_.c1;
-            nearspace_consts_.d2 = 4.0 * RecoveredSemiMajorAxis() * tsi * c1sq;
+            nearspace_consts_.d2 = 4.0 * elements_.RecoveredSemiMajorAxis() * tsi * c1sq;
             const double temp = nearspace_consts_.d2 * tsi * common_consts_.c1 / 3.0;
-            nearspace_consts_.d3 = (17.0 * RecoveredSemiMajorAxis() + s4) * temp;
-            nearspace_consts_.d4 = 0.5 * temp * RecoveredSemiMajorAxis() *
-                    tsi * (221.0 * RecoveredSemiMajorAxis() + 31.0 * s4) * common_consts_.c1;
+            nearspace_consts_.d3 = (17.0 * elements_.RecoveredSemiMajorAxis() + s4) * temp;
+            nearspace_consts_.d4 = 0.5 * temp * elements_.RecoveredSemiMajorAxis() *
+                    tsi * (221.0 * elements_.RecoveredSemiMajorAxis() + 31.0 * s4) * common_consts_.c1;
             nearspace_consts_.t3cof = nearspace_consts_.d2 + 2.0 * c1sq;
             nearspace_consts_.t4cof = 0.25 * (3.0 * nearspace_consts_.d3 + common_consts_.c1 *
                     (12.0 * nearspace_consts_.d2 + 10.0 * c1sq));
@@ -235,7 +188,7 @@ void SGP4::FindPosition(Eci* eci, double tsince) const {
 
 void SGP4::FindPosition(Eci* eci, const Julian& date) const {
 
-    Timespan diff = date - Epoch();
+    Timespan diff = date - elements_.Epoch();
 
     FindPosition(eci, diff.GetTotalMinutes());
 }
@@ -255,19 +208,19 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     /*
      * update for secular gravity and atmospheric drag
      */
-    double xmdf = MeanAnomoly() + common_consts_.xmdot * tsince;
-    double omgadf = ArgumentPerigee() + common_consts_.omgdot * tsince;
-    const double xnoddf = AscendingNode() + common_consts_.xnodot * tsince;
+    double xmdf = elements_.MeanAnomoly() + common_consts_.xmdot * tsince;
+    double omgadf = elements_.ArgumentPerigee() + common_consts_.omgdot * tsince;
+    const double xnoddf = elements_.AscendingNode() + common_consts_.xnodot * tsince;
 
     const double tsq = tsince * tsince;
     xnode = xnoddf + common_consts_.xnodcf * tsq;
     double tempa = 1.0 - common_consts_.c1 * tsince;
-    double tempe = BStar() * common_consts_.c4 * tsince;
+    double tempe = elements_.BStar() * common_consts_.c4 * tsince;
     double templ = common_consts_.t2cof * tsq;
 
-    double xn = RecoveredMeanMotion();
-    e = Eccentricity();
-    xincl = Inclination();
+    double xn = elements_.RecoveredMeanMotion();
+    e = elements_.Eccentricity();
+    xincl = elements_.Inclination();
 
     DeepSpaceSecular(tsince, &xmdf, &omgadf, &xnode, &e, &xincl, &xn);
 
@@ -277,7 +230,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
 
     a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
     e -= tempe;
-    double xmam = xmdf + RecoveredMeanMotion() * templ;
+    double xmam = xmdf + elements_.RecoveredMeanMotion() * templ;
 
     /*
      * fix tolerance for error recognition
@@ -356,17 +309,17 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
     /*
      * update for secular gravity and atmospheric drag
      */
-    const double xmdf = MeanAnomoly() + common_consts_.xmdot * tsince;
-    const double omgadf = ArgumentPerigee() + common_consts_.omgdot * tsince;
-    const double xnoddf = AscendingNode() + common_consts_.xnodot * tsince;
+    const double xmdf = elements_.MeanAnomoly() + common_consts_.xmdot * tsince;
+    const double omgadf = elements_.ArgumentPerigee() + common_consts_.omgdot * tsince;
+    const double xnoddf = elements_.AscendingNode() + common_consts_.xnodot * tsince;
 
     const double tsq = tsince * tsince;
     xnode = xnoddf + common_consts_.xnodcf * tsq;
     double tempa = 1.0 - common_consts_.c1 * tsince;
-    double tempe = BStar() * common_consts_.c4 * tsince;
+    double tempe = elements_.BStar() * common_consts_.c4 * tsince;
     double templ = common_consts_.t2cof * tsq;
 
-    xincl = Inclination();
+    xincl = elements_.Inclination();
     omega = omgadf;
     double xmp = xmdf;
 
@@ -382,13 +335,13 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
         const double tfour = tsince * tcube;
 
         tempa = tempa - nearspace_consts_.d2 * tsq - nearspace_consts_.d3 * tcube - nearspace_consts_.d4 * tfour;
-        tempe += BStar() * nearspace_consts_.c5 * (sin(xmp) - nearspace_consts_.sinmo);
+        tempe += elements_.BStar() * nearspace_consts_.c5 * (sin(xmp) - nearspace_consts_.sinmo);
         templ += nearspace_consts_.t3cof * tcube + tfour * (nearspace_consts_.t4cof + tsince * nearspace_consts_.t5cof);
     }
 
-    a = RecoveredSemiMajorAxis() * pow(tempa, 2.0);
-    e = Eccentricity() - tempe;
-    xl = xmp + omega + xnode + RecoveredMeanMotion() * templ;
+    a = elements_.RecoveredSemiMajorAxis() * pow(tempa, 2.0);
+    e = elements_.Eccentricity() - tempe;
+    xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
 
     if (xl <= 0.0) {
         throw SatelliteException("Error: #2 (xl <= 0.0)");
@@ -567,7 +520,7 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     Vector velocity(xdot, ydot, zdot);
 
     Timespan diff(tsince);
-    Julian julian = Epoch() + diff;
+    Julian julian = elements_.Epoch() + diff;
     (*eci) = Eci(julian, position, velocity);
 }
 
@@ -611,17 +564,17 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     static const double ROOT52 = 1.1428639E-7;
     static const double ROOT54 = 2.1765803E-9;
 
-    const double aqnv = 1.0 / RecoveredSemiMajorAxis();
+    const double aqnv = 1.0 / elements_.RecoveredSemiMajorAxis();
     const double xpidot = omgdot + xnodot;
-    const double sinq = sin(AscendingNode());
-    const double cosq = cos(AscendingNode());
-    const double sing = sin(ArgumentPerigee());
-    const double cosg = cos(ArgumentPerigee());
+    const double sinq = sin(elements_.AscendingNode());
+    const double cosq = cos(elements_.AscendingNode());
+    const double sing = sin(elements_.ArgumentPerigee());
+    const double cosg = cos(elements_.ArgumentPerigee());
 
     /*
      * initialize lunar / solar terms
      */
-    const double jday = Epoch().FromJan1_12h_1900();
+    const double jday = elements_.Epoch().FromJan1_12h_1900();
 
     const double xnodce = 4.5236020 - 9.2422029e-4 * jday;
     const double xnodce_temp = fmod(xnodce, kTWOPI);
@@ -655,7 +608,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     double cc = C1SS;
     double zn = ZNS;
     double ze = ZES;
-    const double xnoi = 1.0 / RecoveredMeanMotion();
+    const double xnoi = 1.0 / elements_.RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++) {
         /*
@@ -697,7 +650,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         const double s3 = cc * xnoi;
         const double s2 = -0.5 * s3 / betao;
         const double s4 = s3 * betao;
-        const double s1 = -15.0 * Eccentricity() * s4;
+        const double s1 = -15.0 * elements_.Eccentricity() * s4;
         const double s5 = x1 * x3 + x2 * x4;
         const double s6 = x2 * x3 + x1 * x4;
         const double s7 = x2 * x4 - x1 * x3;
@@ -712,7 +665,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
          * with
          * shdq = (-zn * s2 * (z21 + z23)) / sinio
          */
-        if (Inclination() < 5.2359877e-2 || Inclination() > kPI - 5.2359877e-2) {
+        if (elements_.Inclination() < 5.2359877e-2 || elements_.Inclination() > kPI - 5.2359877e-2) {
             shdq = 0.0;
         } else {
             shdq = (-zn * s2 * (z21 + z23)) / sinio;
@@ -774,7 +727,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     deepspace_consts_.synchronous_flag = false;
     bool initialize_integrator = true;
 
-    if (RecoveredMeanMotion() < 0.0052359877 && RecoveredMeanMotion() > 0.0034906585) {
+    if (elements_.RecoveredMeanMotion() < 0.0052359877 && elements_.RecoveredMeanMotion() > 0.0034906585) {
 
         /*
          * 24h synchronous resonance terms initialization
@@ -789,16 +742,16 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         const double f311 = 0.9375 * sinio * sinio * (1.0 + 3.0 * cosio) - 0.75 * (1.0 + cosio);
         double f330 = 1.0 + cosio;
         f330 = 1.875 * f330 * f330 * f330;
-        deepspace_consts_.del1 = 3.0 * RecoveredMeanMotion() * RecoveredMeanMotion() * aqnv * aqnv;
+        deepspace_consts_.del1 = 3.0 * elements_.RecoveredMeanMotion() * elements_.RecoveredMeanMotion() * aqnv * aqnv;
         deepspace_consts_.del2 = 2.0 * deepspace_consts_.del1 * f220 * g200 * Q22;
         deepspace_consts_.del3 = 3.0 * deepspace_consts_.del1 * f330 * g300 * Q33 * aqnv;
         deepspace_consts_.del1 = deepspace_consts_.del1 * f311 * g310 * Q31 * aqnv;
 
-        integrator_consts_.xlamo = MeanAnomoly() + AscendingNode() + ArgumentPerigee() - deepspace_consts_.gsto;
+        integrator_consts_.xlamo = elements_.MeanAnomoly() + elements_.AscendingNode() + elements_.ArgumentPerigee() - deepspace_consts_.gsto;
         bfact = xmdot + xpidot - kTHDT;
         bfact += deepspace_consts_.ssl + deepspace_consts_.ssg + deepspace_consts_.ssh;
 
-    } else if (RecoveredMeanMotion() < 8.26e-3 || RecoveredMeanMotion() > 9.24e-3 || Eccentricity() < 0.5) {
+    } else if (elements_.RecoveredMeanMotion() < 8.26e-3 || elements_.RecoveredMeanMotion() > 9.24e-3 || elements_.Eccentricity() < 0.5) {
         initialize_integrator = false;
     } else {
         /*
@@ -813,26 +766,26 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         double g422;
         double g520;
 
-        double g201 = -0.306 - (Eccentricity() - 0.64) * 0.440;
+        double g201 = -0.306 - (elements_.Eccentricity() - 0.64) * 0.440;
 
-        if (Eccentricity() <= 0.65) {
-            g211 = EvaluateCubicPolynomial(Eccentricity(), 3.616, -13.247, +16.290, 0.0);
-            g310 = EvaluateCubicPolynomial(Eccentricity(), -19.302, 117.390, -228.419, 156.591);
-            g322 = EvaluateCubicPolynomial(Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
-            g410 = EvaluateCubicPolynomial(Eccentricity(), -41.122, 242.694, -471.094, 313.953);
-            g422 = EvaluateCubicPolynomial(Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
-            g520 = EvaluateCubicPolynomial(Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
+        if (elements_.Eccentricity() <= 0.65) {
+            g211 = EvaluateCubicPolynomial(elements_.Eccentricity(), 3.616, -13.247, +16.290, 0.0);
+            g310 = EvaluateCubicPolynomial(elements_.Eccentricity(), -19.302, 117.390, -228.419, 156.591);
+            g322 = EvaluateCubicPolynomial(elements_.Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
+            g410 = EvaluateCubicPolynomial(elements_.Eccentricity(), -41.122, 242.694, -471.094, 313.953);
+            g422 = EvaluateCubicPolynomial(elements_.Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
+            g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
         } else {
-            g211 = EvaluateCubicPolynomial(Eccentricity(), -72.099, 331.819, -508.738, 266.724);
-            g310 = EvaluateCubicPolynomial(Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
-            g322 = EvaluateCubicPolynomial(Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
-            g410 = EvaluateCubicPolynomial(Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
-            g422 = EvaluateCubicPolynomial(Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
+            g211 = EvaluateCubicPolynomial(elements_.Eccentricity(), -72.099, 331.819, -508.738, 266.724);
+            g310 = EvaluateCubicPolynomial(elements_.Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
+            g322 = EvaluateCubicPolynomial(elements_.Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
+            g410 = EvaluateCubicPolynomial(elements_.Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
+            g422 = EvaluateCubicPolynomial(elements_.Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
 
-            if (Eccentricity() <= 0.715) {
-                g520 = EvaluateCubicPolynomial(Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
+            if (elements_.Eccentricity() <= 0.715) {
+                g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
             } else {
-                g520 = EvaluateCubicPolynomial(Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
+                g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
             }
         }
 
@@ -840,14 +793,14 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         double g521;
         double g532;
 
-        if (Eccentricity() < 0.7) {
-            g533 = EvaluateCubicPolynomial(Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
-            g521 = EvaluateCubicPolynomial(Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
-            g532 = EvaluateCubicPolynomial(Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
+        if (elements_.Eccentricity() < 0.7) {
+            g533 = EvaluateCubicPolynomial(elements_.Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
+            g521 = EvaluateCubicPolynomial(elements_.Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
+            g532 = EvaluateCubicPolynomial(elements_.Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
         } else {
-            g533 = EvaluateCubicPolynomial(Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
-            g521 = EvaluateCubicPolynomial(Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
-            g532 = EvaluateCubicPolynomial(Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
+            g533 = EvaluateCubicPolynomial(elements_.Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
+            g521 = EvaluateCubicPolynomial(elements_.Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
+            g532 = EvaluateCubicPolynomial(elements_.Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
         }
 
         const double sini2 = sinio * sinio;
@@ -866,7 +819,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
                 (12.0 + 8.0 * cosio - 10.0 * theta2));
 
-        const double xno2 = RecoveredMeanMotion() * RecoveredMeanMotion();
+        const double xno2 = elements_.RecoveredMeanMotion() * elements_.RecoveredMeanMotion();
         const double ainv2 = aqnv * aqnv;
 
         double temp1 = 3.0 * xno2 * ainv2;
@@ -889,7 +842,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         deepspace_consts_.d5421 = temp * f542 * g521;
         deepspace_consts_.d5433 = temp * f543 * g533;
 
-        integrator_consts_.xlamo = MeanAnomoly() + AscendingNode() + AscendingNode() - deepspace_consts_.gsto - deepspace_consts_.gsto;
+        integrator_consts_.xlamo = elements_.MeanAnomoly() + elements_.AscendingNode() + elements_.AscendingNode() - deepspace_consts_.gsto - deepspace_consts_.gsto;
         bfact = xmdot + xnodot + xnodot - kTHDT - kTHDT;
         bfact = bfact + deepspace_consts_.ssl + deepspace_consts_.ssh + deepspace_consts_.ssh;
     }
@@ -899,9 +852,9 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         /*
          * initialize integrator
          */
-        integrator_consts_.xfact = bfact - RecoveredMeanMotion();
+        integrator_consts_.xfact = bfact - elements_.RecoveredMeanMotion();
         integrator_params_.atime = 0.0;
-        integrator_params_.xni = RecoveredMeanMotion();
+        integrator_params_.xni = elements_.RecoveredMeanMotion();
         integrator_params_.xli = integrator_consts_.xlamo;
         /*
          * precompute dot terms for epoch
@@ -990,7 +943,7 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
          * added to xinc (oldxinc), but apparently report # 6 has then
          * from after they are added.
          * use for strn3
-         * if (Inclination() >= 0.2)
+         * if (elements_.Inclination() >= 0.2)
          * use for gsfc
          * if (xinc >= 0.2)
          * (moved from start of function)
@@ -1086,7 +1039,7 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
          * restart from epoch
          */
         integrator_params_.atime = 0.0;
-        integrator_params_.xni = RecoveredMeanMotion();
+        integrator_params_.xni = elements_.RecoveredMeanMotion();
         integrator_params_.xli = integrator_consts_.xlamo;
 
         /*
@@ -1166,7 +1119,7 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
 
     } else {
 
-        const double xomi = ArgumentPerigee() + common_consts_.omgdot * integrator_params_.atime;
+        const double xomi = elements_.ArgumentPerigee() + common_consts_.omgdot * integrator_params_.atime;
         const double x2omi = xomi + xomi;
         const double x2li = integrator_params_.xli + integrator_params_.xli;
 
@@ -1222,10 +1175,4 @@ void SGP4::Reset() {
     first_run_ = true;
     use_simple_model_ = false;
     use_deep_space_ = false;
-
-    mean_anomoly_ = ascending_node_ = argument_perigee_ = eccentricity_ =
-            inclination_ = mean_motion_ = bstar_ = recovered_semi_major_axis_ =
-            recovered_mean_motion_ = perigee_ = period_ = 0.0;
-
-    epoch_ = Julian();
 }

@@ -16,8 +16,7 @@
 
 void RunTle(Tle tle, double start, double end, double inc) {
     double current = start;
-    SGP4 model;
-    model.SetTle(tle);
+    SGP4 model(tle);
     bool running = true;
     bool first_run = true;
     std::cout << "  " << std::setprecision(0) << tle.NoradNumber() << "  xx" << std::endl;

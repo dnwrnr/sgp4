@@ -9,6 +9,7 @@ SOURCES=CoordGeodetic.cpp \
 	Globals.cpp \
 	Julian.cpp \
 	Observer.cpp \
+	OrbitalElements.cpp \
 	SGP4.cpp \
         Timespan.cpp \
 	Tle.cpp \

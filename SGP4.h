@@ -2,99 +2,18 @@
 #define SGP4_H_
 
 #include "Tle.h"
+#include "OrbitalElements.h"
 #include "Eci.h"
 #include "SatelliteException.h"
 
 class SGP4 {
 public:
-    SGP4(void);
     SGP4(const Tle& tle);
     virtual ~SGP4(void);
 
     void SetTle(const Tle& tle);
     void FindPosition(Eci* eci, double tsince) const;
     void FindPosition(Eci* eci, const Julian& date) const;
-
-    /*
-     * XMO
-     */
-    double MeanAnomoly() const {
-        return mean_anomoly_;
-    }
-
-    /*
-     * XNODEO
-     */
-    double AscendingNode() const {
-        return ascending_node_;
-    }
-
-    /*
-     * OMEGAO
-     */
-    double ArgumentPerigee() const {
-        return argument_perigee_;
-    }
-
-    /*
-     * EO
-     */
-    double Eccentricity() const {
-        return eccentricity_;
-    }
-
-    /*
-     * XINCL
-     */
-    double Inclination() const {
-        return inclination_;
-    }
-
-    /*
-     * XNO
-     */
-    double MeanMotion() const {
-        return mean_motion_;
-    }
-
-    /*
-     * BSTAR
-     */
-    double BStar() const {
-        return bstar_;
-    }
-
-    /*
-     * AODP
-     */
-    double RecoveredSemiMajorAxis() const {
-        return recovered_semi_major_axis_;
-    }
-
-    /*
-     * XNODP
-     */
-    double RecoveredMeanMotion() const {
-        return recovered_mean_motion_;
-    }
-
-    /*
-     * PERIGE
-     */
-    double Perigee() const {
-        return perigee_;
-    }
-
-    double Period() const {
-        return period_;
-    }
-
-    /*
-     * EPOCH
-     */
-    Julian Epoch() const {
-        return epoch_;
-    }
 
     struct CommonConstants {
 
@@ -286,10 +205,16 @@ private:
             const double xndot, const double xnddt, const double xldot)const;
     void Reset();
 
+    /*
+     * flags
+     */
     bool first_run_;
     bool use_simple_model_;
     bool use_deep_space_;
 
+    /*
+     * the constants used
+     */
     struct CommonConstants common_consts_;
     struct NearSpaceConstants nearspace_consts_;
     struct DeepSpaceConstants deepspace_consts_;
@@ -297,21 +222,9 @@ private:
     mutable struct IntegratorParams integrator_params_;
 
     /*
-     * these variables are set at the very start
-     * and should not be changed after that
+     * the orbit data
      */
-    double mean_anomoly_;
-    double ascending_node_;
-    double argument_perigee_;
-    double eccentricity_;
-    double inclination_;
-    double mean_motion_;
-    double bstar_;
-    double recovered_semi_major_axis_;
-    double recovered_mean_motion_;
-    double perigee_;
-    double period_;
-    Julian epoch_;
+    OrbitalElements elements_;
 };
 
 #endif
