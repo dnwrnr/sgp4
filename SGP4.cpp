@@ -276,7 +276,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     }
 
     a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
-    e = e - tempe;
+    e -= tempe;
 
     /*
      * fix tolerance for error recognition
@@ -310,7 +310,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     if (xincl < 0.0) {
         xincl = -xincl;
         xnode += kPI;
-        omgadf = omgadf - kPI;
+        omgadf -= kPI;
     }
 
     xl = xmam + omgadf + xnode;
@@ -386,7 +386,7 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
         const double temp = delomg + delm;
 
         xmp += temp;
-        omega = omega - temp;
+        omega -= temp;
 
         const double tcube = tsq * tsince;
         const double tfour = tsince * tcube;
@@ -1009,8 +1009,8 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
          * if (xinc >= 0.2)
          * (moved from start of function)
          */
-        const double sinis = sin((*xinc));
-        const double cosis = cos((*xinc));
+        const double sinis = sin(*xinc);
+        const double cosis = cos(*xinc);
 
         if ((*xinc) >= 0.2) {
             /*
@@ -1025,8 +1025,8 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
             /*
              * apply periodics with lyddane modification
              */
-            const double sinok = sin((*xnodes));
-            const double cosok = cos((*xnodes));
+            const double sinok = sin(*xnodes);
+            const double cosok = cos(*xnodes);
             double alfdp = sinis * sinok;
             double betdp = sinis * cosok;
             const double dalf = ph * cosok + pinc * cosis * sinok;
@@ -1061,7 +1061,7 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
                 if ((*xnodes) < oldxnodes)
                     (*xnodes) += kTWOPI;
                 else
-                    (*xnodes) = (*xnodes) - kTWOPI;
+                    (*xnodes) -= kTWOPI;
             }
 
             (*xll) += pl;
@@ -1207,7 +1207,7 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
     }
 
     (*xldot) = integrator_params_.xni + integrator_consts_.xfact;
-    (*xnddt) = (*xnddt) * (*xldot);
+    (*xnddt) *= (*xldot);
 }
 
 /*
