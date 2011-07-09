@@ -424,20 +424,15 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
         const double& cosio, const double& sinio) const {
 
-    double temp;
-    double temp1;
-    double temp2;
-    double temp3;
-
     const double beta = sqrt(1.0 - e * e);
     const double xn = kXKE / pow(a, 1.5);
     /*
      * long period periodics
      */
     const double axn = e * cos(omega);
-    temp = 1.0 / (a * beta * beta);
-    const double xll = temp * xlcof * axn;
-    const double aynl = temp * aycof;
+    const double temp11 = 1.0 / (a * beta * beta);
+    const double xll = temp11 * xlcof * axn;
+    const double aynl = temp11 * aycof;
     const double xlt = xl + xll;
     const double ayn = e * sin(omega) + aynl;
     const double elsq = axn * axn + ayn * ayn;
@@ -504,38 +499,39 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     /*
      * short period preliminary quantities
      */
-    temp = 1.0 - elsq;
-    const double pl = a * temp;
+    const double temp21 = 1.0 - elsq;
+    const double pl = a * temp21;
 
     if (pl < 0.0) {
         throw SatelliteException("Error: #4 (pl < 0.0)");
     }
 
     const double r = a * (1.0 - ecose);
-    temp1 = 1.0 / r;
-    const double rdot = kXKE * sqrt(a) * esine * temp1;
-    const double rfdot = kXKE * sqrt(pl) * temp1;
-    temp2 = a * temp1;
-    const double betal = sqrt(temp);
-    temp3 = 1.0 / (1.0 + betal);
-    const double cosu = temp2 * (cosepw - axn + ayn * esine * temp3);
-    const double sinu = temp2 * (sinepw - ayn - axn * esine * temp3);
+    const double temp31 = 1.0 / r;
+    const double rdot = kXKE * sqrt(a) * esine * temp31;
+    const double rfdot = kXKE * sqrt(pl) * temp31;
+    const double temp32 = a * temp31;
+    const double betal = sqrt(temp21);
+    const double temp33 = 1.0 / (1.0 + betal);
+    const double cosu = temp32 * (cosepw - axn + ayn * esine * temp33);
+    const double sinu = temp32 * (sinepw - ayn - axn * esine * temp33);
     const double u = atan2(sinu, cosu);
     const double sin2u = 2.0 * sinu * cosu;
     const double cos2u = 2.0 * cosu * cosu - 1.0;
-    temp = 1.0 / pl;
-    temp1 = kCK2 * temp;
-    temp2 = temp1 * temp;
 
     /*
      * update for short periodics
      */
-    const double rk = r * (1.0 - 1.5 * temp2 * betal * x3thm1) + 0.5 * temp1 * x1mth2 * cos2u;
-    const double uk = u - 0.25 * temp2 * x7thm1 * sin2u;
-    const double xnodek = xnode + 1.5 * temp2 * cosio * sin2u;
-    const double xinck = xincl + 1.5 * temp2 * cosio * sinio * cos2u;
-    const double rdotk = rdot - xn * temp1 * x1mth2 * sin2u;
-    const double rfdotk = rfdot + xn * temp1 * (x1mth2 * cos2u + 1.5 * x3thm1);
+    const double temp41 = 1.0 / pl;
+    const double temp42 = kCK2 * temp41;
+    const double temp43 = temp42 * temp41;
+
+    const double rk = r * (1.0 - 1.5 * temp43 * betal * x3thm1) + 0.5 * temp42 * x1mth2 * cos2u;
+    const double uk = u - 0.25 * temp43 * x7thm1 * sin2u;
+    const double xnodek = xnode + 1.5 * temp43 * cosio * sin2u;
+    const double xinck = xincl + 1.5 * temp43 * cosio * sinio * cos2u;
+    const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
+    const double rfdotk = rfdot + xn * temp42 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
     if (rk < 1.0) {
         throw SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
