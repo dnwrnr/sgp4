@@ -277,6 +277,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
 
     a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
     e -= tempe;
+    double xmam = xmdf + RecoveredMeanMotion() * templ;
 
     /*
      * fix tolerance for error recognition
@@ -289,17 +290,6 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
      */
     if (e < 1.0e-6)
         e = 1.0e-6;
-
-    /*
-    xmdf += RecoveredMeanMotion() * templ;
-    double xlm = xmdf + omgadf + xnode;
-    xnode = fmod(xnode, TWOPI);
-    omgadf = fmod(omgadf, TWOPI);
-    xlm = fmod(xlm, TWOPI);
-    double xmam = fmod(xlm - omgadf - xnode, TWOPI);
-     */
-
-    double xmam = xmdf + RecoveredMeanMotion() * templ;
 
     DeepSpacePeriodics(tsince, &e, &xincl, &omgadf, &xnode, &xmam);
 
