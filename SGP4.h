@@ -1,5 +1,5 @@
-#ifndef SGDP4_H_
-#define SGDP4_H_
+#ifndef SGP4_H_
+#define SGP4_H_
 
 #include "Tle.h"
 #include "Eci.h"
