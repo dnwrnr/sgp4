@@ -859,7 +859,7 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         /*
          * precompute dot terms for epoch
          */
-        DeepSpaceCalcDotTerms(&integrator_consts_.xndot_0, &integrator_consts_.xnddt_0, &integrator_consts_.xldot_0);
+        DeepSpaceCalcDotTerms(&integrator_consts_.values_0);
     }
 }
 
@@ -1045,9 +1045,7 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
         /*
          * restore precomputed values for epoch
          */
-        integrator_params_.xndot_t = integrator_consts_.xndot_0;
-        integrator_params_.xnddt_t = integrator_consts_.xnddt_0;
-        integrator_params_.xldot_t = integrator_consts_.xldot_0;
+        integrator_params_.values_t = integrator_consts_.values_0;
     }
 
     double ft = t - integrator_params_.atime;
@@ -1070,12 +1068,12 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
             /*
              * integrate using current dot terms
              */
-            DeepSpaceIntegrator(delt, STEP2, integrator_params_.xndot_t, integrator_params_.xnddt_t, integrator_params_.xldot_t);
+            DeepSpaceIntegrator(delt, STEP2, integrator_params_.values_t);
 
             /*
              * calculate dot terms for next integration
              */
-            DeepSpaceCalcDotTerms(&integrator_params_.xndot_t, &integrator_params_.xnddt_t, &integrator_params_.xldot_t);
+            DeepSpaceCalcDotTerms(&integrator_params_.values_t);
 
             ft = t - integrator_params_.atime;
         } while (fabs(ft) >= STEP);
@@ -1084,8 +1082,8 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
     /*
      * integrator
      */
-    (*xn) = integrator_params_.xni + integrator_params_.xndot_t * ft + integrator_params_.xnddt_t * ft * ft * 0.5;
-    const double xl = integrator_params_.xli + integrator_params_.xldot_t * ft + integrator_params_.xndot_t * ft * ft * 0.5;
+    (*xn) = integrator_params_.xni + integrator_params_.values_t.xndot * ft + integrator_params_.values_t.xnddt * ft * ft * 0.5;
+    const double xl = integrator_params_.xli + integrator_params_.values_t.xldot * ft + integrator_params_.values_t.xndot * ft * ft * 0.5;
     const double temp = -(*xnodes) + deepspace_consts_.gsto + t * kTHDT;
 
     if (deepspace_consts_.synchronous_flag)
@@ -1097,7 +1095,7 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
 /*
  * calculate dot terms
  */
-void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) const {
+void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const {
 
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
@@ -1110,10 +1108,10 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
 
     if (deepspace_consts_.synchronous_flag) {
 
-        (*xndot) = deepspace_consts_.del1 * sin(integrator_params_.xli - FASX2) +
+        values->xndot = deepspace_consts_.del1 * sin(integrator_params_.xli - FASX2) +
                 deepspace_consts_.del2 * sin(2.0 * (integrator_params_.xli - FASX4)) +
                 deepspace_consts_.del3 * sin(3.0 * (integrator_params_.xli - FASX6));
-        (*xnddt) = deepspace_consts_.del1 * cos(integrator_params_.xli - FASX2) + 2.0 *
+        values->xnddt = deepspace_consts_.del1 * cos(integrator_params_.xli - FASX2) + 2.0 *
                 deepspace_consts_.del2 * cos(2.0 * (integrator_params_.xli - FASX4)) + 3.0 *
                 deepspace_consts_.del3 * cos(3.0 * (integrator_params_.xli - FASX6));
 
@@ -1123,7 +1121,7 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
         const double x2omi = xomi + xomi;
         const double x2li = integrator_params_.xli + integrator_params_.xli;
 
-        (*xndot) = deepspace_consts_.d2201 * sin(x2omi + integrator_params_.xli - G22)
+        values->xndot = deepspace_consts_.d2201 * sin(x2omi + integrator_params_.xli - G22)
                 + deepspace_consts_.d2211 * sin(integrator_params_.xli - G22)
                 + deepspace_consts_.d3210 * sin(xomi + integrator_params_.xli - G32)
                 + deepspace_consts_.d3222 * sin(-xomi + integrator_params_.xli - G32)
@@ -1133,7 +1131,7 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
                 + deepspace_consts_.d5232 * sin(-xomi + integrator_params_.xli - G52)
                 + deepspace_consts_.d5421 * sin(xomi + x2li - G54)
                 + deepspace_consts_.d5433 * sin(-xomi + x2li - G54);
-        (*xnddt) = deepspace_consts_.d2201 * cos(x2omi + integrator_params_.xli - G22)
+        values->xnddt = deepspace_consts_.d2201 * cos(x2omi + integrator_params_.xli - G22)
                 + deepspace_consts_.d2211 * cos(integrator_params_.xli - G22)
                 + deepspace_consts_.d3210 * cos(xomi + integrator_params_.xli - G32)
                 + deepspace_consts_.d3222 * cos(-xomi + integrator_params_.xli - G32)
@@ -1145,21 +1143,21 @@ void SGP4::DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) co
                 + deepspace_consts_.d5433 * cos(-xomi + x2li - G54));
     }
 
-    (*xldot) = integrator_params_.xni + integrator_consts_.xfact;
-    (*xnddt) *= (*xldot);
+    values->xldot = integrator_params_.xni + integrator_consts_.xfact;
+    values->xnddt *= values->xldot;
 }
 
 /*
  * deep space integrator for time period of delt
  */
 void SGP4::DeepSpaceIntegrator(const double delt, const double step2,
-        const double xndot, const double xnddt, const double xldot) const {
+        const struct IntegratorValues &values) const {
 
     /*
      * integrator
      */
-    integrator_params_.xli += xldot * delt + xndot * step2;
-    integrator_params_.xni += xndot * delt + xnddt * step2;
+    integrator_params_.xli += values.xldot * delt + values.xndot * step2;
+    integrator_params_.xni += values.xndot * delt + values.xnddt * step2;
 
     /*
      * increment integrator time

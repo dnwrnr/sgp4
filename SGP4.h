@@ -142,10 +142,18 @@ public:
         double del3;
     };
 
+    struct IntegratorValues {
+	IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0) {
+	}
+
+	double xndot;
+	double xnddt;
+	double xldot;
+    };
+
     struct IntegratorConstants {
 
-        IntegratorConstants() : xfact(0.0), xlamo(0.0), xndot_0(0.0),
-        xnddt_0(0.0), xldot_0(0.0) {
+        IntegratorConstants() : xfact(0.0), xlamo(0.0) {
         }
 
         /*
@@ -157,15 +165,12 @@ public:
         /*
          * integrator values for epoch
          */
-        double xndot_0;
-        double xnddt_0;
-        double xldot_0;
+	struct IntegratorValues values_0;
     };
 
     struct IntegratorParams {
 
-        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0),
-        xndot_t(0.0), xnddt_t(0.0), xldot_t(0.0) {
+        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0) {
         }
 
         /*
@@ -177,9 +182,7 @@ public:
         /*
          * itegrator values for current d_atime_
          */
-        double xndot_t;
-        double xnddt_t;
-        double xldot_t;
+	struct IntegratorValues values_t;
     };
 
 private:
@@ -200,9 +203,9 @@ private:
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
             const double& cosio, const double& sinio) const;
-    void DeepSpaceCalcDotTerms(double* xndot, double* xnddt, double* xldot) const;
+    void DeepSpaceCalcDotTerms(struct IntegratorValues *values) const;
     void DeepSpaceIntegrator(const double delt, const double step2,
-            const double xndot, const double xnddt, const double xldot)const;
+            const struct IntegratorValues& values)const;
     void Reset();
 
     /*
