@@ -143,12 +143,12 @@ public:
     };
 
     struct IntegratorValues {
-	IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0) {
-	}
+        IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0) {
+        }
 
-	double xndot;
-	double xnddt;
-	double xldot;
+        double xndot;
+        double xnddt;
+        double xldot;
     };
 
     struct IntegratorConstants {
@@ -165,7 +165,7 @@ public:
         /*
          * integrator values for epoch
          */
-	struct IntegratorValues values_0;
+        struct IntegratorValues values_0;
     };
 
     struct IntegratorParams {
@@ -182,7 +182,7 @@ public:
         /*
          * itegrator values for current d_atime_
          */
-	struct IntegratorValues values_t;
+        struct IntegratorValues values_t;
     };
 
 private:
