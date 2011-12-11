@@ -519,8 +519,9 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
-    Timespan diff(tsince);
-    Julian julian = elements_.Epoch() + diff;
+    Julian julian(elements_.Epoch());
+    julian.AddMin(tsince);
+
     (*eci) = Eci(julian, position, velocity);
 }
 

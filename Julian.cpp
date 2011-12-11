@@ -247,15 +247,27 @@ time_t Julian::ToTime() const {
 double Julian::ToGreenwichSiderealTime() const {
 
 #if 0
-    double theta;
-    double tut1;
+    const double UT = fmod(jul + 0.5, 1.0);
+    const double TU = (jul - 2451545.0 - UT) / 36525.0;
 
+    double GMST = 24110.54841 + TU *
+        (8640184.812866 + TU * (0.093104 - TU * 6.2e-06));
+
+    GMST = fmod(GMST + SEC_PER_DAY * OMEGA_E * UT, SEC_PER_DAY);
+
+    if (GMST < 0.0)
+        GMST += SEC_PER_DAY;  // "wrap" negative modulo value
+
+    return  (TWOPI * (GMST / SEC_PER_DAY));
+#endif
+
+#if 0
     // tut1 = Julian centuries from 2000 Jan. 1 12h UT1 (since J2000 which is 2451545.0)
     // a Julian century is 36525 days
-    tut1 = (date_ - 2451545.0) / 36525.0;
+    const double tut1 = (date_ - 2451545.0) / 36525.0;
 
     // Rotation angle in arcseconds
-    theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
+    double theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
 
     // 360.0 / 86400.0 = 1.0 / 240.0
     theta = fmod(DegreesToRadians(theta / 240.0), kTWOPI);
@@ -285,7 +297,7 @@ double Julian::ToGreenwichSiderealTime() const {
     const double c1p2p = C1 + kTWOPI;
     double gsto = fmod(THGR70 + C1 * ds70 + c1p2p * tfrac + ts70 * ts70 * FK5R, kTWOPI);
     if (gsto < 0.0)
-        gsto = gsto + kTWOPI;
+        gsto += kTWOPI;
 
     return gsto;
 }

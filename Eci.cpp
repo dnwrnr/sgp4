@@ -1,5 +1,7 @@
 #include "Eci.h"
 
+#include "Globals.h"
+
 Eci::Eci(const Julian &date, const CoordGeodetic &geo)
 : date_(date) {
 
@@ -59,11 +61,12 @@ Eci::~Eci(void) {
 CoordGeodetic Eci::ToGeodetic() const {
 
     const double theta = AcTan(position_.y, position_.x);
-    /*
-     * changes lon to 0>= and <360
-     * const double lon = Globals::Fmod2p(theta - date_.ToGreenwichSiderealTime());
-     */
+
+    // 0 >= lon < 360
+    // const double lon = Fmod2p(theta - date_.ToGreenwichSiderealTime());
+    // 180 >= lon < 180
     const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kTWOPI);
+
     const double r = sqrt((position_.x * position_.x) + (position_.y * position_.y));
     static const double e2 = kF * (2.0 - kF);
 
