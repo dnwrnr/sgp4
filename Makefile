@@ -1,6 +1,13 @@
 CC=g++
 AR=ar
-CFLAGS=-c -Wall -g -pedantic -ansi
+
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+	CFLAGS=-c -Wall -O0 -g -pedantic -Wextra -Wconversion -march=native -Wno-long-long
+else
+	CFLAGS=-c -Wall -O2    -pedantic -Wextra -Wconversion -march=native -Wno-long-long
+endif
+
 LDFLAGS=
 
 SOURCES=CoordGeodetic.cpp \
@@ -11,7 +18,7 @@ SOURCES=CoordGeodetic.cpp \
 	Observer.cpp \
 	OrbitalElements.cpp \
 	SGP4.cpp \
-        Timespan.cpp \
+	Timespan.cpp \
 	Tle.cpp \
 	Vector.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
