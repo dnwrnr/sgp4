@@ -178,22 +178,22 @@ void SGP4::Initialize() {
     first_run_ = false;
 }
 
-void SGP4::FindPosition(Eci* eci, double tsince) const {
+Eci SGP4::FindPosition(double tsince) const {
 
     if (use_deep_space_)
-        FindPositionSDP4(eci, tsince);
+        return FindPositionSDP4(tsince);
     else
-        FindPositionSGP4(eci, tsince);
+        return FindPositionSGP4(tsince);
 }
 
-void SGP4::FindPosition(Eci* eci, const Julian& date) const {
+Eci SGP4::FindPosition(const Julian& date) const {
 
     Timespan diff = date - elements_.Epoch();
 
-    FindPosition(eci, diff.GetTotalMinutes());
+    return FindPosition(diff.GetTotalMinutes());
 }
 
-void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
+Eci SGP4::FindPositionSDP4(double tsince) const {
 
     /*
      * the final values
@@ -286,7 +286,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
     /*
      * using calculated values, find position and velocity
      */
-    CalculateFinalPositionVelocity(eci, tsince, e,
+    return CalculateFinalPositionVelocity(tsince, e,
             a, omega, xl, xnode,
             xincl, perturbed_xlcof, perturbed_aycof,
             perturbed_x3thm1, perturbed_x1mth2, perturbed_x7thm1,
@@ -294,7 +294,7 @@ void SGP4::FindPositionSDP4(Eci* eci, double tsince) const {
 
 }
 
-void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
+Eci SGP4::FindPositionSGP4(double tsince) const {
 
     /*
      * the final values
@@ -363,7 +363,7 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
      * using calculated values, find position and velocity
      * we can pass in constants from Initialize() as these dont change
      */
-    CalculateFinalPositionVelocity(eci, tsince, e,
+    return CalculateFinalPositionVelocity(tsince, e,
             a, omega, xl, xnode,
             xincl, common_consts_.xlcof, common_consts_.aycof,
             common_consts_.x3thm1, common_consts_.x1mth2, common_consts_.x7thm1,
@@ -371,7 +371,7 @@ void SGP4::FindPositionSGP4(Eci* eci, double tsince) const {
 
 }
 
-void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const double& e,
+Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
         const double& a, const double& omega, const double& xl, const double& xnode,
         const double& xincl, const double& xlcof, const double& aycof,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
@@ -522,7 +522,9 @@ void SGP4::CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const 
     Julian julian(elements_.Epoch());
     julian.AddMin(tsince);
 
-    (*eci) = Eci(julian, position, velocity);
+    Eci eci(julian, position, velocity);
+
+    return eci;
 }
 
 static inline double EvaluateCubicPolynomial(const double x, const double constant,

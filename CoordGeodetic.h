@@ -16,11 +16,21 @@ public:
     }
 
     /*
-     * radians
+     * default is in degrees 
      */
-    CoordGeodetic(double lat, double lon, double alt)
-        : latitude(lat), longitude(lon), altitude(alt)
+    CoordGeodetic(double lat, double lon, double alt, bool radians = false)
     {
+        if (radians)
+        {
+            latitude = lat;
+            longitude = lon;
+        }
+        else
+        {
+            latitude = DegreesToRadians(lat);
+            longitude = DegreesToRadians(lon);
+        }
+        altitude = alt;
     }
 
     CoordGeodetic(const CoordGeodetic& g)

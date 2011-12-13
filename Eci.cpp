@@ -1,26 +1,26 @@
 #include "Eci.h"
 
-#include "Globals.h"
-
-Eci::Eci(const Julian &date, const CoordGeodetic &geo)
-: date_(date) {
+void Eci::ToEci(const Julian& date, const CoordGeodetic &g)
+{
+    /*
+     * set date
+     */
+    date_ = date;
 
     static const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
-    const double latitude = geo.latitude;
-    const double longitude = geo.longitude;
-    const double altitude = geo.altitude;
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    const double theta = date_.ToLocalMeanSiderealTime(longitude);
+    const double theta = date_.ToLocalMeanSiderealTime(g.longitude);
 
     /*
      * take into account earth flattening
      */
-    const double c = 1.0 / sqrt(1.0 + kF * (kF - 2.0) * pow(sin(latitude), 2.0));
+    const double c = 1.0 /
+        sqrt(1.0 + kF * (kF - 2.0) * pow(sin(g.latitude), 2.0));
     const double s = pow(1.0 - kF, 2.0) * c;
-    const double achcp = (kXKMPER * c + altitude) * cos(latitude);
+    const double achcp = (kXKMPER * c + g.altitude) * cos(g.latitude);
 
     /*
      * X position in km
@@ -30,7 +30,7 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
      */
     position_.x = achcp * cos(theta);
     position_.y = achcp * sin(theta);
-    position_.z = (kXKMPER * s + altitude) * sin(latitude);
+    position_.z = (kXKMPER * s + g.altitude) * sin(g.latitude);
     position_.w = position_.GetMagnitude();
 
     /*
@@ -45,21 +45,8 @@ Eci::Eci(const Julian &date, const CoordGeodetic &geo)
     velocity_.w = velocity_.GetMagnitude();
 }
 
-Eci::Eci(const Julian &date, const Vector &position)
-: date_(date), position_(position) {
-
-}
-
-Eci::Eci(const Julian &date, const Vector &position, const Vector &velocity)
-: date_(date), position_(position), velocity_(velocity) {
-
-}
-
-Eci::~Eci(void) {
-}
-
-CoordGeodetic Eci::ToGeodetic() const {
-
+CoordGeodetic Eci::ToGeodetic() const
+{
     const double theta = AcTan(position_.y, position_.x);
 
     // 0 >= lon < 360
@@ -67,7 +54,9 @@ CoordGeodetic Eci::ToGeodetic() const {
     // 180 >= lon < 180
     const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kPI);
 
-    const double r = sqrt((position_.x * position_.x) + (position_.y * position_.y));
+    const double r = sqrt((position_.x * position_.x) + 
+            (position_.y * position_.y));
+    
     static const double e2 = kF * (2.0 - kF);
 
     double lat = AcTan(position_.z, r);
@@ -75,13 +64,15 @@ CoordGeodetic Eci::ToGeodetic() const {
     double c = 0.0;
     int cnt = 0;
 
-    do {
+    do
+    {
         phi = lat;
         const double sinphi = sin(phi);
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
         lat = AcTan(position_.z + kXKMPER * c * e2 * sinphi, r);
         cnt++;
-    } while (fabs(lat - phi) >= 1e-10 && cnt < 10);
+    }
+    while (fabs(lat - phi) >= 1e-10 && cnt < 10);
 
     const double alt = r / cos(lat) - kXKMPER * c;
 

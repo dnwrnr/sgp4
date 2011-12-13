@@ -5,19 +5,15 @@
 /*
  * in degrees!
  */
-Observer::Observer(const double latitude, const double longitude, const double altitude) {
-
-    geo_.latitude = DegreesToRadians(latitude);
-    geo_.longitude = DegreesToRadians(longitude);
-    geo_.altitude = altitude;
-
-    observers_eci_ = Eci(Julian(), geo_);
+Observer::Observer(const double latitude, const double longitude, const double altitude)
+    : geo_(DegreesToRadians(latitude), DegreesToRadians(longitude), altitude), 
+    observers_eci_(Julian(), geo_)
+{
 }
 
 Observer::Observer(const CoordGeodetic &geo)
-: geo_(geo) {
-
-    observers_eci_ = Eci(Julian(), geo_);
+    : geo_(geo), observers_eci_(Julian(), geo_)
+{
 }
 
 Observer::~Observer(void) {

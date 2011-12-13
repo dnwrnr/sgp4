@@ -23,7 +23,6 @@ void RunTle(Tle tle, double start, double end, double inc) {
     while (running) {
         try {
             double val;
-            Eci eci;
             if (first_run && current != 0.0) {
                 /*
                  * make sure first run is always as zero
@@ -35,7 +34,7 @@ void RunTle(Tle tle, double start, double end, double inc) {
                  */
                 val = current;
             }
-            model.FindPosition(&eci, val);
+            Eci eci = model.FindPosition(val);
 
             Vector position = eci.GetPosition();
             Vector velocity = eci.GetVelocity();

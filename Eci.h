@@ -4,30 +4,60 @@
 #include "CoordGeodetic.h"
 #include "Vector.h"
 #include "Julian.h"
+#include "Globals.h"
 
-class Eci {
+class Eci
+{
 public:
 
-    Eci() {
-    };
-    Eci(const Julian &date, const CoordGeodetic &geo);
-    Eci(const Julian &date, const Vector &position);
-    Eci(const Julian &date, const Vector &position, const Vector &velocity);
-    virtual ~Eci(void);
+    /*
+     * in degrees
+     */
+    Eci(const Julian& date, double latitude, double longitude, double altitude)
+    {
+        ToEci(date, CoordGeodetic(latitude, longitude, altitude));
+    }
 
-    Vector GetPosition() const {
+    Eci(const Julian& date, const CoordGeodetic& g)
+    {
+        ToEci(date, g);
+    }
+
+    Eci(const Julian &date, const Vector &position)
+        : date_(date), position_(position)
+    {
+    }
+
+    Eci(const Julian &date, const Vector &position, const Vector &velocity)
+        : date_(date), position_(position), velocity_(velocity)
+    {
+    }
+
+    virtual ~Eci()
+    {
+    }
+
+    Vector GetPosition() const
+    {
         return position_;
     }
 
-    Vector GetVelocity() const {
+    Vector GetVelocity() const
+    {
         return velocity_;
     }
 
-    Julian GetDate() const {
+    Julian GetDate() const
+    {
         return date_;
     }
 
     CoordGeodetic ToGeodetic() const;
+
+protected:
+    void ToEci(const Julian& date, double latitude, double longitude,
+            double altitude);
+    void ToEci(const Julian& date, const CoordGeodetic& g);
 
 private:
     Julian date_;

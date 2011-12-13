@@ -6,14 +6,15 @@
 #include "Eci.h"
 #include "SatelliteException.h"
 
-class SGP4 {
+class SGP4
+{
 public:
     SGP4(const Tle& tle);
     virtual ~SGP4(void);
 
     void SetTle(const Tle& tle);
-    void FindPosition(Eci* eci, double tsince) const;
-    void FindPosition(Eci* eci, const Julian& date) const;
+    Eci FindPosition(double tsince) const;
+    Eci FindPosition(const Julian& date) const;
 
     struct CommonConstants {
 
@@ -196,9 +197,9 @@ private:
             double* omgasm, double* xnodes, double* xll) const;
     void DeepSpaceSecular(const double& t, double* xll, double* omgasm,
             double* xnodes, double* em, double* xinc, double* xn) const;
-    void FindPositionSDP4(Eci* eci, double tsince) const;
-    void FindPositionSGP4(Eci* eci, double tsince) const;
-    void CalculateFinalPositionVelocity(Eci* eci, const double& tsince, const double& e,
+    Eci FindPositionSDP4(double tsince) const;
+    Eci FindPositionSGP4(double tsince) const;
+    Eci CalculateFinalPositionVelocity(const double& tsince, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,

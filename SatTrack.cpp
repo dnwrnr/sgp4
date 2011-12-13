@@ -10,11 +10,10 @@ int main() {
     "1 25544U 98067A   11146.36888985  .00025753  00000-0  16912-3 0  4201",
     "2 25544  51.6504 272.6534 0003891 329.5510  71.2188 15.75539412717473");
   SGP4 sgp4(tle);
-  Eci eci;
 
   while(1) {
     Julian now;
-    sgp4.FindPosition(&eci, now);
+    Eci eci = sgp4.FindPosition(now);
     CoordTopographic topo = obs.GetLookAngle(eci);
     CoordGeodetic geo = eci.ToGeodetic();
     std::cout << now << " ";
