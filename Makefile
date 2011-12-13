@@ -17,8 +17,7 @@ SOURCES=Eci.cpp \
 	OrbitalElements.cpp \
 	SGP4.cpp \
 	Timespan.cpp \
-	Tle.cpp \
-	Vector.cpp
+	Tle.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 SGP4LIB=libsgp4.a
 
