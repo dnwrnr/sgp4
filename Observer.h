@@ -6,29 +6,53 @@
 #include "Julian.h"
 #include "Eci.h"
 
-class Observer {
+class Observer
+{
 public:
-    Observer(const double latitude, const double longitude, const double altitude);
-    Observer(const CoordGeodetic &geo);
-    virtual ~Observer(void);
+    Observer(double latitude, double longitude, double altitude)
+        : geo_(latitude, longitude, altitude),
+        observers_eci_(Julian(), geo_)
+    {
+    }
 
-    void SetLocation(const CoordGeodetic& geo) {
-        geo_ = geo;
+    Observer(const CoordGeodetic &g)
+        : geo_(g), observers_eci_(Julian(), geo_)
+    {
+    }
+
+    virtual ~Observer()
+    {
+    }
+
+    void SetLocation(const CoordGeodetic& g)
+    {
+        geo_ = g;
         observers_eci_ = Eci(observers_eci_.GetDate(), geo_);
     }
 
-    CoordGeodetic GetLocation() const {
+    CoordGeodetic GetLocation() const
+    {
         return geo_;
     }
 
-    Eci GetEciPosition(const Julian &date) const {
+    Eci GetEciPosition(const Julian &date) const
+    {
         return Eci(date, geo_);
     }
 
     CoordTopographic GetLookAngle(const Eci &eci);
 
 private:
-    void UpdateObserversEci(const Julian &date);
+    void UpdateObserversEci(const Julian &date)
+    {
+        /*
+         * if date has changed, update for new date
+         */
+        if (observers_eci_.GetDate() != date)
+        {
+            observers_eci_ = Eci(date, geo_);
+        }
+    }
 
     /*
      * the observers position

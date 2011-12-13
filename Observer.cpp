@@ -3,33 +3,6 @@
 #include "Globals.h"
 
 /*
- * in degrees!
- */
-Observer::Observer(const double latitude, const double longitude, const double altitude)
-    : geo_(DegreesToRadians(latitude), DegreesToRadians(longitude), altitude), 
-    observers_eci_(Julian(), geo_)
-{
-}
-
-Observer::Observer(const CoordGeodetic &geo)
-    : geo_(geo), observers_eci_(Julian(), geo_)
-{
-}
-
-Observer::~Observer(void) {
-}
-
-void Observer::UpdateObserversEci(const Julian &date) {
-
-    /*
-     * if date has changed, update for new date
-     */
-    if (observers_eci_.GetDate() != date) {
-        observers_eci_ = Eci(date, geo_);
-    }
-}
-
-/*
  * calculate lookangle between the observer and the passed in Eci object
  */
 CoordTopographic Observer::GetLookAngle(const Eci &eci) {
