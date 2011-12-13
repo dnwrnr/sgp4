@@ -10,8 +10,7 @@ endif
 
 LDFLAGS=
 
-SOURCES=CoordTopographic.cpp \
-	Eci.cpp \
+SOURCES=Eci.cpp \
 	Globals.cpp \
 	Julian.cpp \
 	Observer.cpp \
