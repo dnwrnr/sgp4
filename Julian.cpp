@@ -4,9 +4,6 @@
 #include <cmath>
 #include <ctime>
 #include <cassert>
-#include <cstring>
-#include <sstream>
-#include <iomanip>
 
 #ifdef WIN32
 #include <windows.h>
@@ -14,8 +11,8 @@
 #include <sys/time.h>
 #endif
 
-Julian::Julian() {
-
+Julian::Julian()
+{
 #ifdef WIN32
     SYSTEMTIME st;
     GetSystemTime(&st);
@@ -39,22 +36,16 @@ Julian::Julian() {
 #endif
 }
 
-Julian::Julian(const Julian& jul) {
-
-    date_ = jul.date_;
-}
-
 /*
  * create julian date given time_t value
  */
-Julian::Julian(const time_t t) {
-
+Julian::Julian(const time_t t)
+{
     struct tm ptm;
 #if WIN32
     assert(gmtime_s(&ptm, &t));
 #else
-    if (gmtime_r(&t, &ptm) == NULL)
-        assert(1);
+    assert(gmtime_r(&t, &ptm) != NULL);
 #endif
     int year = ptm.tm_year + 1900;
     double day = ptm.tm_yday + 1 +
@@ -66,42 +57,20 @@ Julian::Julian(const time_t t) {
 }
 
 /*
- * create julian date from year and day of year
- */
-Julian::Julian(int year, double day) {
-
-    Initialize(year, day);
-}
-
-/*
- * create julian date from individual components
- * year: 2004
- * mon: 1-12
- * day: 1-31
- * hour: 0-23
- * min: 0-59
- * sec: 0-59.99
- */
-Julian::Julian(int year, int mon, int day, int hour, int min, double sec) {
-
-    Initialize(year, mon, day, hour, min, sec);
-}
-
-/*
  * comparison
  */
-bool Julian::operator==(const Julian &date) const {
-
+bool Julian::operator==(const Julian &date) const
+{
     return date_ == date.date_ ? true : false;
 }
 
-bool Julian::operator!=(const Julian &date) const {
-
+bool Julian::operator!=(const Julian &date) const
+{
     return !(*this == date);
 }
 
-bool Julian::operator>(const Julian &date) const {
-
+bool Julian::operator>(const Julian &date) const
+{
     return date_ > date.date_ ? true : false;
 }
 
@@ -110,29 +79,29 @@ bool Julian::operator<(const Julian &date) const {
     return date_ < date.date_ ? true : false;
 }
 
-bool Julian::operator>=(const Julian &date) const {
-
+bool Julian::operator>=(const Julian &date) const
+{
     return date_ >= date.date_ ? true : false;
 }
 
-bool Julian::operator<=(const Julian &date) const {
-
+bool Julian::operator<=(const Julian &date) const
+{
     return date_ <= date.date_ ? true : false;
 }
 
 /*
  * assignment
  */
-Julian& Julian::operator=(const Julian& b) {
-
+Julian& Julian::operator=(const Julian& b)
+{
     if (this != &b) {
         date_ = b.date_;
     }
     return (*this);
 }
 
-Julian& Julian::operator=(const double b) {
-
+Julian& Julian::operator=(const double b)
+{
     date_ = b;
     return (*this);
 }
@@ -140,57 +109,41 @@ Julian& Julian::operator=(const double b) {
 /*
  * arithmetic
  */
-Julian Julian::operator +(const Timespan& b) const {
-
+Julian Julian::operator +(const Timespan& b) const
+{
     return Julian(*this) += b;
 }
 
-Julian Julian::operator-(const Timespan& b) const {
-
+Julian Julian::operator-(const Timespan& b) const
+{
     return Julian(*this) -= b;
 }
 
-Timespan Julian::operator-(const Julian& b) const {
-
+Timespan Julian::operator-(const Julian& b) const
+{
     return Timespan(date_ - b.date_);
 }
 
 /*
  * compound assignment
  */
-Julian & Julian::operator +=(const Timespan& b) {
-
+Julian & Julian::operator +=(const Timespan& b)
+{
     date_ += b;
     return (*this);
 }
 
-Julian & Julian::operator -=(const Timespan& b) {
-
+Julian & Julian::operator -=(const Timespan& b)
+{
     date_ -= b;
     return (*this);
-}
-
-std::ostream & operator<<(std::ostream& stream, const Julian& julian) {
-
-    std::stringstream out;
-    struct Julian::DateTimeComponents datetime;
-    julian.ToGregorian(&datetime);
-    out << std::right << std::fixed << std::setprecision(6) << std::setfill('0');
-    out << std::setw(4) << datetime.years << "-";
-    out << std::setw(2) << datetime.months << "-";
-    out << std::setw(2) << datetime.days << " ";
-    out << std::setw(2) << datetime.hours << ":";
-    out << std::setw(2) << datetime.minutes << ":";
-    out << std::setw(9) << datetime.seconds << " UTC";
-    stream << out.str();
-    return stream;
 }
 
 /*
  * create julian date from year and day of year
  */
-void Julian::Initialize(int year, double day) {
-
+void Julian::Initialize(int year, double day)
+{
     year--;
 
     int A = (year / 100);
@@ -212,17 +165,21 @@ void Julian::Initialize(int year, double day) {
  * min: 0-59
  * sec: 0-59.99
  */
-void Julian::Initialize(int year, int mon, int day, int hour, int min, double sec) {
-
+void Julian::Initialize(int year, int mon, int day,
+        int hour, int min, double sec)
+{
     // Calculate N, the day of the year (1..366)
     int N;
     int F1 = (int) ((275.0 * mon) / 9.0);
     int F2 = (int) ((mon + 9.0) / 12.0);
 
-    if (IsLeapYear(year)) {
+    if (IsLeapYear(year))
+    {
         // Leap year
         N = F1 - F2 + day - 30;
-    } else {
+    }
+    else
+    {
         // Common year
         N = F1 - (2 * F2) + day - 30;
     }
@@ -236,16 +193,16 @@ void Julian::Initialize(int year, int mon, int day, int hour, int min, double se
  * converts time to time_t
  * note: resolution to seconds only
  */
-time_t Julian::ToTime() const {
-
+time_t Julian::ToTime() const
+{
     return static_cast<time_t> ((date_ - 2440587.5) * 86400.0);
 }
 
 /*
  * Greenwich Mean Sidereal Time
  */
-double Julian::ToGreenwichSiderealTime() const {
-
+double Julian::ToGreenwichSiderealTime() const
+{
 #if 0
     const double UT = fmod(jul + 0.5, 1.0);
     const double TU = (jul - 2451545.0 - UT) / 36525.0;
@@ -256,18 +213,22 @@ double Julian::ToGreenwichSiderealTime() const {
     GMST = fmod(GMST + SEC_PER_DAY * OMEGA_E * UT, SEC_PER_DAY);
 
     if (GMST < 0.0)
+    {
         GMST += SEC_PER_DAY;  // "wrap" negative modulo value
+    }
 
     return  (TWOPI * (GMST / SEC_PER_DAY));
 #endif
 
 #if 0
-    // tut1 = Julian centuries from 2000 Jan. 1 12h UT1 (since J2000 which is 2451545.0)
+    // tut1 = Julian centuries from 2000 Jan. 1 12h UT1
+    // (since J2000 which is 2451545.0)
     // a Julian century is 36525 days
     const double tut1 = (date_ - 2451545.0) / 36525.0;
 
     // Rotation angle in arcseconds
-    double theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1 + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
+    double theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1
+        + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
 
     // 360.0 / 86400.0 = 1.0 / 240.0
     theta = fmod(DegreesToRadians(theta / 240.0), kTWOPI);
@@ -276,7 +237,9 @@ double Julian::ToGreenwichSiderealTime() const {
      * check quadrants
      */
     if (theta < 0.0)
+    {
         theta += kTWOPI;
+    }
 
     return theta;
 #endif
@@ -295,9 +258,12 @@ double Julian::ToGreenwichSiderealTime() const {
      * find greenwich location at epoch
      */
     const double c1p2p = C1 + kTWOPI;
-    double gsto = fmod(THGR70 + C1 * ds70 + c1p2p * tfrac + ts70 * ts70 * FK5R, kTWOPI);
+    double gsto = fmod(THGR70 + C1 * ds70 + c1p2p * tfrac
+            + ts70 * ts70 * FK5R, kTWOPI);
     if (gsto < 0.0)
+    {
         gsto += kTWOPI;
+    }
 
     return gsto;
 }
@@ -305,22 +271,25 @@ double Julian::ToGreenwichSiderealTime() const {
 /*
  * Local Mean Sideral Time
  */
-double Julian::ToLocalMeanSiderealTime(const double& lon) const {
-
+double Julian::ToLocalMeanSiderealTime(const double& lon) const
+{
     return fmod(ToGreenwichSiderealTime() + lon, kTWOPI);
 }
 
-void Julian::ToGregorian(struct DateTimeComponents* datetime) const {
-
+void Julian::ToGregorian(struct DateTimeComponents* datetime) const
+{
     double jdAdj = GetDate() + 0.5;
     int Z = (int) jdAdj;
     double F = jdAdj - Z;
 
     int A = 0;
 
-    if (Z < 2299161) {
+    if (Z < 2299161)
+    {
         A = static_cast<int> (Z);
-    } else {
+    }
+    else
+    {
         int a = static_cast<int> ((Z - 1867216.25) / 36524.25);
         A = static_cast<int> (Z + 1 + a - static_cast<int> (a / 4));
     }
