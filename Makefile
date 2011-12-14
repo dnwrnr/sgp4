@@ -3,9 +3,9 @@ AR=ar
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
-	CFLAGS=-c -Wall -O0 -g -pedantic -Wextra -Wconversion
+	CFLAGS=-c -Wall -O0 -g -pedantic -Werror -Wextra -Wconversion
 else
-	CFLAGS=-c -Wall -O2    -pedantic -Wextra -Wconversion -DNDEBUG
+	CFLAGS=-c -Wall -O2    -pedantic -Werror -Wextra -Wconversion -DNDEBUG
 endif
 
 LDFLAGS=

@@ -43,9 +43,15 @@ Julian::Julian(const time_t t)
 {
     struct tm ptm;
 #if WIN32
-    assert(gmtime_s(&ptm, &t));
+    if (gmtime_s(&ptm, &t))
+    {
+        assert(1);
+    }
 #else
-    assert(gmtime_r(&t, &ptm) != NULL);
+    if (gmtime_r(&t, &ptm) == NULL)
+    {
+        assert(1);
+    }
 #endif
     int year = ptm.tm_year + 1900;
     double day = ptm.tm_yday + 1 +
