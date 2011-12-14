@@ -3,92 +3,108 @@
 
 #include "Tle.h"
 
-class OrbitalElements {
+class OrbitalElements
+{
 public:
     OrbitalElements(const Tle& tle);
-    virtual ~OrbitalElements(void);
+
+    virtual ~OrbitalElements()
+    {
+    }
 
     /*
      * XMO
      */
-    double MeanAnomoly() const {
+    double MeanAnomoly() const
+    {
         return mean_anomoly_;
     }
 
     /*
      * XNODEO
      */
-    double AscendingNode() const {
+    double AscendingNode() const
+    {
         return ascending_node_;
     }
 
     /*
      * OMEGAO
      */
-    double ArgumentPerigee() const {
+    double ArgumentPerigee() const
+    {
         return argument_perigee_;
     }
 
     /*
      * EO
      */
-    double Eccentricity() const {
+    double Eccentricity() const
+    {
         return eccentricity_;
     }
 
     /*
      * XINCL
      */
-    double Inclination() const {
+    double Inclination() const
+    {
         return inclination_;
     }
 
     /*
      * XNO
      */
-    double MeanMotion() const {
+    double MeanMotion() const
+    {
         return mean_motion_;
     }
 
     /*
      * BSTAR
      */
-    double BStar() const {
+    double BStar() const
+    {
         return bstar_;
     }
 
     /*
      * AODP
      */
-    double RecoveredSemiMajorAxis() const {
+    double RecoveredSemiMajorAxis() const
+    {
         return recovered_semi_major_axis_;
     }
 
     /*
      * XNODP
      */
-    double RecoveredMeanMotion() const {
+    double RecoveredMeanMotion() const
+    {
         return recovered_mean_motion_;
     }
 
     /*
      * PERIGE
      */
-    double Perigee() const {
+    double Perigee() const
+    {
         return perigee_;
     }
 
     /*
      * Period in minutes
      */
-    double Period() const {
+    double Period() const
+    {
         return period_;
     }
 
     /*
      * EPOCH
      */
-    Julian Epoch() const {
+    Julian Epoch() const
+    {
         return epoch_;
     }
 
