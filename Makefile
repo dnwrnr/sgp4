@@ -16,6 +16,7 @@ SOURCES=Eci.cpp \
 	Observer.cpp \
 	OrbitalElements.cpp \
 	SGP4.cpp \
+	SolarPosition.cpp \
 	Timespan.cpp \
 	Tle.cpp
 OBJECTS=$(SOURCES:.cpp=.o)

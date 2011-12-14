@@ -4,12 +4,18 @@
 #include "Julian.h"
 #include "Eci.h"
 
-class SolarPosition {
+class SolarPosition
+{
 public:
-    SolarPosition(void);
-    virtual ~SolarPosition(void);
+    SolarPosition()
+    {
+    }
 
-    void FindPosition(const Julian& j, Eci& eci);
+    virtual ~SolarPosition()
+    {
+    }
+
+    Eci FindPosition(const Julian& j);
 
 private:
     double Modulus(double arg1, double arg2) const;
