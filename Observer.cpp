@@ -5,7 +5,6 @@
  */
 CoordTopographic Observer::GetLookAngle(const Eci &eci)
 {
-
     /*
      * update the observers Eci to match the time of the Eci passed in
      * if necessary
@@ -57,10 +56,8 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci)
      * range in km
      * range rate in km/s
      */
-    CoordTopographic topo(az,
+    return CoordTopographic(az,
             el,
             range.w,
             rate);
-
-    return topo;
 }
