@@ -17,8 +17,8 @@ void Eci::ToEci(const Julian& date, const CoordGeodetic &g)
     /*
      * take into account earth flattening
      */
-    const double c = 1.0 /
-        sqrt(1.0 + kF * (kF - 2.0) * pow(sin(g.latitude), 2.0));
+    const double c = 1.0
+        / sqrt(1.0 + kF * (kF - 2.0) * pow(sin(g.latitude), 2.0));
     const double s = pow(1.0 - kF, 2.0) * c;
     const double achcp = (kXKMPER * c + g.altitude) * cos(g.latitude);
 
@@ -54,8 +54,8 @@ CoordGeodetic Eci::ToGeodetic() const
     // 180 >= lon < 180
     const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kPI);
 
-    const double r = sqrt((position_.x * position_.x) + 
-            (position_.y * position_.y));
+    const double r = sqrt((position_.x * position_.x)
+            + (position_.y * position_.y));
     
     static const double e2 = kF * (2.0 - kF);
 
