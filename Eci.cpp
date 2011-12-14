@@ -76,5 +76,5 @@ CoordGeodetic Eci::ToGeodetic() const
 
     const double alt = r / cos(lat) - kXKMPER * c;
 
-    return CoordGeodetic(lat, lon, alt);
+    return CoordGeodetic(lat, lon, alt, true);
 }
