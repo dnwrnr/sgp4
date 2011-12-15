@@ -6,27 +6,18 @@
 #include <cmath>
 #include <iomanip>
 
-SGP4::SGP4(const Tle& tle)
-: elements_(tle) {
-
-    Initialize();
-}
-
-SGP4::~SGP4(void) {
-}
-
-void SGP4::SetTle(const Tle& tle) {
-
+void SGP4::SetTle(const Tle& tle)
+{
     /*
      * extract and format tle data
      */
     elements_ = OrbitalElements(tle);
 
-    Initialize();
+    Initialise();
 }
 
-void SGP4::Initialize() {
-
+void SGP4::Initialise()
+{
     /*
      * reset all constants etc
      */
@@ -35,11 +26,13 @@ void SGP4::Initialize() {
     /*
      * error checks
      */
-    if (elements_.Eccentricity() < 0.0 || elements_.Eccentricity() > 1.0 - 1.0e-3) {
+    if (elements_.Eccentricity() < 0.0 || elements_.Eccentricity() > 1.0 - 1.0e-3)
+    {
         throw SatelliteException("Eccentricity out of range");
     }
 
-    if (elements_.Inclination() < 0.0 || elements_.Inclination() > kPI) {
+    if (elements_.Inclination() < 0.0 || elements_.Inclination() > kPI)
+    {
         throw SatelliteException("Inclination out of range");
     }
 
@@ -51,9 +44,12 @@ void SGP4::Initialize() {
     const double betao2 = 1.0 - eosq;
     const double betao = sqrt(betao2);
 
-    if (elements_.Period() >= 225.0) {
+    if (elements_.Period() >= 225.0)
+    {
         use_deep_space_ = true;
-    } else {
+    }
+    else
+    {
         use_deep_space_ = false;
         use_simple_model_ = false;
         /*
@@ -62,7 +58,8 @@ void SGP4::Initialize() {
          * quadratic variation in mean anomly. also, the c3 term, the
          * delta omega term and the delta m term are dropped
          */
-        if (elements_.Perigee() < 220.0) {
+        if (elements_.Perigee() < 220.0)
+        {
             use_simple_model_ = true;
         }
     }
@@ -73,9 +70,11 @@ void SGP4::Initialize() {
      */
     double s4 = kS;
     double qoms24 = kQOMS2T;
-    if (elements_.Perigee() < 156.0) {
+    if (elements_.Perigee() < 156.0)
+    {
         s4 = elements_.Perigee() - 78.0;
-        if (elements_.Perigee() < 98.0) {
+        if (elements_.Perigee() < 98.0) 
+        {
             s4 = 20.0;
         }
         qoms24 = pow((120.0 - s4) * kAE / kXKMPER, 4.0);
@@ -125,25 +124,30 @@ void SGP4::Initialize() {
     common_consts_.t2cof = 1.5 * common_consts_.c1;
 
     if (fabs(common_consts_.cosio + 1.0) > 1.5e-12)
+    {
         common_consts_.xlcof = 0.125 * common_consts_.a3ovk2 * common_consts_.sinio * (3.0 + 5.0 * common_consts_.cosio) / (1.0 + common_consts_.cosio);
+    }
     else
+    {
         common_consts_.xlcof = 0.125 * common_consts_.a3ovk2 * common_consts_.sinio * (3.0 + 5.0 * common_consts_.cosio) / 1.5e-12;
+    }
 
     common_consts_.aycof = 0.25 * common_consts_.a3ovk2 * common_consts_.sinio;
     common_consts_.x7thm1 = 7.0 * theta2 - 1.0;
 
-    if (use_deep_space_) {
-
+    if (use_deep_space_)
+    {
         deepspace_consts_.gsto = elements_.Epoch().ToGreenwichSiderealTime();
 
-        DeepSpaceInitialize(eosq, common_consts_.sinio, common_consts_.cosio, betao,
+        DeepSpaceInitialise(eosq, common_consts_.sinio, common_consts_.cosio, betao,
                 theta2, betao2,
                 common_consts_.xmdot, common_consts_.omgdot, common_consts_.xnodot);
-
-    } else {
-
+    }
+    else
+    {
         double c3 = 0.0;
-        if (elements_.Eccentricity() > 1.0e-4) {
+        if (elements_.Eccentricity() > 1.0e-4)
+        {
             c3 = coef * tsi * common_consts_.a3ovk2 * elements_.RecoveredMeanMotion() * kAE *
                     common_consts_.sinio / elements_.Eccentricity();
         }
@@ -154,12 +158,15 @@ void SGP4::Initialize() {
 
         nearspace_consts_.xmcof = 0.0;
         if (elements_.Eccentricity() > 1.0e-4)
+        {
             nearspace_consts_.xmcof = -kTWOTHIRD * coef * elements_.BStar() * kAE / eeta;
+        }
 
         nearspace_consts_.delmo = pow(1.0 + common_consts_.eta * (cos(elements_.MeanAnomoly())), 3.0);
         nearspace_consts_.sinmo = sin(elements_.MeanAnomoly());
 
-        if (!use_simple_model_) {
+        if (!use_simple_model_)
+        {
             const double c1sq = common_consts_.c1 * common_consts_.c1;
             nearspace_consts_.d2 = 4.0 * elements_.RecoveredSemiMajorAxis() * tsi * c1sq;
             const double temp = nearspace_consts_.d2 * tsi * common_consts_.c1 / 3.0;
@@ -178,23 +185,27 @@ void SGP4::Initialize() {
     first_run_ = false;
 }
 
-Eci SGP4::FindPosition(double tsince) const {
-
+Eci SGP4::FindPosition(double tsince) const
+{
     if (use_deep_space_)
+    {
         return FindPositionSDP4(tsince);
+    }
     else
+    {
         return FindPositionSGP4(tsince);
+    }
 }
 
-Eci SGP4::FindPosition(const Julian& date) const {
-
+Eci SGP4::FindPosition(const Julian& date) const
+{
     Timespan diff = date - elements_.Epoch();
 
     return FindPosition(diff.GetTotalMinutes());
 }
 
-Eci SGP4::FindPositionSDP4(double tsince) const {
-
+Eci SGP4::FindPositionSDP4(double tsince) const
+{
     /*
      * the final values
      */
@@ -224,7 +235,8 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
 
     DeepSpaceSecular(tsince, &xmdf, &omgadf, &xnode, &e, &xincl, &xn);
 
-    if (xn <= 0.0) {
+    if (xn <= 0.0)
+    {
         throw SatelliteException("Error: #2 (xn <= 0.0)");
     }
 
@@ -235,14 +247,17 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
     /*
      * fix tolerance for error recognition
      */
-    if (e >= 1.0 || e < -0.001) {
+    if (e >= 1.0 || e < -0.001)
+    {
         throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
     }
     /*
      * fix tolerance to avoid a divide by zero
      */
     if (e < 1.0e-6)
+    {
         e = 1.0e-6;
+    }
 
     DeepSpacePeriodics(tsince, &e, &xincl, &omgadf, &xnode, &xmam);
 
@@ -250,7 +265,8 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
      * keeping xincl positive important unless you need to display xincl
      * and dislike negative inclinations
      */
-    if (xincl < 0.0) {
+    if (xincl < 0.0)
+    {
         xincl = -xincl;
         xnode += kPI;
         omgadf -= kPI;
@@ -259,7 +275,8 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
     xl = xmam + omgadf + xnode;
     omega = omgadf;
 
-    if (e < 0.0 || e > 1.0) {
+    if (e < 0.0 || e > 1.0)
+    {
         throw SatelliteException("Error: #3 (e < 0.0 || e > 1.0)");
     }
 
@@ -277,9 +294,13 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
 
     double perturbed_xlcof;
     if (fabs(perturbed_cosio + 1.0) > 1.5e-12)
+    {
         perturbed_xlcof = 0.125 * common_consts_.a3ovk2 * perturbed_sinio * (3.0 + 5.0 * perturbed_cosio) / (1.0 + perturbed_cosio);
+    }
     else
+    {
         perturbed_xlcof = 0.125 * common_consts_.a3ovk2 * perturbed_sinio * (3.0 + 5.0 * perturbed_cosio) / 1.5e-12;
+    }
 
     const double perturbed_aycof = 0.25 * common_consts_.a3ovk2 * perturbed_sinio;
 
@@ -294,8 +315,8 @@ Eci SGP4::FindPositionSDP4(double tsince) const {
 
 }
 
-Eci SGP4::FindPositionSGP4(double tsince) const {
-
+Eci SGP4::FindPositionSGP4(double tsince) const
+{
     /*
      * the final values
      */
@@ -323,7 +344,8 @@ Eci SGP4::FindPositionSGP4(double tsince) const {
     omega = omgadf;
     double xmp = xmdf;
 
-    if (!use_simple_model_) {
+    if (!use_simple_model_)
+    {
         const double delomg = nearspace_consts_.omgcof * tsince;
         const double delm = nearspace_consts_.xmcof * (pow(1.0 + common_consts_.eta * cos(xmdf), 3.0) - nearspace_consts_.delmo);
         const double temp = delomg + delm;
@@ -343,25 +365,29 @@ Eci SGP4::FindPositionSGP4(double tsince) const {
     e = elements_.Eccentricity() - tempe;
     xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
 
-    if (xl <= 0.0) {
+    if (xl <= 0.0)
+    {
         throw SatelliteException("Error: #2 (xl <= 0.0)");
     }
 
     /*
      * fix tolerance for error recognition
      */
-    if (e >= 1.0 || e < -0.001) {
+    if (e >= 1.0 || e < -0.001)
+    {
         throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
     }
     /*
      * fix tolerance to avoid a divide by zero
      */
     if (e < 1.0e-6)
+    {
         e = 1.0e-6;
+    }
 
     /*
      * using calculated values, find position and velocity
-     * we can pass in constants from Initialize() as these dont change
+     * we can pass in constants from Initialise() as these dont change
      */
     return CalculateFinalPositionVelocity(tsince, e,
             a, omega, xl, xnode,
@@ -375,8 +401,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
         const double& a, const double& omega, const double& xl, const double& xnode,
         const double& xincl, const double& xlcof, const double& aycof,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
-        const double& cosio, const double& sinio) const {
-
+        const double& cosio, const double& sinio) const
+{
     const double beta = sqrt(1.0 - e * e);
     const double xn = kXKE / pow(a, 1.5);
     /*
@@ -413,7 +439,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
 
     bool kepler_running = true;
 
-    for (int i = 0; i < 10 && kepler_running; i++) {
+    for (int i = 0; i < 10 && kepler_running; i++)
+    {
         sinepw = sin(epw);
         cosepw = cos(epw);
         ecose = axn * cosepw + ayn * sinepw;
@@ -421,9 +448,12 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
 
         double f = capu - epw + esine;
 
-        if (fabs(f) < 1.0e-12) {
+        if (fabs(f) < 1.0e-12)
+        {
             kepler_running = false;
-        } else {
+        }
+        else
+        {
             /*
              * 1st order Newton-Raphson correction
              */
@@ -434,12 +464,19 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
              * 2nd order Newton-Raphson correction.
              * f / (fdot - 0.5 * d2f * f/fdot)
              */
-            if (i == 0) {
+            if (i == 0)
+            {
                 if (delta_epw > max_newton_naphson)
+                {
                     delta_epw = max_newton_naphson;
+                }
                 else if (delta_epw < -max_newton_naphson)
+                {
                     delta_epw = -max_newton_naphson;
-            } else {
+                }
+            }
+            else
+            {
                 delta_epw = f / (fdot + 0.5 * esine * delta_epw);
             }
 
@@ -455,7 +492,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
     const double temp21 = 1.0 - elsq;
     const double pl = a * temp21;
 
-    if (pl < 0.0) {
+    if (pl < 0.0)
+    {
         throw SatelliteException("Error: #4 (pl < 0.0)");
     }
 
@@ -486,7 +524,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
     const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
     const double rfdotk = rfdot + xn * temp42 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
-    if (rk < 1.0) {
+    if (rk < 1.0)
+    {
         throw SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
     }
 
@@ -528,18 +567,18 @@ Eci SGP4::CalculateFinalPositionVelocity(const double& tsince, const double& e,
 }
 
 static inline double EvaluateCubicPolynomial(const double x, const double constant,
-        const double linear, const double squared, const double cubed) {
-
+        const double linear, const double squared, const double cubed)
+{
     return constant + x * (linear + x * (squared + x * cubed));
 }
 
 /*
- * deep space initialization
+ * deep space initialisation
  */
-void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
+void SGP4::DeepSpaceInitialise(const double& eosq, const double& sinio, const double& cosio, const double& betao,
         const double& theta2, const double& betao2,
-        const double& xmdot, const double& omgdot, const double& xnodot) {
-
+        const double& xmdot, const double& omgdot, const double& xnodot)
+{
     double se = 0.0;
     double si = 0.0;
     double sl = 0.0;
@@ -613,7 +652,8 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
     double ze = ZES;
     const double xnoi = 1.0 / elements_.RecoveredMeanMotion();
 
-    for (int cnt = 0; cnt < 2; cnt++) {
+    for (int cnt = 0; cnt < 2; cnt++)
+    {
         /*
          * solar terms are done a second time after lunar terms are done
          */
@@ -668,9 +708,12 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
          * with
          * shdq = (-zn * s2 * (z21 + z23)) / sinio
          */
-        if (elements_.Inclination() < 5.2359877e-2 || elements_.Inclination() > kPI - 5.2359877e-2) {
+        if (elements_.Inclination() < 5.2359877e-2 || elements_.Inclination() > kPI - 5.2359877e-2)
+        {
             shdq = 0.0;
-        } else {
+        }
+        else
+        {
             shdq = (-zn * s2 * (z21 + z23)) / sinio;
         }
 
@@ -688,7 +731,9 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         deepspace_consts_.xh3 = -2.0 * s2 * (z23 - z21);
 
         if (cnt == 1)
+        {
             break;
+        }
         /*
          * do lunar terms
          */
@@ -728,12 +773,12 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
 
     deepspace_consts_.resonance_flag = false;
     deepspace_consts_.synchronous_flag = false;
-    bool initialize_integrator = true;
+    bool initialise_integrator = true;
 
-    if (elements_.RecoveredMeanMotion() < 0.0052359877 && elements_.RecoveredMeanMotion() > 0.0034906585) {
-
+    if (elements_.RecoveredMeanMotion() < 0.0052359877 && elements_.RecoveredMeanMotion() > 0.0034906585)
+    {
         /*
-         * 24h synchronous resonance terms initialization
+         * 24h synchronous resonance terms initialisation
          */
         deepspace_consts_.resonance_flag = true;
         deepspace_consts_.synchronous_flag = true;
@@ -754,11 +799,15 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         bfact = xmdot + xpidot - kTHDT;
         bfact += deepspace_consts_.ssl + deepspace_consts_.ssg + deepspace_consts_.ssh;
 
-    } else if (elements_.RecoveredMeanMotion() < 8.26e-3 || elements_.RecoveredMeanMotion() > 9.24e-3 || elements_.Eccentricity() < 0.5) {
-        initialize_integrator = false;
-    } else {
+    }
+    else if (elements_.RecoveredMeanMotion() < 8.26e-3 || elements_.RecoveredMeanMotion() > 9.24e-3 || elements_.Eccentricity() < 0.5)
+    {
+        initialise_integrator = false;
+    }
+    else
+    {
         /*
-         * geopotential resonance initialization for 12 hour orbits
+         * geopotential resonance initialisation for 12 hour orbits
          */
         deepspace_consts_.resonance_flag = true;
 
@@ -771,23 +820,29 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
 
         double g201 = -0.306 - (elements_.Eccentricity() - 0.64) * 0.440;
 
-        if (elements_.Eccentricity() <= 0.65) {
+        if (elements_.Eccentricity() <= 0.65)
+        {
             g211 = EvaluateCubicPolynomial(elements_.Eccentricity(), 3.616, -13.247, +16.290, 0.0);
             g310 = EvaluateCubicPolynomial(elements_.Eccentricity(), -19.302, 117.390, -228.419, 156.591);
             g322 = EvaluateCubicPolynomial(elements_.Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
             g410 = EvaluateCubicPolynomial(elements_.Eccentricity(), -41.122, 242.694, -471.094, 313.953);
             g422 = EvaluateCubicPolynomial(elements_.Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
             g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
-        } else {
+        }
+        else
+        {
             g211 = EvaluateCubicPolynomial(elements_.Eccentricity(), -72.099, 331.819, -508.738, 266.724);
             g310 = EvaluateCubicPolynomial(elements_.Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
             g322 = EvaluateCubicPolynomial(elements_.Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
             g410 = EvaluateCubicPolynomial(elements_.Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
             g422 = EvaluateCubicPolynomial(elements_.Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
 
-            if (elements_.Eccentricity() <= 0.715) {
+            if (elements_.Eccentricity() <= 0.715)
+            {
                 g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
-            } else {
+            }
+            else
+            {
                 g520 = EvaluateCubicPolynomial(elements_.Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
             }
         }
@@ -796,11 +851,14 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         double g521;
         double g532;
 
-        if (elements_.Eccentricity() < 0.7) {
+        if (elements_.Eccentricity() < 0.7)
+        {
             g533 = EvaluateCubicPolynomial(elements_.Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
             g521 = EvaluateCubicPolynomial(elements_.Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
             g532 = EvaluateCubicPolynomial(elements_.Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
-        } else {
+        }
+        else
+        {
             g533 = EvaluateCubicPolynomial(elements_.Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
             g521 = EvaluateCubicPolynomial(elements_.Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
             g532 = EvaluateCubicPolynomial(elements_.Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
@@ -850,10 +908,10 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
         bfact = bfact + deepspace_consts_.ssl + deepspace_consts_.ssh + deepspace_consts_.ssh;
     }
 
-    if (initialize_integrator) {
-
+    if (initialise_integrator)
+    {
         /*
-         * initialize integrator
+         * initialise integrator
          */
         integrator_consts_.xfact = bfact - elements_.RecoveredMeanMotion();
         integrator_params_.atime = 0.0;
@@ -867,8 +925,8 @@ void SGP4::DeepSpaceInitialize(const double& eosq, const double& sinio, const do
 }
 
 void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double* pinc,
-        double* pl, double* pgh, double* ph) const {
-
+        double* pl, double* pgh, double* ph) const
+{
     static const double ZES = 0.01675;
     static const double ZNS = 1.19459E-5;
     static const double ZNL = 1.5835218E-4;
@@ -879,7 +937,9 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
      */
     double zm = deepspace_consts_.zmos + ZNS * t;
     if (first_run_)
+    {
         zm = deepspace_consts_.zmos;
+    }
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -896,7 +956,9 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
     zm = deepspace_consts_.zmol + ZNL * t;
 
     if (first_run_)
+    {
         zm = deepspace_consts_.zmol;
+    }
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -921,8 +983,8 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
  * calculate lunar / solar periodics and apply
  */
 void SGP4::DeepSpacePeriodics(const double& t, double* em,
-        double* xinc, double* omgasm, double* xnodes, double* xll) const {
-
+        double* xinc, double* omgasm, double* xnodes, double* xll) const
+{
     /*
      * storage for lunar / solar terms set by DeepSpaceCalculateLunarSolarTerms()
      */
@@ -937,8 +999,8 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
      */
     DeepSpaceCalculateLunarSolarTerms(t, &pe, &pinc, &pl, &pgh, &ph);
 
-    if (!first_run_) {
-
+    if (!first_run_)
+    {
         (*xinc) += pinc;
         (*em) += pe;
 
@@ -954,7 +1016,8 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
         const double sinis = sin(*xinc);
         const double cosis = cos(*xinc);
 
-        if ((*xinc) >= 0.2) {
+        if ((*xinc) >= 0.2)
+        {
             /*
              * apply periodics directly
              */
@@ -963,7 +1026,9 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
             (*omgasm) += pgh - cosis * tmp_ph;
             (*xnodes) += tmp_ph;
             (*xll) += pl;
-        } else {
+        }
+        else
+        {
             /*
              * apply periodics with lyddane modification
              */
@@ -979,7 +1044,9 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
 
             (*xnodes) = fmod((*xnodes), kTWOPI);
             if ((*xnodes) < 0.0)
+            {
                 (*xnodes) += kTWOPI;
+            }
 
             double xls = (*xll) + (*omgasm) + cosis * (*xnodes);
             double dls = pl + pgh - pinc * (*xnodes) * sinis;
@@ -992,18 +1059,25 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
 
             (*xnodes) = atan2(alfdp, betdp);
             if ((*xnodes) < 0.0)
+            {
                 (*xnodes) += kTWOPI;
+            }
 
             /*
              * Get perturbed xnodes in to same quadrant as original.
              * RAAN is in the range of 0 to 360 degrees
              * atan2 is in the range of -180 to 180 degrees
              */
-            if (fabs(oldxnodes - (*xnodes)) > kPI) {
+            if (fabs(oldxnodes - (*xnodes)) > kPI)
+            {
                 if ((*xnodes) < oldxnodes)
+                {
                     (*xnodes) += kTWOPI;
+                }
                 else
+                {
                     (*xnodes) -= kTWOPI;
+                }
             }
 
             (*xll) += pl;
@@ -1016,8 +1090,8 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
  * deep space secular effects
  */
 void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
-        double* xnodes, double* em, double* xinc, double* xn) const {
-
+        double* xnodes, double* em, double* xinc, double* xn) const
+{
     static const double STEP = 720.0;
     static const double STEP2 = 259200.0;
 
@@ -1028,7 +1102,9 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
     (*xinc) += deepspace_consts_.ssi * t;
 
     if (!deepspace_consts_.resonance_flag)
+    {
         return;
+    }
 
     /*
      * 1st condition (if t is less than one time step from epoch)
@@ -1037,7 +1113,8 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
      */
     if (fabs(t) < STEP ||
             t * integrator_params_.atime <= 0.0 ||
-            fabs(t) < fabs(integrator_params_.atime)) {
+            fabs(t) < fabs(integrator_params_.atime))
+    {
         /*
          * restart from epoch
          */
@@ -1057,17 +1134,20 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
      * if time difference (ft) is greater than the time step (720.0)
      * loop around until integrator_params_.atime is within one time step of t
      */
-    if (fabs(ft) >= STEP) {
-
+    if (fabs(ft) >= STEP)
+    {
         /*
          * calculate step direction to allow integrator_params_.atime
          * to catch up with t
          */
         double delt = -STEP;
         if (ft >= 0.0)
+        {
             delt = STEP;
+        }
 
-        do {
+        do
+        {
             /*
              * integrate using current dot terms
              */
@@ -1090,16 +1170,20 @@ void SGP4::DeepSpaceSecular(const double& t, double* xll, double* omgasm,
     const double temp = -(*xnodes) + deepspace_consts_.gsto + t * kTHDT;
 
     if (deepspace_consts_.synchronous_flag)
+    {
         (*xll) = xl + temp - (*omgasm);
+    }
     else
+    {
         (*xll) = xl + temp + temp;
+    }
 }
 
 /*
  * calculate dot terms
  */
-void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const {
-
+void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const
+{
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
     static const double G44 = 1.8014998;
@@ -1109,7 +1193,8 @@ void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const {
     static const double FASX4 = 2.8843198;
     static const double FASX6 = 0.37448087;
 
-    if (deepspace_consts_.synchronous_flag) {
+    if (deepspace_consts_.synchronous_flag)
+    {
 
         values->xndot = deepspace_consts_.del1 * sin(integrator_params_.xli - FASX2) +
                 deepspace_consts_.del2 * sin(2.0 * (integrator_params_.xli - FASX4)) +
@@ -1118,8 +1203,9 @@ void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const {
                 deepspace_consts_.del2 * cos(2.0 * (integrator_params_.xli - FASX4)) + 3.0 *
                 deepspace_consts_.del3 * cos(3.0 * (integrator_params_.xli - FASX6));
 
-    } else {
-
+    }
+    else
+    {
         const double xomi = elements_.ArgumentPerigee() + common_consts_.omgdot * integrator_params_.atime;
         const double x2omi = xomi + xomi;
         const double x2li = integrator_params_.xli + integrator_params_.xli;
@@ -1154,8 +1240,8 @@ void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues *values) const {
  * deep space integrator for time period of delt
  */
 void SGP4::DeepSpaceIntegrator(const double delt, const double step2,
-        const struct IntegratorValues &values) const {
-
+        const struct IntegratorValues &values) const
+{
     /*
      * integrator
      */
@@ -1168,8 +1254,8 @@ void SGP4::DeepSpaceIntegrator(const double delt, const double step2,
     integrator_params_.atime += delt;
 }
 
-void SGP4::Reset() {
-
+void SGP4::Reset()
+{
     /*
      * common variables
      */

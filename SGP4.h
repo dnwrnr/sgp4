@@ -9,19 +9,27 @@
 class SGP4
 {
 public:
-    SGP4(const Tle& tle);
-    virtual ~SGP4(void);
+    SGP4(const Tle& tle)
+        : elements_(tle)
+    {
+        Initialise();
+    }
+
+    virtual ~SGP4()
+    {
+    }
 
     void SetTle(const Tle& tle);
     Eci FindPosition(double tsince) const;
     Eci FindPosition(const Julian& date) const;
 
-    struct CommonConstants {
-
+    struct CommonConstants
+    {
         CommonConstants()
         : cosio(0.0), sinio(0.0), eta(0.0), t2cof(0.0), a3ovk2(0.0),
         x1mth2(0.0), x3thm1(0.0), x7thm1(0.0), aycof(0.0), xlcof(0.0),
-        xnodcf(0.0), c1(0.0), c4(0.0), omgdot(0.0), xnodot(0.0), xmdot(0.0) {
+        xnodcf(0.0), c1(0.0), c4(0.0), omgdot(0.0), xnodot(0.0), xmdot(0.0)
+        {
         }
 
         double cosio;
@@ -42,11 +50,12 @@ public:
         double xmdot; // secular rate of xmo (radians/sec)
     };
 
-    struct NearSpaceConstants {
-
+    struct NearSpaceConstants
+    {
         NearSpaceConstants()
         : c5(0.0), omgcof(0.0), xmcof(0.0), delmo(0.0), sinmo(0.0), d2(0.0),
-        d3(0.0), d4(0.0), t3cof(0.0), t4cof(0.0), t5cof(0.0) {
+        d3(0.0), d4(0.0), t3cof(0.0), t4cof(0.0), t5cof(0.0)
+        {
         }
 
         double c5;
@@ -62,8 +71,8 @@ public:
         double t5cof;
     };
 
-    struct DeepSpaceConstants {
-
+    struct DeepSpaceConstants
+    {
         DeepSpaceConstants()
         : gsto(0.0), zmol(0.0), zmos(0.0), resonance_flag(false),
         synchronous_flag(false), sse(0.0), ssi(0.0), ssl(0.0), ssg(0.0),
@@ -72,7 +81,8 @@ public:
         e3(0.0), xi2(0.0), xi3(0.0), xl2(0.0), xl3(0.0), xl4(0.0), xgh2(0.0),
         xgh3(0.0), xgh4(0.0), xh2(0.0), xh3(0.0), d2201(0.0), d2211(0.0),
         d3210(0.0), d3222(0.0), d4410(0.0), d4422(0.0), d5220(0.0), d5232(0.0),
-        d5421(0.0), d5433(0.0), del1(0.0), del2(0.0), del3(0.0) {
+        d5421(0.0), d5433(0.0), del1(0.0), del2(0.0), del3(0.0)
+        {
         }
 
         double gsto;
@@ -143,8 +153,10 @@ public:
         double del3;
     };
 
-    struct IntegratorValues {
-        IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0) {
+    struct IntegratorValues
+    {
+        IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0)
+        {
         }
 
         double xndot;
@@ -152,9 +164,10 @@ public:
         double xldot;
     };
 
-    struct IntegratorConstants {
-
-        IntegratorConstants() : xfact(0.0), xlamo(0.0) {
+    struct IntegratorConstants
+    {
+        IntegratorConstants() : xfact(0.0), xlamo(0.0)
+        {
         }
 
         /*
@@ -169,9 +182,10 @@ public:
         struct IntegratorValues values_0;
     };
 
-    struct IntegratorParams {
-
-        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0) {
+    struct IntegratorParams
+    {
+        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0)
+        {
         }
 
         /*
@@ -187,8 +201,8 @@ public:
     };
 
 private:
-    void Initialize();
-    void DeepSpaceInitialize(const double& eosq, const double& sinio, const double& cosio, const double& betao,
+    void Initialise();
+    void DeepSpaceInitialise(const double& eosq, const double& sinio, const double& cosio, const double& betao,
             const double& theta2, const double& betao2,
             const double& xmdot, const double& omgdot, const double& xnodot);
     void DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double* pinc,
@@ -206,7 +220,7 @@ private:
             const double& cosio, const double& sinio) const;
     void DeepSpaceCalcDotTerms(struct IntegratorValues *values) const;
     void DeepSpaceIntegrator(const double delt, const double step2,
-            const struct IntegratorValues& values)const;
+            const struct IntegratorValues& values) const;
     void Reset();
 
     /*

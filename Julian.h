@@ -46,7 +46,7 @@ public:
 
     ~Julian()
     {
-    };
+    }
 
     // comparison operators
     bool operator==(const Julian &date) const;
