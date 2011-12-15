@@ -220,7 +220,7 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
 
 int main() {
 
-    CoordGeodetic geo(51.37322, 0.089607, 0.05);
+    CoordGeodetic geo(51.507406923983446, -0.12773752212524414, 0.05);
     Tle tle("GIOVE-B                 ",
             "1 32781U 08020A   11158.03814084  .00000088  00000-0  10000-3 0  4620",
             "2 32781  55.9142 172.9458 0022365 228.3743 131.4697  1.70953903 19437");
