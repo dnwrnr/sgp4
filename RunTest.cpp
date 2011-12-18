@@ -14,21 +14,27 @@
 #include <vector>
 #include <cstdlib>
 
-void RunTle(Tle tle, double start, double end, double inc) {
+void RunTle(Tle tle, double start, double end, double inc)
+{
     double current = start;
     SGP4 model(tle);
     bool running = true;
     bool first_run = true;
     std::cout << "  " << std::setprecision(0) << tle.NoradNumber() << "  xx" << std::endl;
-    while (running) {
-        try {
+    while (running)
+    {
+        try
+        {
             double val;
-            if (first_run && current != 0.0) {
+            if (first_run && current != 0.0) 
+            {
                 /*
                  * make sure first run is always as zero
                  */
                 val = 0.0;
-            } else {
+            }
+            else
+            {
                 /*
                  * otherwise run as normal
                  */
@@ -56,25 +62,34 @@ void RunTle(Tle tle, double start, double end, double inc) {
             std::cout.width(14);
             std::cout << velocity.z << std::endl;
 
-        } catch (SatelliteException& e) {
+        }
+        catch (SatelliteException& e)
+        {
             std::cout << e.what() << std::endl;
             running = false;
         }
-        if ((first_run && current == 0.0) || !first_run) {
+        if ((first_run && current == 0.0) || !first_run)
+        {
             if (current == end)
+            {
                 running = false;
+            }
             else if (current + inc > end)
+            {
                 current = end;
+            }
             else
+            {
                 current += inc;
+            }
         }
         first_run = false;
 
     }
 }
 
-void tokenize(const std::string& str, std::vector<std::string>& tokens) {
-
+void tokenize(const std::string& str, std::vector<std::string>& tokens)
+{
     const std::string& delimiters = " ";
 
     /*
@@ -87,7 +102,8 @@ void tokenize(const std::string& str, std::vector<std::string>& tokens) {
      */
     std::string::size_type pos = str.find_first_of(delimiters, last_pos);
 
-    while (std::string::npos != pos || std::string::npos != last_pos) {
+    while (std::string::npos != pos || std::string::npos != last_pos)
+    {
         /*
          * add found token to vector
          */
@@ -103,13 +119,14 @@ void tokenize(const std::string& str, std::vector<std::string>& tokens) {
     }
 }
 
-void RunTest(const char* infile) {
-
+void RunTest(const char* infile)
+{
     std::ifstream file;
 
     file.open(infile);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Error opening file" << std::endl;
         return;
     }
@@ -119,20 +136,18 @@ void RunTest(const char* infile) {
     std::string line2;
     std::string parameters;
 
-    while (!file.eof()) {
+    while (!file.eof())
+    {
         std::string line;
         std::getline(file, line);
 
-        /*
-         * trim spaces
-         */
-        TrimLeft(line);
-        TrimRight(line);
+        Trim(line);
 
         /*
          * skip blank lines or lines starting with #
          */
-        if (line.length() == 0 || line[0] == '#') {
+        if (line.length() == 0 || line[0] == '#')
+        {
             got_first_line = false;
             continue;
         }
@@ -140,20 +155,25 @@ void RunTest(const char* infile) {
         /*
          * find first line
          */
-        if (!got_first_line) {
-
-            try {
+        if (!got_first_line)
+        {
+            try
+            {
                 Tle::IsValidLine(line, 1);
                 /*
                  * store line and now read in second line
                  */
                 got_first_line = true;
                 line1 = line;
-            } catch (TleException& e) {
+            }
+            catch (TleException& e)
+            {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
             }
-        } else {
+        }
+        else
+        {
             /*
              * no second chances, second line should follow the first
              */
@@ -166,11 +186,13 @@ void RunTest(const char* infile) {
             double start = 0.0;
             double end = 1440.0;
             double inc = 120.0;
-            if (line.length() > 69) {
+            if (line.length() > 69)
+            {
                 std::vector<std::string> tokens;
                 parameters = line.substr(70, line.length() - 69);
                 tokenize(parameters, tokens);
-                if (tokens.size() >= 3) {
+                if (tokens.size() >= 3)
+                {
                     start = atof(tokens[0].c_str());
                     end = atof(tokens[1].c_str());
                     inc = atof(tokens[2].c_str());
@@ -180,11 +202,14 @@ void RunTest(const char* infile) {
             /*
              * following line must be the second line
              */
-            try {
+            try
+            {
                 Tle::IsValidLine(line2, 2);
                 Tle tle("Test", line1, line2);
                 RunTle(tle, start, end, inc);
-            } catch (TleException& e) {
+            }
+            catch (TleException& e)
+            {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
             }
@@ -199,13 +224,13 @@ void RunTest(const char* infile) {
     return;
 }
 
-int main() {
-
+int main()
+{
     const char* file_name = "SGP4-VER.TLE";
 
     RunTest(file_name);
 
-    return 0;
+    return 1;
 }
 
 
