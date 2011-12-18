@@ -226,7 +226,6 @@ private:
     /*
      * flags
      */
-    bool first_run_;
     bool use_simple_model_;
     bool use_deep_space_;
 

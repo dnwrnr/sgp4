@@ -181,8 +181,6 @@ void SGP4::Initialise()
                     c1sq * (2.0 * nearspace_consts_.d2 + c1sq));
         }
     }
-
-    first_run_ = false;
 }
 
 Eci SGP4::FindPosition(double tsince) const
@@ -936,10 +934,6 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
      * calculate solar terms for time t
      */
     double zm = deepspace_consts_.zmos + ZNS * t;
-    if (first_run_)
-    {
-        zm = deepspace_consts_.zmos;
-    }
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -954,11 +948,6 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double*
      * calculate lunar terms for time t
      */
     zm = deepspace_consts_.zmol + ZNL * t;
-
-    if (first_run_)
-    {
-        zm = deepspace_consts_.zmol;
-    }
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -999,90 +988,87 @@ void SGP4::DeepSpacePeriodics(const double& t, double* em,
      */
     DeepSpaceCalculateLunarSolarTerms(t, &pe, &pinc, &pl, &pgh, &ph);
 
-    if (!first_run_)
+    (*xinc) += pinc;
+    (*em) += pe;
+
+    /* Spacetrack report #3 has sin/cos from before perturbations
+     * added to xinc (oldxinc), but apparently report # 6 has then
+     * from after they are added.
+     * use for strn3
+     * if (elements_.Inclination() >= 0.2)
+     * use for gsfc
+     * if (xinc >= 0.2)
+     * (moved from start of function)
+     */
+    const double sinis = sin(*xinc);
+    const double cosis = cos(*xinc);
+
+    if ((*xinc) >= 0.2)
     {
-        (*xinc) += pinc;
-        (*em) += pe;
-
-        /* Spacetrack report #3 has sin/cos from before perturbations
-         * added to xinc (oldxinc), but apparently report # 6 has then
-         * from after they are added.
-         * use for strn3
-         * if (elements_.Inclination() >= 0.2)
-         * use for gsfc
-         * if (xinc >= 0.2)
-         * (moved from start of function)
+        /*
+         * apply periodics directly
          */
-        const double sinis = sin(*xinc);
-        const double cosis = cos(*xinc);
+        const double tmp_ph = ph / sinis;
 
-        if ((*xinc) >= 0.2)
+        (*omgasm) += pgh - cosis * tmp_ph;
+        (*xnodes) += tmp_ph;
+        (*xll) += pl;
+    }
+    else
+    {
+        /*
+         * apply periodics with lyddane modification
+         */
+        const double sinok = sin(*xnodes);
+        const double cosok = cos(*xnodes);
+        double alfdp = sinis * sinok;
+        double betdp = sinis * cosok;
+        const double dalf = ph * cosok + pinc * cosis * sinok;
+        const double dbet = -ph * sinok + pinc * cosis * cosok;
+
+        alfdp += dalf;
+        betdp += dbet;
+
+        (*xnodes) = fmod((*xnodes), kTWOPI);
+        if ((*xnodes) < 0.0)
         {
-            /*
-             * apply periodics directly
-             */
-            const double tmp_ph = ph / sinis;
-
-            (*omgasm) += pgh - cosis * tmp_ph;
-            (*xnodes) += tmp_ph;
-            (*xll) += pl;
+            (*xnodes) += kTWOPI;
         }
-        else
+
+        double xls = (*xll) + (*omgasm) + cosis * (*xnodes);
+        double dls = pl + pgh - pinc * (*xnodes) * sinis;
+        xls += dls;
+
+        /*
+         * save old xnodes value
+         */
+        const double oldxnodes = (*xnodes);
+
+        (*xnodes) = atan2(alfdp, betdp);
+        if ((*xnodes) < 0.0)
         {
-            /*
-             * apply periodics with lyddane modification
-             */
-            const double sinok = sin(*xnodes);
-            const double cosok = cos(*xnodes);
-            double alfdp = sinis * sinok;
-            double betdp = sinis * cosok;
-            const double dalf = ph * cosok + pinc * cosis * sinok;
-            const double dbet = -ph * sinok + pinc * cosis * cosok;
+            (*xnodes) += kTWOPI;
+        }
 
-            alfdp += dalf;
-            betdp += dbet;
-
-            (*xnodes) = fmod((*xnodes), kTWOPI);
-            if ((*xnodes) < 0.0)
+        /*
+         * Get perturbed xnodes in to same quadrant as original.
+         * RAAN is in the range of 0 to 360 degrees
+         * atan2 is in the range of -180 to 180 degrees
+         */
+        if (fabs(oldxnodes - (*xnodes)) > kPI)
+        {
+            if ((*xnodes) < oldxnodes)
             {
                 (*xnodes) += kTWOPI;
             }
-
-            double xls = (*xll) + (*omgasm) + cosis * (*xnodes);
-            double dls = pl + pgh - pinc * (*xnodes) * sinis;
-            xls += dls;
-
-            /*
-             * save old xnodes value
-             */
-            const double oldxnodes = (*xnodes);
-
-            (*xnodes) = atan2(alfdp, betdp);
-            if ((*xnodes) < 0.0)
+            else
             {
-                (*xnodes) += kTWOPI;
+                (*xnodes) -= kTWOPI;
             }
-
-            /*
-             * Get perturbed xnodes in to same quadrant as original.
-             * RAAN is in the range of 0 to 360 degrees
-             * atan2 is in the range of -180 to 180 degrees
-             */
-            if (fabs(oldxnodes - (*xnodes)) > kPI)
-            {
-                if ((*xnodes) < oldxnodes)
-                {
-                    (*xnodes) += kTWOPI;
-                }
-                else
-                {
-                    (*xnodes) -= kTWOPI;
-                }
-            }
-
-            (*xll) += pl;
-            (*omgasm) = xls - (*xll) - cosis * (*xnodes);
         }
+
+        (*xll) += pl;
+        (*omgasm) = xls - (*xll) - cosis * (*xnodes);
     }
 }
 
@@ -1259,7 +1245,6 @@ void SGP4::Reset()
     /*
      * common variables
      */
-    first_run_ = true;
     use_simple_model_ = false;
     use_deep_space_ = false;
 }
