@@ -3,9 +3,9 @@ AR=ar
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
-	CFLAGS=-c -Wall -O0 -g -pedantic -Werror -Wextra -Wconversion
+	CFLAGS=-Wall -O0 -g -pedantic -Werror -Wextra -Wconversion
 else
-	CFLAGS=-c -Wall -O2    -pedantic -Werror -Wextra -Wconversion -DNDEBUG
+	CFLAGS=-Wall -O2    -pedantic -Werror -Wextra -Wconversion -DNDEBUG
 endif
 
 LDFLAGS=
@@ -37,19 +37,19 @@ PASSPREDICTOBJECTS=$(PASSPREDICTSOURCES:.cpp=.o)
 all: $(SGP4LIB) ${TESTPROG} ${SATTRACK} ${PASSPREDICT}
 
 ${SGP4LIB}: ${OBJECTS}
-	${AR} -rcs $@ ${OBJECTS}
+	${AR} rcs $@ ${OBJECTS}
 
 ${TESTPROG}: ${SGP4LIB} ${TESTPROGOBJECTS}
-	$(CC) ${TESTPROGOBJECTS} $(LDFLAGS) -L. -lsgp4 -o $@
+	$(CC) ${LDFLAGS} ${CFLAGS} ${TESTPROGOBJECTS} -static -L. -lsgp4 -o $@
 
 ${SATTRACK}: ${SGP4LIB} ${SATTRACKOBJECTS}
-	${CC} ${SATTRACKOBJECTS} ${LDFLAGS} -L. -lsgp4 -o $@
+	${CC} ${LDFLAGS} ${CFLAGS} ${SATTRACKOBJECTS} -static -L. -lsgp4 -o $@
 
 ${PASSPREDICT}: ${SGP4LIB} ${PASSPREDICTOBJECTS}
-	${CC} ${PASSPREDICTOBJECTS} ${LDFLAGS} -L. -lsgp4 -o $@
+	${CC} ${LDFLAGS} ${CFLAGS} ${PASSPREDICTOBJECTS} -static -L. -lsgp4 -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
 	rm -rf *.o ${SGP4LIB} ${TESTPROG} ${SATTRACK} ${PASSPREDICT}
