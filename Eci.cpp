@@ -54,7 +54,7 @@ CoordGeodetic Eci::ToGeodetic() const
     // 0 >= lon < 360
     // const double lon = Fmod2p(theta - date_.ToGreenwichSiderealTime());
     // 180 >= lon < 180
-    const double lon = fmod(theta - date_.ToGreenwichSiderealTime(), kPI);
+    const double lon = Util::WrapNegPosPI(theta - date_.ToGreenwichSiderealTime());
 
     const double r = sqrt((position_.x * position_.x)
             + (position_.y * position_.y));

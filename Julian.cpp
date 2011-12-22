@@ -1,5 +1,6 @@
 #include "Globals.h"
 #include "Julian.h"
+#include "Util.h"
 
 #include <cmath>
 #include <ctime>
@@ -226,7 +227,6 @@ double Julian::ToGreenwichSiderealTime() const
     return  (TWOPI * (GMST / SEC_PER_DAY));
 #endif
 
-#if 0
     // tut1 = Julian centuries from 2000 Jan. 1 12h UT1
     // (since J2000 which is 2451545.0)
     // a Julian century is 36525 days
@@ -237,19 +237,11 @@ double Julian::ToGreenwichSiderealTime() const
         + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
 
     // 360.0 / 86400.0 = 1.0 / 240.0
-    theta = fmod(DegreesToRadians(theta / 240.0), kTWOPI);
-
-    /*
-     * check quadrants
-     */
-    if (theta < 0.0)
-    {
-        theta += kTWOPI;
-    }
+    theta = Util::WrapTwoPI(Util::DegreesToRadians(theta / 240.0));
 
     return theta;
-#endif
 
+#if 0
     static const double C1 = 1.72027916940703639e-2;
     static const double THGR70 = 1.7321343856509374;
     static const double FK5R = 5.07551419432269442e-15;
@@ -264,14 +256,11 @@ double Julian::ToGreenwichSiderealTime() const
      * find greenwich location at epoch
      */
     const double c1p2p = C1 + kTWOPI;
-    double gsto = fmod(THGR70 + C1 * ds70 + c1p2p * tfrac
-            + ts70 * ts70 * FK5R, kTWOPI);
-    if (gsto < 0.0)
-    {
-        gsto += kTWOPI;
-    }
+    double gsto = Util::WrapTwoPI(THGR70 + C1 * ds70 + c1p2p * tfrac
+            + ts70 * ts70 * FK5R);
 
     return gsto;
+#endif
 }
 
 /*

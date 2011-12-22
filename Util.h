@@ -15,16 +15,38 @@ namespace Util
         return !(ss >> val).fail();
     }
 
-
-    inline double Fmod2p(const double arg)
+    /*
+     * always positive result
+     * Mod(-3,4)= 1   fmod(-3,4)= -3
+     */
+    inline double Mod(const double x, const double y)
     {
-        double modu = fmod(arg, kTWOPI);
-        if (modu < 0.0)
+        if (y == 0)
         {
-            modu += kTWOPI;
+            return x;
         }
 
-        return modu;
+        return x - y * floor(x / y);
+    }
+
+    inline double WrapNegPosPI(const double a)
+    {
+        return Mod(a + kPI, kTWOPI) - kPI;
+    }
+    
+    inline double WrapTwoPI(const double a)
+    {
+        return Mod(a, kTWOPI);
+    }
+
+    inline double WrapNegPos180(const double a)
+    {
+        return Mod(a + 180.0, 360.0) - 180.0;
+    }
+
+    inline double Wrap360(const double a)
+    {
+        return Mod(a, 360.0);
     }
 
     inline double DegreesToRadians(const double degrees)
