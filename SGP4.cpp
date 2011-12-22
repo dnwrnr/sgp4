@@ -1,5 +1,6 @@
 #include "SGP4.h"
 
+#include "Util.h"
 #include "Vector.h"
 #include "SatelliteException.h"
 
@@ -626,7 +627,7 @@ void SGP4::DeepSpaceInitialise(const double& eosq, const double& sinio, const do
     const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
     const double c = 4.7199672 + 0.22997150 * jday;
     const double gam = 5.8351514 + 0.0019443680 * jday;
-    deepspace_consts_.zmol = Fmod2p(c - gam);
+    deepspace_consts_.zmol = Util::Fmod2p(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     zx = atan2(zx, zy);
@@ -634,7 +635,7 @@ void SGP4::DeepSpaceInitialise(const double& eosq, const double& sinio, const do
 
     const double zcosgl = cos(zx);
     const double zsingl = sin(zx);
-    deepspace_consts_.zmos = Fmod2p(6.2565837 + 0.017201977 * jday);
+    deepspace_consts_.zmos = Util::Fmod2p(6.2565837 + 0.017201977 * jday);
 
     /*
      * do solar terms

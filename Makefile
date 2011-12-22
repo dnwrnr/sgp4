@@ -11,14 +11,14 @@ endif
 LDFLAGS=
 
 SOURCES=Eci.cpp \
-	Globals.cpp \
 	Julian.cpp \
 	Observer.cpp \
 	OrbitalElements.cpp \
 	SGP4.cpp \
 	SolarPosition.cpp \
 	Timespan.cpp \
-	Tle.cpp
+	Tle.cpp \
+	Util.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 SGP4LIB=libsgp4.a
 

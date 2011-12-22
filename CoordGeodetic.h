@@ -2,6 +2,7 @@
 #define COORDGEODETIC_H_
 
 #include "Globals.h"
+#include "Util.h"
 
 #include <string>
 #include <sstream>
@@ -27,8 +28,8 @@ public:
         }
         else
         {
-            latitude = DegreesToRadians(lat);
-            longitude = DegreesToRadians(lon);
+            latitude = Util::DegreesToRadians(lat);
+            longitude = Util::DegreesToRadians(lon);
         }
         altitude = alt;
     }
@@ -69,8 +70,8 @@ public:
     {
         std::stringstream ss;
         ss << std::right << std::fixed << std::setprecision(2);
-        ss << "Lat: " << std::setw(7) << RadiansToDegrees(latitude);
-        ss << ", Lon: " << std::setw(7) << RadiansToDegrees(longitude);
+        ss << "Lat: " << std::setw(7) << Util::RadiansToDegrees(latitude);
+        ss << ", Lon: " << std::setw(7) << Util::RadiansToDegrees(longitude);
         ss << ", Alt: " << std::setw(9) << altitude;
         return ss.str();
     }

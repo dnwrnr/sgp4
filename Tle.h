@@ -2,6 +2,7 @@
 #define TLE_H_
 
 #include "Globals.h"
+#include "Util.h"
 #include "Julian.h"
 #include "TleException.h"
 
@@ -88,7 +89,7 @@ public:
         }
         else
         {
-            return DegreesToRadians(inclination_);
+            return Util::DegreesToRadians(inclination_);
         }
     }
 
@@ -100,7 +101,7 @@ public:
         }
         else
         {
-            return DegreesToRadians(right_ascending_node_);
+            return Util::DegreesToRadians(right_ascending_node_);
         }
     }
 
@@ -117,7 +118,7 @@ public:
         }
         else
         {
-            return DegreesToRadians(argument_perigee_);
+            return Util::DegreesToRadians(argument_perigee_);
         }
     }
 
@@ -129,7 +130,7 @@ public:
         }
         else
         {
-            return DegreesToRadians(mean_anomaly_);
+            return Util::DegreesToRadians(mean_anomaly_);
         }
     }
 

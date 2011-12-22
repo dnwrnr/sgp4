@@ -2,6 +2,7 @@
 #include "Tle.h"
 #include "SGP4.h"
 #include "Globals.h"
+#include "Util.h"
 #include "Observer.h"
 #include "CoordGeodetic.h"
 #include "CoordTopographic.h"
@@ -141,7 +142,7 @@ void RunTest(const char* infile)
         std::string line;
         std::getline(file, line);
 
-        Trim(line);
+        Util::Trim(line);
 
         /*
          * skip blank lines or lines starting with #

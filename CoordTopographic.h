@@ -2,6 +2,7 @@
 #define COORDTOPOGRAPHIC_H_
 
 #include "Globals.h"
+#include "Util.h"
 
 #include <iostream>
 #include <sstream>
@@ -57,8 +58,8 @@ public:
     {
         std::stringstream ss;
         ss << std::right << std::fixed << std::setprecision(2);
-        ss << "Az: " << std::setw(7) << RadiansToDegrees(azimuth);
-        ss << ", El: " << std::setw(7) << RadiansToDegrees(elevation);
+        ss << "Az: " << std::setw(7) << Util::RadiansToDegrees(azimuth);
+        ss << ", El: " << std::setw(7) << Util::RadiansToDegrees(elevation);
         ss << ", Rng: " << std::setw(9) << range;
         ss << ", Rng Rt: " << std::setw(6) << range_rate;
         return ss.str();

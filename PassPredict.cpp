@@ -1,5 +1,6 @@
 #include "Observer.h"
 #include "SGP4.h"
+#include "Util.h"
 
 #include <cmath>
 #include <iostream>
@@ -186,7 +187,7 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
                 found_los = false;
                 end_of_pass = true;
                 double max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
-                std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << RadiansToDegrees(max_elevation) << std::endl;
+                std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << Util::RadiansToDegrees(max_elevation) << std::endl;
 
             }
         }
@@ -214,7 +215,7 @@ void AOSLOS(const CoordGeodetic& user_geo, SGP4& sgp4, const Julian& start_time,
 
         los_time = end_time;
         double max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
-        std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << RadiansToDegrees(max_elevation) << std::endl;
+        std::cout << "AOS: " << aos_time << ", LOS: " << los_time << ", Max El: " << Util::RadiansToDegrees(max_elevation) << std::endl;
     }
 }
 

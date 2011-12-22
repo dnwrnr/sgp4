@@ -2,7 +2,6 @@
 #define GLOBALS_H_
 
 #include <cmath>
-#include <string>
 
 const double kAE = 1.0;
 const double kQ0 = 120.0;
@@ -54,7 +53,6 @@ const double kSECONDS_PER_DAY = 86400.0;
 const double kMINUTES_PER_DAY = 1440.0;
 const double kHOURS_PER_DAY = 24.0;
 
-
 // Jan 1.0 1900 = Jan 1 1900 00h UTC
 const double kEPOCH_JAN1_00H_1900 = 2415019.5;
 
@@ -63,44 +61,6 @@ const double kEPOCH_JAN1_12H_1900 = 2415020.0;
 
 // Jan 1.5 2000 = Jan 1 2000 12h UTC
 const double kEPOCH_JAN1_12H_2000 = 2451545.0;
-
-inline double Fmod2p(const double arg) {
-
-    double modu = fmod(arg, kTWOPI);
-    if (modu < 0.0)
-        modu += kTWOPI;
-
-    return modu;
-}
-
-inline double DegreesToRadians(const double degrees) {
-
-    return degrees * kPI / 180.0;
-}
-
-inline double RadiansToDegrees(const double radians) {
-
-    return radians * 180.0 / kPI;
-}
-
-inline double AcTan(const double sinx, const double cosx) {
-
-    if (cosx == 0.0) {
-        if (sinx > 0.0)
-            return kPI / 2.0;
-        else
-            return 3.0 * kPI / 2.0;
-    } else {
-        if (cosx > 0.0)
-            return atan(sinx / cosx);
-        else
-            return kPI + atan(sinx / cosx);
-    }
-}
-
-void TrimLeft(std::string& str);
-void TrimRight(std::string& str);
-void Trim(std::string& str);
 
 #endif
 

@@ -1,6 +1,6 @@
 #include "Tle.h"
 
-#include <cstdlib>
+#include "Util.h"
 
 namespace
 {
@@ -109,12 +109,12 @@ void Tle::Initialize()
     /*
      * trim whitespace
      */
-    TrimLeft(name_);
-    TrimRight(name_);
-    TrimLeft(line_one_);
-    TrimRight(line_one_);
-    TrimLeft(line_two_);
-    TrimRight(line_two_);
+    Util::TrimLeft(name_);
+    Util::TrimRight(name_);
+    Util::TrimLeft(line_one_);
+    Util::TrimRight(line_one_);
+    Util::TrimLeft(line_two_);
+    Util::TrimRight(line_two_);
 
     /*
      * check the two lines are valid
@@ -126,7 +126,11 @@ void Tle::Initialize()
      */
 
     temp = ExtractNoradNumber(line_one_, 1);
-    norad_number_ = atoi(temp.c_str());
+    if (!Util::FromString<unsigned int>(temp, norad_number_))
+    {
+        throw TleException("Conversion failed");
+    }
+
     /*
      * if blank use norad number for name
      */
@@ -138,10 +142,18 @@ void Tle::Initialize()
     international_designator_ = line_one_.substr(TLE1_COL_INTLDESC_A,
             TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
 
-    int year = atoi(line_one_.substr(TLE1_COL_EPOCH_A,
-                TLE1_LEN_EPOCH_A).c_str());
-    double day = atof(line_one_.substr(TLE1_COL_EPOCH_B,
-                TLE1_LEN_EPOCH_B).c_str());
+    int year;
+    double day;
+    if (!Util::FromString<int>(line_one_.substr(TLE1_COL_EPOCH_A, 
+                    TLE1_LEN_EPOCH_A), year))
+    {
+        throw TleException("Conversion failed");
+    }
+    if (!Util::FromString<double>(line_one_.substr(TLE1_COL_EPOCH_B,
+                TLE1_LEN_EPOCH_B), day))
+    {
+        throw TleException("Conversion failed");
+    }
     /*
      * generate julian date for epoch
      */
@@ -156,47 +168,77 @@ void Tle::Initialize()
     } else
         temp = "0";
     temp += line_one_.substr(TLE1_COL_MEANMOTIONDT + 1, TLE1_LEN_MEANMOTIONDT);
-    mean_motion_dot_ = atof(temp.c_str());
+    if (!Util::FromString<double>(temp, mean_motion_dot_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = ExpToDecimal(line_one_.substr(TLE1_COL_MEANMOTIONDT2,
                 TLE1_LEN_MEANMOTIONDT2));
-    mean_motion_dot2_ = atof(temp.c_str());
+    if (!Util::FromString<double>(temp, mean_motion_dot2_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = ExpToDecimal(line_one_.substr(TLE1_COL_BSTAR,
                 TLE1_LEN_BSTAR).c_str());
-    bstar_ = atof(temp.c_str());
+    if (!Util::FromString<double>(temp, bstar_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     /*
      * line 2
      */
 
     temp = line_two_.substr(TLE2_COL_INCLINATION, TLE2_LEN_INCLINATION);
-    TrimLeft(temp);
-    inclination_ = atof(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<double>(temp, inclination_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = line_two_.substr(TLE2_COL_RAASCENDNODE, TLE2_LEN_RAASCENDNODE);
-    TrimLeft(temp);
-    right_ascending_node_ = atof(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<double>(temp, right_ascending_node_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = "0.";
     temp += line_two_.substr(TLE2_COL_ECCENTRICITY, TLE2_LEN_ECCENTRICITY);
-    eccentricity_ = atof(temp.c_str());
+    if (!Util::FromString<double>(temp, eccentricity_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = line_two_.substr(TLE2_COL_ARGPERIGEE, TLE2_LEN_ARGPERIGEE);
-    TrimLeft(temp);
-    argument_perigee_ = atof(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<double>(temp, argument_perigee_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = line_two_.substr(TLE2_COL_MEANANOMALY, TLE2_LEN_MEANANOMALY);
-    TrimLeft(temp);
-    mean_anomaly_ = atof(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<double>(temp, mean_anomaly_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = line_two_.substr(TLE2_COL_MEANMOTION, TLE2_LEN_MEANMOTION);
-    TrimLeft(temp);
-    mean_motion_ = atof(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<double>(temp, mean_motion_))
+    {
+        throw TleException("Conversion failed");
+    }
 
     temp = line_two_.substr(TLE2_COL_REVATEPOCH, TLE2_LEN_REVATEPOCH);
-    TrimLeft(temp);
-    orbit_number_ = atoi(temp.c_str());
+    Util::TrimLeft(temp);
+    if (!Util::FromString<unsigned int>(temp, orbit_number_))
+    {
+        throw TleException("Conversion failed");
+    }
 }
 
 /*
@@ -281,81 +323,90 @@ void Tle::ValidateLine(const std::string& line, const std::string& pattern)
         throw TleException("Invalid line length.");
     }
 
-    std::string::const_iterator pattern_itr = pattern.begin();
-    std::string::const_iterator line_itr = line.begin();
-
-    while (pattern_itr != pattern.end())
+    for (size_t i = 0; i < pattern.length(); i++)
     {
-        if (isdigit(*pattern_itr) || *pattern_itr == ' ' ||
-                *pattern_itr == '.')
-        {
-            /*
-             * should match exactly
-             */
-            if (*pattern_itr != *line_itr)
-            {
-                throw TleException("Invalid character.");
-            }
+        char ptrn = pattern[i];
+        char mtch = line[i];
 
-        }
-        else if (*pattern_itr == 'N')
+        switch (ptrn)
         {
-            /*
-             * 'N' = number or ' '
-             */
-            if (!isdigit(*line_itr) && *line_itr != ' ')
+            case '1':
+            case '2':
+            case ' ':
+            case '.':
             {
-                throw TleException("Invalid character.");
+                /*
+                 * should match exactly
+                 */
+                if (ptrn != mtch)
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
             }
-
-        }
-        else if (*pattern_itr == '+')
-        {
-            /*
-             * '+' = '+' or '-' or ' ' or '0'
-             */
-            if (*line_itr != '+' && *line_itr != '-' &&
-                    *line_itr != ' ' && *line_itr != '0')
+            case 'N':
             {
-                throw TleException("Invalid character.");
+                /*
+                 * number or ' '
+                 */
+                if (!isdigit(mtch) && mtch != ' ')
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
             }
-
-        }
-        else if (*pattern_itr == '-')
-        {
-            /*
-             * '-' = '+' or '-'
-             */
-            if (*line_itr != '+' && *line_itr != '-')
+            case '+':
             {
-                throw TleException("Invalid character.");
+                /*
+                 * + or - or space or 0 or digit
+                 */
+                if (mtch != '+' && mtch != '-'
+                        && mtch != ' ' && mtch != '0'
+                        && !isdigit(mtch))
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
             }
-
-        }
-        else if (*pattern_itr == 'C')
-        {
-            /*
-             * 'C' = 'U' or 'S'
-             */
-            if (*line_itr != 'U' && *line_itr != 'S')
+            case '-':
             {
-                throw TleException("Invalid character.");
+                /*
+                 * + or -
+                 */
+                if (mtch != '+' && mtch != '-')
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
             }
-
-        }
-        else if (*pattern_itr == 'X')
-        {
-            /*
-             * 'X' = A-Z or ' '
-             */
-            if (!(*line_itr >= 'A' || *line_itr <= 'Z') && *line_itr != ' ')
+            case 'C':
             {
-                throw TleException("Invalid character.");
+                /*
+                 * U or S
+                 */
+                if (mtch != 'U' && mtch != 'S')
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
+            }
+            case 'X':
+            {
+                /*
+                 * alpha or ' '
+                 */
+                if (!isupper(mtch) && !isalpha(mtch) && mtch != ' ')
+                {
+                    throw TleException("Invalid character");
+                }
+                break;
+            }
+            default:
+            {
+                throw TleException("Invalid pattern character");
+                break;
             }
         }
-
-        pattern_itr++;
-        line_itr++;
     }
 }
 
@@ -399,11 +450,11 @@ std::string Tle::ExtractNoradNumber(const std::string& str, int line_number)
     /*
      * extract string
      */
-    if (1 == line_number)
+    if (line_number == 1)
     {
         norad_number = str.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
     }
-    else if (2 == line_number)
+    else if (line_number == 2)
     {
         norad_number = str.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM);
     }
