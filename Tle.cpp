@@ -2,6 +2,8 @@
 
 #include "Util.h"
 
+#include <locale> 
+
 namespace
 {
     /*
