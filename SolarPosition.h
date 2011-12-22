@@ -18,7 +18,6 @@ public:
     Eci FindPosition(const Julian& j);
 
 private:
-    double Modulus(double arg1, double arg2) const;
     double Delta_ET(double year) const;
 };
 

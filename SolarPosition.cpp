@@ -10,21 +10,22 @@ Eci SolarPosition::FindPosition(const Julian& j)
     const double mjd = j.FromJan1_12h_1900();
     const double year = 1900 + mjd / 365.25;
     const double T = (mjd + Delta_ET(year) / kSECONDS_PER_DAY) / 36525.0;
-    const double M = Util::DegreesToRadians(Modulus(358.47583
-                + Modulus(35999.04975 * T, 360.0)
-                - (0.000150 + 0.0000033 * T) * T * T, 360.0));
-    const double L = Util::DegreesToRadians(Modulus(279.69668
-                + Modulus(36000.76892 * T, 360.0)
-                + 0.0003025 * T*T, 360.0));
+    const double M = Util::DegreesToRadians(Util::Wrap360(358.47583
+                + Util::Wrap360(35999.04975 * T)
+                - (0.000150 + 0.0000033 * T) * T * T));
+    const double L = Util::DegreesToRadians(Util::Wrap360(279.69668
+                + Util::Wrap360(36000.76892 * T)
+                + 0.0003025 * T*T));
     const double e = 0.01675104 - (0.0000418 + 0.000000126 * T) * T;
     const double C = Util::DegreesToRadians((1.919460
                 - (0.004789 + 0.000014 * T) * T) * sin(M)
                 + (0.020094 - 0.000100 * T) * sin(2 * M)
                 + 0.000293 * sin(3 * M));
-    const double O = Util::DegreesToRadians(Modulus(259.18 - 1934.142 * T, 360.0));
-    const double Lsa = Modulus(L + C
-            - Util::DegreesToRadians(0.00569 - 0.00479 * sin(O)), kTWOPI);
-    const double nu = Modulus(M + C, kTWOPI);
+    const double O = Util::DegreesToRadians(
+            Util::Wrap360(259.18 - 1934.142 * T));
+    const double Lsa = Util::WrapTwoPI(L + C
+            - Util::DegreesToRadians(0.00569 - 0.00479 * sin(O)));
+    const double nu = Util::WrapTwoPI(M + C);
     double R = 1.0000002 * (1 - e * e) / (1 + e * cos(nu));
     const double eps = Util::DegreesToRadians(23.452294 - (0.0130125
                 + (0.00000164 - 0.000000503 * T) * T) * T + 0.00256 * cos(O));
@@ -36,16 +37,6 @@ Eci SolarPosition::FindPosition(const Julian& j)
             R);
 
     return Eci(j, solar_position);
-}
-
-double SolarPosition::Modulus(double arg1, double arg2) const
-{
-    double result = arg1 - arg2 * floor(arg1 / arg2);
-    if (result < 0.0)
-    {
-        result += arg2;
-    }
-    return result;
 }
 
 double SolarPosition::Delta_ET(double year) const
