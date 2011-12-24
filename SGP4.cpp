@@ -99,7 +99,7 @@ void SGP4::Initialise()
             common_consts_.x3thm1 * (8.0 + 3.0 * etasq *
             (8.0 + etasq)));
     common_consts_.c1 = elements_.BStar() * c2;
-    common_consts_.a3ovk2 = -kXJ3 / kCK2 * pow(kAE, 3.0);
+    common_consts_.a3ovk2 = -kXJ3 / kCK2 * kAE * kAE * kAE;
     common_consts_.x1mth2 = 1.0 - theta2;
     common_consts_.c4 = 2.0 * elements_.RecoveredMeanMotion() * coef1 * elements_.RecoveredSemiMajorAxis() * betao2 *
             (common_consts_.eta * (2.0 + 0.5 * etasq) + elements_.Eccentricity() * (0.5 + 2.0 * etasq) -
@@ -239,7 +239,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
         throw SatelliteException("Error: #2 (xn <= 0.0)");
     }
 
-    a = pow(kXKE / xn, kTWOTHIRD) * pow(tempa, 2.0);
+    a = pow(kXKE / xn, kTWOTHIRD) * tempa * tempa;
     e -= tempe;
     double xmam = xmdf + elements_.RecoveredMeanMotion() * templ;
 
@@ -360,7 +360,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
         templ += nearspace_consts_.t3cof * tcube + tfour * (nearspace_consts_.t4cof + tsince * nearspace_consts_.t5cof);
     }
 
-    a = elements_.RecoveredSemiMajorAxis() * pow(tempa, 2.0);
+    a = elements_.RecoveredSemiMajorAxis() * tempa * tempa;
     e = elements_.Eccentricity() - tempe;
     xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
 

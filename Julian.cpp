@@ -231,10 +231,12 @@ double Julian::ToGreenwichSiderealTime() const
     // (since J2000 which is 2451545.0)
     // a Julian century is 36525 days
     const double tut1 = (date_ - 2451545.0) / 36525.0;
+    const double tut2 = tut1 * tut1;
+    const double tut3 = tut2 * tut1;
 
     // Rotation angle in arcseconds
     double theta = 67310.54841 + (876600.0 * 3600.0 + 8640184.812866) * tut1
-        + 0.093104 * pow(tut1, 2.0) - 0.0000062 * pow(tut1, 3.0);
+        + 0.093104 * tut2 - 0.0000062 * tut3;
 
     // 360.0 / 86400.0 = 1.0 / 240.0
     theta = Util::WrapTwoPI(Util::DegreesToRadians(theta / 240.0));
