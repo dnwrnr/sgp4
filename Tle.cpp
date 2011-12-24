@@ -351,7 +351,7 @@ void Tle::ValidateLine(const std::string& line, const std::string& pattern)
                 /*
                  * number or ' '
                  */
-                if (!isdigit(mtch) && mtch != ' ')
+                if (!std::isdigit(mtch, std::locale::classic()) && mtch != ' ')
                 {
                     throw TleException("Invalid character");
                 }
@@ -364,7 +364,7 @@ void Tle::ValidateLine(const std::string& line, const std::string& pattern)
                  */
                 if (mtch != '+' && mtch != '-'
                         && mtch != ' ' && mtch != '0'
-                        && !isdigit(mtch))
+                        && !std::isdigit(mtch, std::locale::classic()))
                 {
                     throw TleException("Invalid character");
                 }
@@ -397,7 +397,9 @@ void Tle::ValidateLine(const std::string& line, const std::string& pattern)
                 /*
                  * alpha or ' '
                  */
-                if (!isupper(mtch) && !isalpha(mtch) && mtch != ' ')
+                if (!std::isupper(mtch, std::locale::classic()) &&
+                        !std::isalpha(mtch, std::locale::classic()) &&
+                        mtch != ' ')
                 {
                     throw TleException("Invalid character");
                 }
@@ -424,7 +426,7 @@ int Tle::CheckSum(const std::string & str)
     {
         char ch = str[i];
 
-        if (isdigit(ch))
+        if (std::isdigit(ch, std::locale::classic()))
         {
             xsum += (ch - '0');
         }
