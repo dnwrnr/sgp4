@@ -1,6 +1,6 @@
-#include "Observer.h"
-#include "SGP4.h"
-#include "Util.h"
+#include <Observer.h>
+#include <SGP4.h>
+#include <Util.h>
 
 #include <cmath>
 #include <iostream>

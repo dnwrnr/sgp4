@@ -1,10 +1,26 @@
-syntax: glob
-Release\*
-Debug\*
-*.o
-RunTest
-SatTrack
-PassPredict
-*.txt
-*.orig
-*.a
+# Exact paths to config junk
+^INSTALL$
+^aclocal.m4$
+^configure$
+^(config.guess|config.sub|depcomp|install-sh|ltmain.sh|missing)$
+^config.(log|status)$
+^autom4te.cache$
+
+# Build artifacts
+^libsgp4/libsgp4.a$
+^passpredict/passpredict$
+^runtest/runtest$
+^sattrack/sattrack$
+.(deps|libs)/*$
+.cmp$
+autom4te.cache/*$
+
+Makefile(.in)?$
+.(deps|libs)$
+\.l?o$
+
+# Merged files
+\.orig$
+
+# Backup files
+.*~$
