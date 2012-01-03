@@ -211,9 +211,10 @@ private:
             double* omgasm, double* xnodes, double* xll) const;
     void DeepSpaceSecular(const double& t, double* xll, double* omgasm,
             double* xnodes, double* em, double* xinc, double* xn) const;
-    Eci FindPositionSDP4(double tsince) const;
-    Eci FindPositionSGP4(double tsince) const;
-    Eci CalculateFinalPositionVelocity(const double& tsince, const double& e,
+    Eci FindPosition(const Julian& dt, double tsince) const;
+    Eci FindPositionSDP4(const Julian& dt, double tsince) const;
+    Eci FindPositionSGP4(const Julian& dt, double tsince) const;
+    Eci CalculateFinalPositionVelocity(const Julian& dt, const double& e,
             const double& a, const double& omega, const double& xl, const double& xnode,
             const double& xincl, const double& xlcof, const double& aycof,
             const double& x3thm1, const double& x1mth2, const double& x7thm1,
