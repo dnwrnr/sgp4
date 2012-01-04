@@ -427,13 +427,13 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
         const double& x3thm1, const double& x1mth2, const double& x7thm1,
         const double& cosio, const double& sinio) const
 {
-    const double beta = sqrt(1.0 - e * e);
+    const double beta2 = 1.0 - e * e;
     const double xn = kXKE / pow(a, 1.5);
     /*
      * long period periodics
      */
     const double axn = e * cos(omega);
-    const double temp11 = 1.0 / (a * beta * beta);
+    const double temp11 = 1.0 / (a * beta2);
     const double xll = temp11 * xlcof * axn;
     const double aynl = temp11 * aycof;
     const double xlt = xl + xll;
