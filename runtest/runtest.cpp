@@ -160,12 +160,15 @@ void RunTest(const char* infile)
         {
             try
             {
-                Tle::IsValidLine(line, 1);
-                /*
-                 * store line and now read in second line
-                 */
-                got_first_line = true;
-                line1 = line;
+                if (line.length() >= Tle::GetLineLength())
+                {
+                    Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 1);
+                    /*
+                     * store line and now read in second line
+                     */
+                    got_first_line = true;
+                    line1 = line;
+                }
             }
             catch (TleException& e)
             {
@@ -183,14 +186,15 @@ void RunTest(const char* infile)
              * split line, first 69 is the second line of the tle
              * the rest is the test parameters, if there is any
              */
-            line2 = line.substr(0, 69);
+            line2 = line.substr(0, Tle::GetLineLength());
             double start = 0.0;
             double end = 1440.0;
             double inc = 120.0;
             if (line.length() > 69)
             {
                 std::vector<std::string> tokens;
-                parameters = line.substr(70, line.length() - 69);
+                parameters = line.substr(Tle::GetLineLength() + 1,
+                        line.length() - Tle::GetLineLength());
                 tokenize(parameters, tokens);
                 if (tokens.size() >= 3)
                 {
@@ -205,9 +209,12 @@ void RunTest(const char* infile)
              */
             try
             {
-                Tle::IsValidLine(line2, 2);
-                Tle tle("Test", line1, line2);
-                RunTle(tle, start, end, inc);
+                if (line.length() >= Tle::GetLineLength())
+                {
+                    Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 2);
+                    Tle tle("Test", line1, line2);
+                    RunTle(tle, start, end, inc);
+                }
             }
             catch (TleException& e)
             {
