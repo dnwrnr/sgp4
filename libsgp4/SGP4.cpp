@@ -282,9 +282,25 @@ Eci SGP4::FindPositionSDP4(const Julian& dt, double tsince) const
     xl = xmam + omgadf + xnode;
     omega = omgadf;
 
-    if (e < 0.0 || e > 1.0)
+    if (a < 1.0)
     {
-        throw SatelliteException("Error: #3 (e < 0.0 || e > 1.0)");
+        throw SatelliteException("Error: (a < 1.0)");
+    }
+
+    /*
+     * fix tolerance for error recognition
+     */
+    if (e <= -0.001)
+    {
+        throw SatelliteException("Error: (e <= -0.001)");
+    }
+    else if (e < 1.0e-6)
+    {
+        e = 1.0e-6;
+    }
+    else if (e > (1.0 - 1.0e-6))
+    {
+        e = 1.0 - 1.0e-6;
     }
 
     /*
@@ -372,19 +388,25 @@ Eci SGP4::FindPositionSGP4(const Julian& dt, double tsince) const
     e = elements_.Eccentricity() - tempe;
     xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
 
+    if (a < 1.0)
+    {
+        throw SatelliteException("Error: (a < 1.0)");
+    }
+
     /*
      * fix tolerance for error recognition
      */
-    if (e >= 1.0 || e < -0.001)
+    if (e <= -0.001)
     {
-        throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
+        throw SatelliteException("Error: (e <= -0.001)");
     }
-    /*
-     * fix tolerance to avoid a divide by zero
-     */
-    if (e < 1.0e-6)
+    else if (e < 1.0e-6)
     {
         e = 1.0e-6;
+    }
+    else if (e > (1.0 - 1.0e-6))
+    {
+        e = 1.0 - 1.0e-6;
     }
 
     /*
@@ -417,6 +439,11 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
     const double xlt = xl + xll;
     const double ayn = e * sin(omega) + aynl;
     const double elsq = axn * axn + ayn * ayn;
+
+    if (elsq >= 1.0)
+    {
+        throw SatelliteException("Error: (elsq >= 1.0)");
+    }
 
     /*
      * solve keplers equation
@@ -496,7 +523,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
 
     if (pl < 0.0)
     {
-        throw SatelliteException("Error: #4 (pl < 0.0)");
+        //TODO:
+        throw SatelliteException("Error: (pl < 0.0)");
     }
 
     const double r = a * (1.0 - ecose);
@@ -528,7 +556,7 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
 
     if (rk < 1.0)
     {
-        throw SatelliteException("Error: #6 Satellite decayed (rk < 1.0)");
+        throw SatelliteException("Error: Satellite decayed (rk < 1.0)");
     }
 
     /*
