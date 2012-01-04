@@ -372,11 +372,6 @@ Eci SGP4::FindPositionSGP4(const Julian& dt, double tsince) const
     e = elements_.Eccentricity() - tempe;
     xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
 
-    if (xl <= 0.0)
-    {
-        throw SatelliteException("Error: #2 (xl <= 0.0)");
-    }
-
     /*
      * fix tolerance for error recognition
      */
