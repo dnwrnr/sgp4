@@ -244,27 +244,12 @@ Eci SGP4::FindPositionSDP4(const Julian& dt, double tsince) const
 
     if (xn <= 0.0)
     {
-        throw SatelliteException("Error: #2 (xn <= 0.0)");
+        throw SatelliteException("Error: (xn <= 0.0)");
     }
 
     a = pow(kXKE / xn, kTWOTHIRD) * tempa * tempa;
     e -= tempe;
     double xmam = xmdf + elements_.RecoveredMeanMotion() * templ;
-
-    /*
-     * fix tolerance for error recognition
-     */
-    if (e >= 1.0 || e < -0.001)
-    {
-        throw SatelliteException("Error: #1 (e >= 1.0 || e < -0.001)");
-    }
-    /*
-     * fix tolerance to avoid a divide by zero
-     */
-    if (e < 1.0e-6)
-    {
-        e = 1.0e-6;
-    }
 
     DeepSpacePeriodics(tsince, &e, &xincl, &omgadf, &xnode, &xmam);
 
@@ -523,7 +508,6 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
 
     if (pl < 0.0)
     {
-        //TODO:
         throw SatelliteException("Error: (pl < 0.0)");
     }
 
