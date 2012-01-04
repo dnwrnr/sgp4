@@ -1,4 +1,4 @@
-AC_PREREQ([2.68])
+AC_PREREQ([2.61])
 AC_INIT([sgp4], 1.0, [info@danrw.com])
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
