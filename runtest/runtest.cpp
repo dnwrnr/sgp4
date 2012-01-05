@@ -21,7 +21,10 @@ void RunTle(Tle tle, double start, double end, double inc)
     SGP4 model(tle);
     bool running = true;
     bool first_run = true;
-    std::cout << "  " << std::setprecision(0) << tle.NoradNumber() << "  xx" << std::endl;
+
+    std::cout << std::setprecision(0) << tle.NoradNumber() << " xx"
+        << std::endl;
+
     while (running)
     {
         try
@@ -66,7 +69,6 @@ void RunTle(Tle tle, double start, double end, double inc)
         }
         catch (SatelliteException& e)
         {
-            std::cout << e.what() << std::endl;
             running = false;
         }
         if ((first_run && current == 0.0) || !first_run)
