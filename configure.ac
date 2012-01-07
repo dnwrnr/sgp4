@@ -21,7 +21,7 @@ AC_ARG_ENABLE(debug,
 if test x$enable_debug = xyes; then
   AM_CXXFLAGS="-g -O0 -Wall -Werror"
 else
-  AM_CXXFLAGS="-O2 -Wall -Werror -fomit-frame-pointer"
+  AM_CXXFLAGS="-DNDEBUG -O2 -Wall -Werror -fomit-frame-pointer"
 fi
 
 AC_SUBST(AM_CXXFLAGS)
