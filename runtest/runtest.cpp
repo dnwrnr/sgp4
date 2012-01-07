@@ -27,31 +27,59 @@ void RunTle(Tle tle, double start, double end, double inc)
 
     while (running)
     {
+        bool error = false;
+        Vector position;
+        Vector velocity;
+        double tsince;
+
         try
         {
-            double val;
             if (first_run && current != 0.0) 
             {
                 /*
                  * make sure first run is always as zero
                  */
-                val = 0.0;
+                tsince = 0.0;
             }
             else
             {
                 /*
                  * otherwise run as normal
                  */
-                val = current;
+                tsince = current;
             }
-            Eci eci = model.FindPosition(val);
 
-            Vector position = eci.GetPosition();
-            Vector velocity = eci.GetVelocity();
+            Eci eci = model.FindPosition(tsince);
+            position = eci.GetPosition();
+            velocity = eci.GetVelocity();
+        }
+        catch (SatelliteException& e)
+        {
+            std::cerr << e.what() << std::endl;
+            error = true;
+            running = false;
+        }
+        catch (DecayedException& e)
+        {
+            std::cerr << e.what() << std::endl;
 
+            position = e.GetPosition();
+            velocity = e.GetVelocity();
+
+            if (!first_run)
+            {
+                // print out position on first run
+                error = true;
+            }
+
+            running = false;
+        }
+
+        if (!error)
+        {
             std::cout << std::setprecision(8) << std::fixed;
             std::cout.width(17);
-            std::cout << val << " ";
+            std::cout << tsince << " ";
             std::cout.width(16);
             std::cout << position.x << " ";
             std::cout.width(16);
@@ -65,12 +93,8 @@ void RunTle(Tle tle, double start, double end, double inc)
             std::cout << velocity.y << " ";
             std::cout.width(14);
             std::cout << velocity.z << std::endl;
+        }
 
-        }
-        catch (SatelliteException& e)
-        {
-            running = false;
-        }
         if ((first_run && current == 0.0) || !first_run)
         {
             if (current == end)
@@ -87,7 +111,6 @@ void RunTle(Tle tle, double start, double end, double inc)
             }
         }
         first_run = false;
-
     }
 }
 

@@ -5,6 +5,7 @@
 #include "OrbitalElements.h"
 #include "Eci.h"
 #include "SatelliteException.h"
+#include "DecayedException.h"
 
 class SGP4
 {

@@ -3,6 +3,7 @@
 #include "Util.h"
 #include "Vector.h"
 #include "SatelliteException.h"
+#include "DecayedException.h"
 
 #include <cmath>
 #include <iomanip>
@@ -267,11 +268,6 @@ Eci SGP4::FindPositionSDP4(const Julian& dt, double tsince) const
     xl = xmam + omgadf + xnode;
     omega = omgadf;
 
-    if (a < 1.0)
-    {
-        throw SatelliteException("Error: (a < 1.0)");
-    }
-
     /*
      * fix tolerance for error recognition
      */
@@ -372,11 +368,6 @@ Eci SGP4::FindPositionSGP4(const Julian& dt, double tsince) const
     a = elements_.RecoveredSemiMajorAxis() * tempa * tempa;
     e = elements_.Eccentricity() - tempe;
     xl = xmp + omega + xnode + elements_.RecoveredMeanMotion() * templ;
-
-    if (a < 1.0)
-    {
-        throw SatelliteException("Error: (a < 1.0)");
-    }
 
     /*
      * fix tolerance for error recognition
@@ -538,11 +529,6 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
     const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
     const double rfdotk = rfdot + xn * temp42 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
-    if (rk < 1.0)
-    {
-        throw SatelliteException("Error: Satellite decayed (rk < 1.0)");
-    }
-
     /*
      * orientation vectors
      */
@@ -571,6 +557,11 @@ Eci SGP4::CalculateFinalPositionVelocity(const Julian& dt, const double& e,
     const double ydot = (rdotk * uy + rfdotk * vy) * kXKMPER / 60.0;
     const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
+
+    if (rk < 1.0)
+    {
+        throw DecayedException(dt, position, velocity);
+    }
 
     Eci eci(dt, position, velocity);
 
