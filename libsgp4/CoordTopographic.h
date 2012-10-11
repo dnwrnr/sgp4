@@ -1,99 +1,139 @@
 #ifndef COORDTOPOGRAPHIC_H_
 #define COORDTOPOGRAPHIC_H_
 
-#include "Globals.h"
 #include "Util.h"
 
-#include <iostream>
+#include <string>
 #include <sstream>
 #include <iomanip>
 
+/**
+ * Stores a topographic position
+ */
 struct CoordTopographic
 {
 public:
+    /**
+     * Default constructor
+     */
     CoordTopographic()
-    : azimuth(0.0), elevation(0.0), range(0.0), range_rate(0.0)
+        : azimuth(0.0), 
+        elevation(0.0),
+        range(0.0),
+        range_rate(0.0)
     {
     }
 
-    CoordTopographic(double az, double el, double rnge, double rnge_rate)
-    : azimuth(az), elevation(el), range(rnge), range_rate(rnge_rate)
+    /**
+     * Constructor
+     * @param[in] arg_azimuth azimuth in radians
+     * @param[in] arg_elevation elevation in radians
+     * @param[in] arg_range range in kilometers
+     * @param[in] arg_range_rate range rate in kilometers per second
+     */
+    CoordTopographic(
+            double arg_azimuth,
+            double arg_elevation,
+            double arg_range,
+            double arg_range_rate)
+        : azimuth(arg_azimuth),
+        elevation(arg_elevation),
+        range(arg_range),
+        range_rate(arg_range_rate)
     {
     }
 
-    CoordTopographic(const CoordTopographic& t)
+    /**
+     * Copy constructor
+     * @param[in] topo object to copy from
+     */
+    CoordTopographic(const CoordTopographic& topo)
     {
-        azimuth = t.azimuth;
-        elevation = t.elevation;
-        range = t.range;
-        range_rate = t.range_rate;
+        azimuth = topo.azimuth;
+        elevation = topo.elevation;
+        range = topo.range;
+        range_rate = topo.range_rate;
     }
 
+    /**
+     * Destructor
+     */
     virtual ~CoordTopographic()
     {
-    };
+    }
 
-    CoordTopographic& operator=(const CoordTopographic& t)
+    /**
+     * Assignment operator
+     * @param[in] topo object to copy from
+     */
+    CoordTopographic& operator=(const CoordTopographic& topo)
     {
-        if (this != &t) {
-            azimuth = t.azimuth;
-            elevation = t.elevation;
-            range = t.range;
-            range_rate = t.range_rate;
+        if (this != &topo)
+        {
+            azimuth = topo.azimuth;
+            elevation = topo.elevation;
+            range = topo.range;
+            range_rate = topo.range_rate;
         }
         return *this;
     }
 
-    bool operator==(const CoordTopographic& t) const
+    /**
+     * Equality operator
+     * @param[in] topo value to check
+     * @returns whether the object is equal
+     */
+    bool operator==(const CoordTopographic& topo) const
     {
-        return IsEqual(t);
+        return IsEqual(topo);
     }
 
-    bool operator !=(const CoordTopographic& t) const
+    /**
+     * Inequality operator
+     * @param[in] topo the object to compare with
+     * @returns whether the object is not equal
+     */    
+    bool operator !=(const CoordTopographic& topo) const
     {
-        return !IsEqual(t);
+        return !IsEqual(topo);
     }
 
+    /**
+     * Dump this object to a string
+     * @returns string
+     */
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << std::right << std::fixed << std::setprecision(2);
-        ss << "Az: " << std::setw(7) << Util::RadiansToDegrees(azimuth);
-        ss << ", El: " << std::setw(7) << Util::RadiansToDegrees(elevation);
-        ss << ", Rng: " << std::setw(9) << range;
-        ss << ", Rng Rt: " << std::setw(6) << range_rate;
+        ss << std::right << std::fixed << std::setprecision(3);
+        ss << "Az: " << std::setw(8) << Util::RadiansToDegrees(azimuth);
+        ss << ", El: " << std::setw(8) << Util::RadiansToDegrees(elevation);
+        ss << ", Rng: " << std::setw(10) << range;
+        ss << ", Rng Rt: " << std::setw(7) << range_rate;
         return ss.str();
     }
 
-    /*
-     * radians
-     */
+    /** azimuth in radians */
     double azimuth;
-    /*
-     * radians
-     */
+    /** elevations in radians */
     double elevation;
-    /*
-     * kilometers
-     */
+    /** range in kilometers */
     double range;
-    /*
-     * kilometers / second
-     */
+    /** range rate in kilometers per second */
     double range_rate;
 
-protected:
-    bool IsEqual(const CoordTopographic& t) const
+private:
+    bool IsEqual(const CoordTopographic& topo) const
     {
-       if (azimuth == t.azimuth && elevation == t.elevation &&
-                range == t.range && range_rate == t.range_rate)
-       {
-            return true;
-       }
-       else
-       {
-           return false;
-       }
+        bool equal = false;
+        if (azimuth == topo.azimuth &&
+                elevation == topo.elevation &&
+                range == topo.range &&
+                range_rate == topo.range_rate)
+        {
+            equal = true;
+        }
+        return equal;
     }
 };
 
@@ -104,4 +144,3 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordTopographic& t)
 }
 
 #endif
-

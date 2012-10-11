@@ -1,7 +1,7 @@
 # Exact paths to config junk
 ^INSTALL$
 ^aclocal.m4$
-^configure$
+#^configure$
 ^(config.guess|config.sub|depcomp|install-sh|ltmain.sh|missing)$
 ^config.(log|status)$
 ^autom4te.cache$
@@ -14,6 +14,7 @@
 .(deps|libs)/*$
 .cmp$
 autom4te.cache/*$
+doxygen/*$
 
 Makefile(.in)?$
 .(deps|libs)$

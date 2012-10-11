@@ -22,17 +22,10 @@ public:
 
     void SetTle(const Tle& tle);
     Eci FindPosition(double tsince) const;
-    Eci FindPosition(const Julian& date) const;
+    Eci FindPosition(const DateTime& date) const;
 
     struct CommonConstants
     {
-        CommonConstants()
-        : cosio(0.0), sinio(0.0), eta(0.0), t2cof(0.0), a3ovk2(0.0),
-        x1mth2(0.0), x3thm1(0.0), x7thm1(0.0), aycof(0.0), xlcof(0.0),
-        xnodcf(0.0), c1(0.0), c4(0.0), omgdot(0.0), xnodot(0.0), xmdot(0.0)
-        {
-        }
-
         double cosio;
         double sinio;
         double eta;
@@ -48,17 +41,11 @@ public:
         double c4;
         double omgdot; // secular rate of omega (radians/sec)
         double xnodot; // secular rate of xnode (radians/sec)
-        double xmdot; // secular rate of xmo (radians/sec)
+        double xmdot;  // secular rate of xmo   (radians/sec)
     };
 
     struct NearSpaceConstants
     {
-        NearSpaceConstants()
-        : c5(0.0), omgcof(0.0), xmcof(0.0), delmo(0.0), sinmo(0.0), d2(0.0),
-        d3(0.0), d4(0.0), t3cof(0.0), t4cof(0.0), t5cof(0.0)
-        {
-        }
-
         double c5;
         double omgcof;
         double xmcof;
@@ -74,18 +61,6 @@ public:
 
     struct DeepSpaceConstants
     {
-        DeepSpaceConstants()
-        : gsto(0.0), zmol(0.0), zmos(0.0), resonance_flag(false),
-        synchronous_flag(false), sse(0.0), ssi(0.0), ssl(0.0), ssg(0.0),
-        ssh(0.0), se2(0.0), si2(0.0), sl2(0.0), sgh2(0.0), sh2(0.0), se3(0.0),
-        si3(0.0), sl3(0.0), sgh3(0.0), sh3(0.0), sl4(0.0), sgh4(0.0), ee2(0.0),
-        e3(0.0), xi2(0.0), xi3(0.0), xl2(0.0), xl3(0.0), xl4(0.0), xgh2(0.0),
-        xgh3(0.0), xgh4(0.0), xh2(0.0), xh3(0.0), d2201(0.0), d2211(0.0),
-        d3210(0.0), d3222(0.0), d4410(0.0), d4422(0.0), d5220(0.0), d5232(0.0),
-        d5421(0.0), d5433(0.0), del1(0.0), del2(0.0), del3(0.0)
-        {
-        }
-
         double gsto;
         double zmol;
         double zmos;
@@ -156,10 +131,6 @@ public:
 
     struct IntegratorValues
     {
-        IntegratorValues() : xndot(0.0), xnddt(0.0), xldot(0.0)
-        {
-        }
-
         double xndot;
         double xnddt;
         double xldot;
@@ -167,10 +138,6 @@ public:
 
     struct IntegratorConstants
     {
-        IntegratorConstants() : xfact(0.0), xlamo(0.0)
-        {
-        }
-
         /*
          * integrator constants
          */
@@ -185,10 +152,6 @@ public:
 
     struct IntegratorParams
     {
-        IntegratorParams() : xli(0.0), xni(0.0), atime(0.0)
-        {
-        }
-
         /*
          * integrator values
          */
@@ -203,25 +166,59 @@ public:
 
 private:
     void Initialise();
-    void DeepSpaceInitialise(const double& eosq, const double& sinio, const double& cosio, const double& betao,
-            const double& theta2, const double& betao2,
-            const double& xmdot, const double& omgdot, const double& xnodot);
-    void DeepSpaceCalculateLunarSolarTerms(const double t, double* pe, double* pinc,
-            double* pl, double* pgh, double* ph) const;
-    void DeepSpacePeriodics(const double& t, double* em, double* xinc,
-            double* omgasm, double* xnodes, double* xll) const;
-    void DeepSpaceSecular(const double& t, double* xll, double* omgasm,
-            double* xnodes, double* em, double* xinc, double* xn) const;
-    Eci FindPosition(const Julian& dt, double tsince) const;
-    Eci FindPositionSDP4(const Julian& dt, double tsince) const;
-    Eci FindPositionSGP4(const Julian& dt, double tsince) const;
-    Eci CalculateFinalPositionVelocity(const Julian& dt, const double& e,
-            const double& a, const double& omega, const double& xl, const double& xnode,
-            const double& xincl, const double& xlcof, const double& aycof,
-            const double& x3thm1, const double& x1mth2, const double& x7thm1,
-            const double& cosio, const double& sinio) const;
-    void DeepSpaceCalcDotTerms(struct IntegratorValues *values) const;
-    void DeepSpaceIntegrator(const double delt, const double step2,
+    Eci FindPositionSDP4(const double tsince) const;
+    Eci FindPositionSGP4(double tsince) const;
+    Eci CalculateFinalPositionVelocity(
+            const double tsince,
+            const double e,
+            const double a,
+            const double omega,
+            const double xl,
+            const double xnode,
+            const double xincl,
+            const double xlcof,
+            const double aycof,
+            const double x3thm1,
+            const double x1mth2,
+            const double x7thm1,
+            const double cosio,
+            const double sinio) const;
+    void DeepSpaceInitialise(
+            const double eosq,
+            const double sinio,
+            const double cosio,
+            const double betao,
+            const double theta2,
+            const double betao2,
+            const double xmdot,
+            const double omgdot,
+            const double xnodot);
+    void DeepSpaceCalculateLunarSolarTerms(
+            const double tsince,
+            double& pe,
+            double& pinc,
+            double& pl,
+            double& pgh,
+            double& ph) const;
+    void DeepSpacePeriodics(
+            const double tsince,
+            double& em,
+            double& xinc,
+            double& omgasm,
+            double& xnodes,
+            double& xll) const;
+    void DeepSpaceSecular(
+            const double tsince,
+            double& xll,
+            double& omgasm,
+            double& xnodes,
+            double& em,
+            double& xinc,
+            double& xn) const;
+    void DeepSpaceCalcDotTerms(struct IntegratorValues& values) const;
+    void DeepSpaceIntegrator(
+            const double delt,
+            const double step2,
             const struct IntegratorValues& values) const;
     void Reset();
 

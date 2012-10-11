@@ -1,7 +1,7 @@
 #ifndef SOLARPOSITION_H_
 #define SOLARPOSITION_H_
 
-#include "Julian.h"
+#include "DateTime.h"
 #include "Eci.h"
 
 class SolarPosition
@@ -15,7 +15,7 @@ public:
     {
     }
 
-    Eci FindPosition(const Julian& j);
+    Eci FindPosition(const DateTime& dt);
 
 private:
     double Delta_ET(double year) const;

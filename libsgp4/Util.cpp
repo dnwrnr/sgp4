@@ -34,5 +34,4 @@ namespace Util
         TrimLeft(s);
         TrimRight(s);
     }
-
 }

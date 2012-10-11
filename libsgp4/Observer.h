@@ -2,66 +2,87 @@
 #define OBSERVER_H_
 
 #include "CoordGeodetic.h"
-#include "CoordTopographic.h"
-#include "Julian.h"
 #include "Eci.h"
+
+class DateTime;
+class CoordTopographic;
 
 class Observer
 {
 public:
-    Observer(double latitude, double longitude, double altitude)
-        : geo_(latitude, longitude, altitude),
-        observers_eci_(Julian(), geo_)
+    /**
+     * Constructor
+     * @param[in] latitude observers latitude in degrees
+     * @param[in] longitude observers longitude in degrees
+     * @param[in] altitude observers altitude in kilometers
+     */
+    Observer(const double latitude,
+            const double longitude,
+            const double altitude)
+        : m_geo(latitude, longitude, altitude),
+        m_eci(DateTime(), m_geo)
     {
     }
 
-    Observer(const CoordGeodetic &g)
-        : geo_(g), observers_eci_(Julian(), geo_)
+    /**
+     * Constructor
+     * @param[in] geo the observers position
+     */
+    Observer(const CoordGeodetic &geo)
+        : m_geo(geo),
+        m_eci(DateTime(), geo)
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~Observer()
     {
     }
 
-    void SetLocation(const CoordGeodetic& g)
+    /**
+     * Set the observers location
+     * @param[in] geo the observers position
+     */
+    void SetLocation(const CoordGeodetic& geo)
     {
-        geo_ = g;
-        observers_eci_ = Eci(observers_eci_.GetDate(), geo_);
+        m_geo = geo;
+        m_eci.Update(m_eci.GetDateTime(), m_geo);
     }
 
+    /**
+     * Get the observers location
+     * @returns the observers position
+     */
     CoordGeodetic GetLocation() const
     {
-        return geo_;
+        return m_geo;
     }
 
-    Eci GetEciPosition(const Julian &date) const
-    {
-        return Eci(date, geo_);
-    }
-
+    /**
+     * Get the look angle for the observers position to the object
+     * @param[in] eci the object to find the look angle to
+     * @returns the lookup angle
+     */
     CoordTopographic GetLookAngle(const Eci &eci);
 
 private:
-    void UpdateObserversEci(const Julian &date)
+    /**
+     * @param[in] dt the date to update the observers position for
+     */
+    void Update(const DateTime &dt)
     {
-        /*
-         * if date has changed, update for new date
-         */
-        if (observers_eci_.GetDate() != date)
+        if (m_eci != dt)
         {
-            observers_eci_ = Eci(date, geo_);
+            m_eci.Update(dt, m_geo);
         }
     }
 
-    /*
-     * the observers position
-     */
-    CoordGeodetic geo_;
-    /*
-     * the observers eci for a particular time
-     */
-    Eci observers_eci_;
+    /** the observers position */
+    CoordGeodetic m_geo;
+    /** the observers Eci for a particular time */
+    Eci m_eci;
 };
 
 #endif

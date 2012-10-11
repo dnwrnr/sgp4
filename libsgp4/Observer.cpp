@@ -1,5 +1,7 @@
 #include "Observer.h"
 
+#include "CoordTopographic.h"
+
 /*
  * calculate lookangle between the observer and the passed in Eci object
  */
@@ -9,23 +11,23 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci)
      * update the observers Eci to match the time of the Eci passed in
      * if necessary
      */
-    UpdateObserversEci(eci.GetDate());
+    Update(eci.GetDateTime());
 
     /*
      * calculate differences
      */
-    Vector range_rate = eci.GetVelocity().Subtract(observers_eci_.GetVelocity());
-    Vector range = eci.GetPosition().Subtract(observers_eci_.GetPosition());
+    Vector range_rate = eci.GetVelocity() - m_eci.GetVelocity();
+    Vector range = eci.GetPosition() - m_eci.GetPosition();
 
     range.w = range.GetMagnitude();
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    double theta = eci.GetDate().ToLocalMeanSiderealTime(geo_.longitude);
+    double theta = eci.GetDateTime().ToLocalMeanSiderealTime(m_geo.longitude);
 
-    double sin_lat = sin(geo_.latitude);
-    double cos_lat = cos(geo_.latitude);
+    double sin_lat = sin(m_geo.latitude);
+    double cos_lat = cos(m_geo.latitude);
     double sin_theta = sin(theta);
     double cos_theta = cos(theta);
 

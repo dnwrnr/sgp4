@@ -2,7 +2,6 @@
 #define SATELLITEEXCEPTION_H_
 
 #include <exception>
-#include <iostream>
 
 class SatelliteException : public std::exception
 {

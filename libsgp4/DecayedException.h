@@ -2,44 +2,65 @@
 #define DECAYEDEXCEPTION_H_
 
 #include <exception>
-#include <iostream>
-#include "Julian.h"
+
+#include "DateTime.h"
 #include "Vector.h"
 
 class DecayedException : public std::exception
 {
 public:
-    DecayedException(const Julian& dt, const Vector& pos, const Vector& vel)
+    /**
+     * Constructor
+     * @param[in] dt time of the event
+     * @param[in] pos position of the satellite at dt
+     * @param[in] vel velocity of the satellite at dt
+     */
+    DecayedException(const DateTime& dt, const Vector& pos, const Vector& vel)
         : _dt(dt), _pos(pos), _vel(vel)
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~DecayedException(void) throw ()
     {
     }
 
+    /**
+     * @returns the error string
+     */
     virtual const char* what() const throw ()
     {
         return "Error: Satellite decayed";
     }
 
-    Julian GetDate() const
+    /**
+     * @returns the date
+     */
+    DateTime GetDateTime() const
     {
         return _dt;
     }
 
+    /**
+     * @returns the position
+     */
     Vector GetPosition() const
     {
         return _pos;
     }
 
+    /**
+     * @returns the velocity
+     */
     Vector GetVelocity() const
     {
         return _vel;
     }
 
 private:
-    Julian _dt;
+    DateTime _dt;
     Vector _pos;
     Vector _vel;
 };

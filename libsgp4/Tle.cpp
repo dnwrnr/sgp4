@@ -1,14 +1,9 @@
 #include "Tle.h"
 
-#include "Util.h"
-
 #include <locale> 
 
 namespace
 {
-    /*
-     * line 1
-     */
     static const unsigned int TLE1_COL_NORADNUM = 2;
     static const unsigned int TLE1_LEN_NORADNUM = 5;
     static const unsigned int TLE1_COL_INTLDESC_A = 9;
@@ -21,10 +16,10 @@ namespace
     static const unsigned int TLE1_LEN_EPOCH_A = 2;
     static const unsigned int TLE1_COL_EPOCH_B = 20;
     static const unsigned int TLE1_LEN_EPOCH_B = 12;
-    static const unsigned int TLE1_COL_MEANMOTIONDT = 33;
-    static const unsigned int TLE1_LEN_MEANMOTIONDT = 10;
-    static const unsigned int TLE1_COL_MEANMOTIONDT2 = 44;
-    static const unsigned int TLE1_LEN_MEANMOTIONDT2 = 8;
+    static const unsigned int TLE1_COL_MEANMOTIONDT2 = 33;
+    static const unsigned int TLE1_LEN_MEANMOTIONDT2 = 10;
+    static const unsigned int TLE1_COL_MEANMOTIONDDT6 = 44;
+    static const unsigned int TLE1_LEN_MEANMOTIONDDT6 = 8;
     static const unsigned int TLE1_COL_BSTAR = 53;
     static const unsigned int TLE1_LEN_BSTAR = 8;
     static const unsigned int TLE1_COL_EPHEMTYPE = 62;
@@ -32,9 +27,6 @@ namespace
     static const unsigned int TLE1_COL_ELNUM = 64;
     static const unsigned int TLE1_LEN_ELNUM = 4;
 
-    /*
-     * line 2
-     */
     static const unsigned int TLE2_COL_NORADNUM = 2;
     static const unsigned int TLE2_LEN_NORADNUM = 5;
     static const unsigned int TLE2_COL_INCLINATION = 8;
@@ -51,421 +43,309 @@ namespace
     static const unsigned int TLE2_LEN_MEANMOTION = 11;
     static const unsigned int TLE2_COL_REVATEPOCH = 63;
     static const unsigned int TLE2_LEN_REVATEPOCH = 5;
-
 }
 
-Tle::Tle(const Tle& tle)
-{
-    name_ = tle.name_;
-    line_one_ = tle.line_one_;
-    line_two_ = tle.line_two_;
-
-    norad_number_ = tle.norad_number_;
-    international_designator_ = tle.international_designator_;
-    epoch_ = tle.epoch_;
-    mean_motion_dot_ = tle.mean_motion_dot_;
-    mean_motion_dot2_ = tle.mean_motion_dot2_;
-    bstar_ = tle.bstar_;
-    inclination_ = tle.inclination_;
-    right_ascending_node_ = tle.right_ascending_node_;
-    eccentricity_ = tle.eccentricity_;
-    argument_perigee_ = tle.argument_perigee_;
-    mean_anomaly_ = tle.mean_anomaly_;
-    mean_motion_ = tle.mean_motion_;
-    orbit_number_ = tle.orbit_number_;
-}
-
-/*
- * convert a tle raw string into an exponent string
- */
-std::string Tle::ExpToDecimal(const std::string& str)
-{
-    static const int START_SIGN = 0;
-    static const int LENGTH_SIGN = 1;
-    static const int START_MANTISSA = 1;
-    static const int LENGTH_MANTISSA = 5;
-    static const int START_EXP = 6;
-    static const int LENGTH_EXP = 2;
-
-    if ((LENGTH_SIGN + LENGTH_MANTISSA + LENGTH_EXP) != str.length())
-    {
-        throw TleException("Invalid string length for exponential conversion.");
-    }
-
-    std::string value = str.substr(START_SIGN, LENGTH_SIGN);
-    value += ".";
-    value += str.substr(START_MANTISSA, LENGTH_MANTISSA);
-    value += "e";
-    value += str.substr(START_EXP, LENGTH_EXP);
-
-    return value;
-}
-
-/*
- * extract all variables
+/**
+ * Initialise the tle object.
+ * @exception TleException
  */
 void Tle::Initialize()
 {
-    std::string temp;
-
-    /*
-     * trim whitespace
-     */
-    Util::TrimLeft(name_);
-    Util::TrimRight(name_);
-    Util::TrimLeft(line_one_);
-    Util::TrimRight(line_one_);
-    Util::TrimLeft(line_two_);
-    Util::TrimRight(line_two_);
-
-    /*
-     * check the two lines are valid
-     */
-    IsValidPair(line_one_, line_two_);
-
-    /*
-     * line 1
-     */
-
-    temp = ExtractNoradNumber(line_one_, 1);
-    if (!Util::FromString<unsigned int>(temp, norad_number_))
+    if (!IsValidLineLength(line_one_))
     {
-        throw TleException("Conversion failed");
+        throw TleException("Invalid length for line one");
     }
 
-    /*
-     * if blank use norad number for name
-     */
+    if (!IsValidLineLength(line_two_))
+    {
+        throw TleException("Invalid length for line two");
+    }
+
+    if (line_one_[0] != '1')
+    {
+        throw TleException("Invalid line beginning for line one");
+    }
+        
+    if (line_two_[0] != '2')
+    {
+        throw TleException("Invalid line beginning for line two");
+    }
+
+    unsigned int sat_number_1;
+    unsigned int sat_number_2;
+
+    ExtractInteger(line_one_.substr(TLE1_COL_NORADNUM,
+                TLE1_LEN_NORADNUM), sat_number_1);
+    ExtractInteger(line_two_.substr(TLE2_COL_NORADNUM,
+                TLE2_LEN_NORADNUM), sat_number_2);
+
+    if (sat_number_1 != sat_number_2)
+    {
+        throw TleException("Satellite numbers do not match");
+    }
+
+    norad_number_ = sat_number_1;
+
     if (name_.empty())
     {
-        name_ = temp;
+        name_ = line_one_.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
     }
 
-    international_designator_ = line_one_.substr(TLE1_COL_INTLDESC_A,
+    int_designator_ = line_one_.substr(TLE1_COL_INTLDESC_A,
             TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
 
-    int year;
-    double day;
-    if (!Util::FromString<int>(line_one_.substr(TLE1_COL_EPOCH_A, 
-                    TLE1_LEN_EPOCH_A), year))
-    {
-        throw TleException("Conversion failed");
-    }
-    if (!Util::FromString<double>(line_one_.substr(TLE1_COL_EPOCH_B,
-                TLE1_LEN_EPOCH_B), day))
-    {
-        throw TleException("Conversion failed");
-    }
-    /*
-     * generate julian date for epoch
-     */
-    if (year < 57)
-        year += 2000;
-    else
-        year += 1900;
-    epoch_ = Julian(year, day);
+    unsigned int year = 0;
+    double day = 0.0;
 
-    if (line_one_[TLE1_COL_MEANMOTIONDT] == '-') {
-        temp = "-0";
-    } else
-        temp = "0";
-    temp += line_one_.substr(TLE1_COL_MEANMOTIONDT + 1, TLE1_LEN_MEANMOTIONDT);
-    if (!Util::FromString<double>(temp, mean_motion_dot_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = ExpToDecimal(line_one_.substr(TLE1_COL_MEANMOTIONDT2,
-                TLE1_LEN_MEANMOTIONDT2));
-    if (!Util::FromString<double>(temp, mean_motion_dot2_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = ExpToDecimal(line_one_.substr(TLE1_COL_BSTAR,
-                TLE1_LEN_BSTAR).c_str());
-    if (!Util::FromString<double>(temp, bstar_))
-    {
-        throw TleException("Conversion failed");
-    }
+    ExtractInteger(line_one_.substr(TLE1_COL_EPOCH_A,
+                TLE1_LEN_EPOCH_A), year);
+    ExtractDouble(line_one_.substr(TLE1_COL_EPOCH_B,
+                TLE1_LEN_EPOCH_B), 4, day);
+    ExtractDouble(line_one_.substr(TLE1_COL_MEANMOTIONDT2,
+                TLE1_LEN_MEANMOTIONDT2), 2, mean_motion_dt2_);
+    ExtractExponential(line_one_.substr(TLE1_COL_MEANMOTIONDDT6,
+                TLE1_LEN_MEANMOTIONDDT6), mean_motion_ddt6_);
+    ExtractExponential(line_one_.substr(TLE1_COL_BSTAR,
+                TLE1_LEN_BSTAR), bstar_);
 
     /*
      * line 2
      */
-
-    temp = line_two_.substr(TLE2_COL_INCLINATION, TLE2_LEN_INCLINATION);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<double>(temp, inclination_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = line_two_.substr(TLE2_COL_RAASCENDNODE, TLE2_LEN_RAASCENDNODE);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<double>(temp, right_ascending_node_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = "0.";
-    temp += line_two_.substr(TLE2_COL_ECCENTRICITY, TLE2_LEN_ECCENTRICITY);
-    if (!Util::FromString<double>(temp, eccentricity_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = line_two_.substr(TLE2_COL_ARGPERIGEE, TLE2_LEN_ARGPERIGEE);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<double>(temp, argument_perigee_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = line_two_.substr(TLE2_COL_MEANANOMALY, TLE2_LEN_MEANANOMALY);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<double>(temp, mean_anomaly_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = line_two_.substr(TLE2_COL_MEANMOTION, TLE2_LEN_MEANMOTION);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<double>(temp, mean_motion_))
-    {
-        throw TleException("Conversion failed");
-    }
-
-    temp = line_two_.substr(TLE2_COL_REVATEPOCH, TLE2_LEN_REVATEPOCH);
-    Util::TrimLeft(temp);
-    if (!Util::FromString<unsigned int>(temp, orbit_number_))
-    {
-        throw TleException("Conversion failed");
-    }
-}
-
-/*
- * check the two lines have matching norad numbers
- * and that the lines themselves are equal
- */
-void Tle::IsValidPair(const std::string& line1, const std::string& line2)
-{
-    /*
-     * validate each line
-     */
-    IsValidLine(line1, 1);
-    IsValidLine(line2, 2);
-
-    /*
-     * extract norad numbers
-     */
-    std::string norad_1 = ExtractNoradNumber(line1, 1);
-    std::string norad_2 = ExtractNoradNumber(line2, 2);
-
-    /*
-     * make sure they match
-     */
-    if (norad_1.compare(norad_2) != 0)
-    {
-        throw TleException("Norad numbers do not match.");
-    }
-}
-
-/*
- * validate a line
- */
-void Tle::IsValidLine(const std::string& str, int line_number)
-{
-    /*
-     * validation patterns
-     */
-    static const std::string line1_pattern = "1 NNNNNC NNNNNXXX NNNNN.NNNNNNNN +.NNNNNNNN +NNNNN-N +NNNNN-N N NNNNN";
-    static const std::string line2_pattern = "2 NNNNN NNN.NNNN NNN.NNNN NNNNNNN NNN.NNNN NNN.NNNN NN.NNNNNNNNNNNNNN";
-
-    /*
-     * validate line against the pattern
-     */
-    if (1 == line_number)
-    {
-        ValidateLine(str, line1_pattern);
-    }
-    else if (2 == line_number)
-    {
-        ValidateLine(str, line2_pattern);
-    }
+    ExtractDouble(line_two_.substr(TLE2_COL_INCLINATION,
+                TLE2_LEN_INCLINATION), 4, inclination_);
+    ExtractDouble(line_two_.substr(TLE2_COL_RAASCENDNODE,
+                TLE2_LEN_RAASCENDNODE), 4, right_ascending_node_);
+    ExtractDouble(line_two_.substr(TLE2_COL_ECCENTRICITY,
+                TLE2_LEN_ECCENTRICITY), -1, eccentricity_);
+    ExtractDouble(line_two_.substr(TLE2_COL_ARGPERIGEE,
+                TLE2_LEN_ARGPERIGEE), 4, argument_perigee_);
+    ExtractDouble(line_two_.substr(TLE2_COL_MEANANOMALY,
+                TLE2_LEN_MEANANOMALY), 4, mean_anomaly_);
+    ExtractDouble(line_two_.substr(TLE2_COL_MEANMOTION,
+                TLE2_LEN_MEANMOTION), 3, mean_motion_);
+    ExtractInteger(line_two_.substr(TLE2_COL_REVATEPOCH,
+                TLE2_LEN_REVATEPOCH), orbit_number_);
+    
+    if (year < 57)
+        year += 2000;
     else
-    {
-        throw TleException("Invalid line number to check.");
-    }
-
-    /*
-     * last char in string is modulo 10 checksum
-     * edited out as checksum isnt consistent
-     *
-     * int chk = CheckSum(str);
-     * if (chk != (str[TLE_LEN_LINE_DATA - 1] - '0'))
-     *   return false;
-     */
+        year += 1900;
+    epoch_ = DateTime(year, day);
 }
 
+/**
+ * Check 
+ * @param str The string to check
+ * @returns Whether true of the string has a valid length
+ */
 bool Tle::IsValidLineLength(const std::string& str)
 {
     return str.length() == GetLineLength() ? true : false;
 }
 
-/*
- * validate line given a pattern
+/**
+ * Convert a string containing an integer
+ * @param[in] str The string to convert
+ * @param[out] val The result
+ * @exception TleException on conversion error
  */
-void Tle::ValidateLine(const std::string& line, const std::string& pattern)
+void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 {
-    /*
-     * check length of line
-     */
-    if (!IsValidLineLength(line))
+    std::string temp;
+    bool found_digit = false;
+
+    for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
     {
-        throw TleException("Invalid line length.");
+        if (isdigit(*i))
+        {
+            found_digit = true;
+            temp += *i;
+        }
+        else if (found_digit)
+        {
+            throw TleException("Unexpected non digit");
+        }
+        else if (*i != ' ')
+        {
+            throw TleException("Invalid character");
+        }
     }
 
-    for (size_t i = 0; i < pattern.length(); i++)
+    if (temp.length() == 0)
     {
-        char ptrn = pattern[i];
-        char mtch = line[i];
+        temp += '0';
+    }
 
-        switch (ptrn)
-        {
-            case '1':
-            case '2':
-            case ' ':
-            case '.':
-            {
-                /*
-                 * should match exactly
-                 */
-                if (ptrn != mtch)
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            case 'N':
-            {
-                /*
-                 * number or ' '
-                 */
-                if (!std::isdigit(mtch, std::locale::classic()) && mtch != ' ')
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            case '+':
-            {
-                /*
-                 * + or - or space or 0 or digit
-                 */
-                if (mtch != '+' && mtch != '-'
-                        && mtch != ' ' && mtch != '0'
-                        && !std::isdigit(mtch, std::locale::classic()))
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            case '-':
-            {
-                /*
-                 * + or -
-                 */
-                if (mtch != '+' && mtch != '-')
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            case 'C':
-            {
-                /*
-                 * U or S
-                 */
-                if (mtch != 'U' && mtch != 'S')
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            case 'X':
-            {
-                /*
-                 * alpha or ' '
-                 */
-                if (!std::isupper(mtch, std::locale::classic()) &&
-                        !std::isalpha(mtch, std::locale::classic()) &&
-                        mtch != ' ')
-                {
-                    throw TleException("Invalid character");
-                }
-                break;
-            }
-            default:
-            {
-                throw TleException("Invalid pattern character");
-                break;
-            }
-        }
+    if (!Util::FromString<unsigned int>(temp, val))
+    {
+        throw TleException("Failed to convert value to integer");
     }
 }
 
-/*
- * compute checksum
+/**
+ * Convert a string containing an double
+ * @param[in] str The string to convert
+ * @param[in] point_pos The position of the decimal point. (-1 if none)
+ * @param[out] val The result
+ * @exception TleException on conversion error
  */
-int Tle::CheckSum(const std::string & str)
+void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
 {
-    size_t len = str.size() - 1;
-    int xsum = 0;
+    std::string temp;
+    bool found_digit = false;
 
-    for (size_t i = 0; i < len; i++)
+    for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
     {
-        char ch = str[i];
+        /*
+         * integer part
+         */
+        if (i < str.begin() + point_pos - 1)
+        {
+            bool done = false;
 
-        if (std::isdigit(ch, std::locale::classic()))
-        {
-            xsum += (ch - '0');
+            if (i == str.begin())
+            {
+                if(*i == '-' || *i == '+')
+                {
+                    /*
+                     * first character could be signed
+                     */
+                    temp += *i;
+                    done = true;
+                }
+            }
+
+            if (!done)
+            {
+                if (isdigit(*i))
+                {
+                    found_digit = true;
+                    temp += *i;
+                }
+                else if (found_digit)
+                {
+                    throw TleException("Unexpected non digit");
+                }
+                else if (*i != ' ')
+                {
+                    throw TleException("Invalid character");
+                }
+            }
         }
-        else if (ch == '-')
+        /*
+         * decimal point
+         */
+        else if (i == str.begin() + point_pos - 1)
         {
-            xsum++;
+            if (temp.length() == 0)
+            {
+                /*
+                 * integer part is blank, so add a '0'
+                 */
+                temp += '0';
+            }
+
+            if (*i == '.')
+            {
+                /*
+                 * decimal point found
+                 */
+                temp += *i;
+            }
+            else
+            {
+                throw TleException("Failed to find decimal point");
+            }
+        }
+        /*
+         * fraction part
+         */
+        else
+        {
+            if (i == str.begin() && point_pos == -1)
+            {
+                /*
+                 * no decimal point expected, add 0. beginning
+                 */
+                temp += '0';
+                temp += '.';
+            }
+            
+            /*
+             * should be a digit
+             */
+            if (isdigit(*i))
+            {
+                temp += *i;
+            }
+            else
+            {
+                throw TleException("Invalid digit");
+            }
         }
     }
 
-    return (xsum % 10);
+    if (!Util::FromString<double>(temp, val))
+    {
+        throw TleException("Failed to convert value to double");
+    }
 }
 
-std::string Tle::ExtractNoradNumber(const std::string& str, int line_number)
+/**
+ * Convert a string containing an exponential
+ * @param[in] str The string to convert
+ * @param[out] val The result
+ * @exception TleException on conversion error
+ */
+void Tle::ExtractExponential(const std::string& str, double& val)
 {
-    std::string norad_number;
+    std::string temp;
 
-    /*
-     * check length
-     */
-    if (!IsValidLineLength(str))
+    for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
     {
-        throw TleException("Invalid line length.");
+        if (i == str.begin())
+        {
+            if (*i == '-' || *i == '+' || *i == ' ')
+            {
+                if (*i == '-')
+                {
+                    temp += *i;
+                }
+                temp += '0';
+                temp += '.';
+            }
+            else
+            {
+                throw TleException("Invalid sign");
+            }
+        }
+        else if (i == str.begin() + str.length() - 2)
+        {
+            if (*i == '-' || *i == '+')
+            {
+                temp += 'e';
+                temp += *i;
+            }
+            else
+            {
+                throw TleException("Invalid exponential sign");
+            }
+        }
+        else
+        {
+            if (isdigit(*i))
+            {
+                temp += *i;
+            }
+            else
+            {
+                throw TleException("Invalid digit");
+            }
+        }
     }
 
-    /*
-     * extract string
-     */
-    if (line_number == 1)
+    if (!Util::FromString<double>(temp, val))
     {
-        norad_number = str.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+        throw TleException("Failed to convert value to double");
     }
-    else if (line_number == 2)
-    {
-        norad_number = str.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM);
-    }
-    else
-    {
-        throw TleException("Invalid line number to check.");
-    }
-
-    return norad_number;
 }

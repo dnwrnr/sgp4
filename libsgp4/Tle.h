@@ -1,86 +1,164 @@
 #ifndef TLE_H_
 #define TLE_H_
 
-#include "Globals.h"
 #include "Util.h"
-#include "Julian.h"
+#include "DateTime.h"
 #include "TleException.h"
 
-#include <iostream>
-
+/**
+ * Tle class
+ * @details Loads and validates a tle.
+ */
 class Tle
 {
 public:
-    Tle(const std::string& line_one, const std::string& line_two)
-    : line_one_(line_one), line_two_(line_two)
+    /**
+     * @details Initialise given the two lines of a tle
+     * @param[in] line_one Tle line one
+     * @param[in] line_two Tle line two
+     */
+    Tle(const std::string& line_one,
+            const std::string& line_two)
+        : line_one_(line_one),
+        line_two_(line_two)
     {
         Initialize();
     }
 
-    Tle(const std::string& name, const std::string& line_one,
-        const std::string& line_two)
-    : name_(name),line_one_(line_one), line_two_(line_two)
+    /**
+     * @details Initialise given the satellite name and the two lines of a tle
+     * @param[in] name Satellite name
+     * @param[in] line_one Tle line one
+     * @param[in] line_two Tle line two
+     */
+    Tle(const std::string& name,
+            const std::string& line_one,
+            const std::string& line_two)
+        : name_(name),
+        line_one_(line_one),
+        line_two_(line_two)
     {
         Initialize();
     }
 
-    Tle(const Tle& tle);
+    /**
+     * Copy constructor
+     * @param[in] tle Tle object to copy from
+     */
+    Tle(const Tle& tle)
+    {
+        name_ = tle.name_;
+        line_one_ = tle.line_one_;
+        line_two_ = tle.line_two_;
 
+        norad_number_ = tle.norad_number_;
+        int_designator_ = tle.int_designator_;
+        epoch_ = tle.epoch_;
+        mean_motion_dt2_ = tle.mean_motion_dt2_;
+        mean_motion_ddt6_ = tle.mean_motion_ddt6_;
+        bstar_ = tle.bstar_;
+        inclination_ = tle.inclination_;
+        right_ascending_node_ = tle.right_ascending_node_;
+        eccentricity_ = tle.eccentricity_;
+        argument_perigee_ = tle.argument_perigee_;
+        mean_anomaly_ = tle.mean_anomaly_;
+        mean_motion_ = tle.mean_motion_;
+        orbit_number_ = tle.orbit_number_;
+    }
+
+    /**
+     * Destructor
+     */
     virtual ~Tle()
     {
     }
 
-    /*
-     * get raw strings
+    /**
+     * Get the satellite name
+     * @returns the satellite name
      */
     std::string GetName() const
     {
         return name_;
     }
 
+    /**
+     * Get the first line of the tle
+     * @returns the first line of the tle
+     */
     std::string GetLine1() const
     {
         return line_one_;
     }
 
+    /**
+     * Get the second line of the tle
+     * @returns the second line of the tle
+     */
     std::string GetLine2() const
     {
         return line_two_;
     }
 
-    /*
-     * get tle values
+    /**
+     * Get the norad number
+     * @returns the norad number
      */
     unsigned int NoradNumber() const
     {
         return norad_number_;
     }
 
-    std::string InternationlDesignator() const
+    /**
+     * Get the international designator
+     * @returns the international designator
+     */
+    std::string IntDesignator() const
     {
-        return international_designator_;
+        return int_designator_;
     }
 
-    Julian Epoch() const
+    /**
+     * Get the tle epoch
+     * @returns the tle epoch
+     */
+    DateTime Epoch() const
     {
         return epoch_;
     }
 
-    double MeanMotionDot() const
+    /**
+     * Get the first time derivative of the mean motion divided by two
+     * @returns the first time derivative of the mean motion divided by two
+     */
+    double MeanMotionDt2() const
     {
-        return mean_motion_dot_;
+        return mean_motion_dt2_;
     }
 
-    double MeanMotionDot2() const
+    /**
+     * Get the second time derivative of mean motion divided by six
+     * @returns the second time derivative of mean motion divided by six
+     */
+    double MeanMotionDdt6() const
     {
-        return mean_motion_dot2_;
+        return mean_motion_ddt6_;
     }
 
+    /**
+     * Get the BSTAR drag term
+     * @returns the BSTAR drag term
+     */
     double BStar() const
     {
         return bstar_;
     }
 
+    /**
+     * Get the inclination
+     * @param in_degrees Whether to return the value in degrees or radians
+     * @returns the inclination
+     */
     double Inclination(bool in_degrees) const
     {
         if (in_degrees)
@@ -93,6 +171,11 @@ public:
         }
     }
 
+    /**
+     * Get the right ascension of the ascending node
+     * @param in_degrees Whether to return the value in degrees or radians
+     * @returns the right ascension of the ascending node
+     */
     double RightAscendingNode(const bool in_degrees) const
     {
         if (in_degrees)
@@ -105,11 +188,20 @@ public:
         }
     }
 
+    /**
+     * Get the eccentricity
+     * @returns the eccentricity
+     */
     double Eccentricity() const
     {
         return eccentricity_;
     }
 
+    /**
+     * Get the argument of perigee
+     * @param in_degrees Whether to return the value in degrees or radians
+     * @returns the argument of perigee
+     */
     double ArgumentPerigee(const bool in_degrees) const
     {
         if (in_degrees)
@@ -122,6 +214,11 @@ public:
         }
     }
 
+    /**
+     * Get the mean anomaly
+     * @param in_degrees Whether to return the value in degrees or radians
+     * @returns the mean anomaly
+     */
     double MeanAnomaly(const bool in_degrees) const
     {
         if (in_degrees)
@@ -134,67 +231,84 @@ public:
         }
     }
 
+    /**
+     * Get the mean motion
+     * @returns the mean motion (revolutions per day)
+     */
     double MeanMotion() const
     {
         return mean_motion_;
     }
 
+    /**
+     * Get the orbit number
+     * @returns the orbit number
+     */
     unsigned int OrbitNumber() const
     {
         return orbit_number_;
     }
 
-    /*
-     * helper / validation methods
+    /**
+     * Get the expected tle line length
+     * @returns the tle line length
      */
     static unsigned int GetLineLength()
     {
         return TLE_LEN_LINE_DATA;
     }
-
-    static void IsValidPair(const std::string& line1, const std::string& line2);
-    static void IsValidLine(const std::string& str, int line_number);
+    
+    /**
+     * Dump this object to a string
+     * @returns string
+     */
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << std::right << std::fixed;
+        ss << "Norad Number:         " << NoradNumber() << std::endl;
+        ss << "Int. Designator:      " << IntDesignator() << std::endl;
+        ss << "Epoch:                " << Epoch() << std::endl;
+        ss << "Orbit Number:         " << OrbitNumber() << std::endl;
+        ss << std::setprecision(8);
+        ss << "Mean Motion Dt2:      ";
+        ss << std::setw(12) << MeanMotionDt2() << std::endl;
+        ss << "Mean Motion Ddt6:     ";
+        ss << std::setw(12) << MeanMotionDdt6() << std::endl;
+        ss << "Eccentricity:         ";
+        ss << std::setw(12) << Eccentricity() << std::endl;
+        ss << "BStar:                ";
+        ss << std::setw(12) << BStar() << std::endl;
+        ss << "Inclination:          ";
+        ss << std::setw(12) << Inclination(true) << std::endl;
+        ss << "Right Ascending Node: ";
+        ss << std::setw(12) << RightAscendingNode(true) << std::endl;
+        ss << "Argument Perigee:     ";
+        ss << std::setw(12) << ArgumentPerigee(true) << std::endl;
+        ss << "Mean Anomaly:         ";
+        ss << std::setw(12) << MeanAnomaly(true) << std::endl;
+        ss << "Mean Motion:          ";
+        ss << std::setw(12) << MeanMotion() << std::endl;
+        return ss.str();
+    }
 
 private:
-    /*
-     * initialize from raw tle strings
-     */
     void Initialize();
-    /*
-     * format a raw string into an exponent string
-     */
-    static std::string ExpToDecimal(const std::string&);
-    /*
-     * validate a line against a pattern
-     */
-    static void ValidateLine(const std::string& line,
-            const std::string& pattern);
-    /*
-     * compute checksum
-     */
-    static int CheckSum(const std::string& str);
-
-    static std::string ExtractNoradNumber(const std::string& str,
-            int line_number);
-
     static bool IsValidLineLength(const std::string& str);
+    void ExtractInteger(const std::string& str, unsigned int& val);
+    void ExtractDouble(const std::string& str, int point_pos, double& val);
+    void ExtractExponential(const std::string& str, double& val);
 
 private:
-    /*
-     * raw tle data
-     */
     std::string name_;
     std::string line_one_;
     std::string line_two_;
 
-    /*
-     * extracted values all in native units
-     */
     unsigned int norad_number_;
-    std::string international_designator_;
-    Julian epoch_;
-    double mean_motion_dot_;
-    double mean_motion_dot2_;
+    std::string int_designator_;
+    DateTime epoch_;
+    double mean_motion_dt2_;
+    double mean_motion_ddt6_;
     double bstar_;
     double inclination_;
     double right_ascending_node_;
@@ -204,13 +318,14 @@ private:
     double mean_motion_;
     unsigned int orbit_number_;
 
-    /*
-     * line lengths
-     */
     static const unsigned int TLE_LEN_LINE_DATA = 69;
     static const unsigned int TLE_LEN_LINE_NAME = 22;
+};
 
-    };
+
+inline std::ostream& operator<<(std::ostream& strm, const Tle& t)
+{
+    return strm << t.ToString();
+}
 
 #endif
-

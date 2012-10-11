@@ -1,5 +1,7 @@
 #include "OrbitalElements.h"
 
+#include "Tle.h"
+
 OrbitalElements::OrbitalElements(const Tle& tle)
 {
     /*

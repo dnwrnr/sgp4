@@ -1,8 +1,5 @@
-#include <Julian.h>
 #include <Tle.h>
 #include <SGP4.h>
-#include <Globals.h>
-#include <Util.h>
 #include <Observer.h>
 #include <CoordGeodetic.h>
 #include <CoordTopographic.h>
@@ -187,7 +184,7 @@ void RunTest(const char* infile)
             {
                 if (line.length() >= Tle::GetLineLength())
                 {
-                    Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 1);
+                    //Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 1);
                     /*
                      * store line and now read in second line
                      */
@@ -236,7 +233,7 @@ void RunTest(const char* infile)
             {
                 if (line.length() >= Tle::GetLineLength())
                 {
-                    Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 2);
+                    //Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 2);
                     Tle tle("Test", line1, line2);
                     RunTle(tle, start, end, inc);
                 }
@@ -265,6 +262,3 @@ int main()
 
     return 1;
 }
-
-
-

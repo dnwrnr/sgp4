@@ -3,67 +3,133 @@
 
 #include "CoordGeodetic.h"
 #include "Vector.h"
-#include "Julian.h"
-#include "Globals.h"
+#include "DateTime.h"
 
+/**
+ * A class store to store an Earth-centered inertial position.
+ * This is only valid for the date specified.
+ */
 class Eci
 {
 public:
 
-    /*
-     * in degrees
+    /**
+     * @param[in] dt the date to be used for this position
+     * @param[in] latitude the latitude in degrees
+     * @param[in] longitude the longitude in degrees
+     * @param[in] altitude the altitude in kilometers
      */
-    Eci(const Julian& date, double latitude, double longitude, double altitude)
+    Eci(const DateTime& dt,
+            const double latitude,
+            const double longitude,
+            const double altitude)
     {
-        ToEci(date, CoordGeodetic(latitude, longitude, altitude));
+        ToEci(dt, CoordGeodetic(latitude, longitude, altitude));
     }
 
-    Eci(const Julian& date, const CoordGeodetic& g)
+    /**
+     * @param[in] dt the date to be used for this position
+     * @param[in] geo the position
+     */
+    Eci(const DateTime& dt, const CoordGeodetic& geo)
     {
-        ToEci(date, g);
+        ToEci(dt, geo);
     }
 
-    Eci(const Julian &date, const Vector &position)
-        : date_(date), position_(position)
+    /**
+     * @param[in] dt the date to be used for this position
+     * @param[in] position
+     */
+    Eci(const DateTime &dt, const Vector &position)
+        : m_dt(dt),
+        m_position(position)
     {
     }
 
-    Eci(const Julian &date, const Vector &position, const Vector &velocity)
-        : date_(date), position_(position), velocity_(velocity)
+    /**
+     * @param[in] dt the date to be used for this position
+     * @param[in] position the position
+     * @param[in] velocity the velocity
+     */
+    Eci(const DateTime &dt, const Vector &position, const Vector &velocity)
+        : m_dt(dt),
+        m_position(position),
+        m_velocity(velocity)
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~Eci()
     {
     }
 
+    /**
+     * Equality operator
+     * @param dt the date to compare
+     * @returns true if the object matches
+     */
+    bool operator==(const DateTime& dt) const
+    {
+        return m_dt == dt;
+    }
+
+    /**
+     * Inequality operator
+     * @param dt the date to compare
+     * @returns true if the object doesn't match
+     */
+    bool operator!=(const DateTime& dt) const
+    {
+        return m_dt != dt;
+    }
+
+    /**
+     * Update this object with a new date and geodetic position
+     * @param dt new date
+     * @param geo new geodetic position
+     */
+    void Update(const DateTime& dt, const CoordGeodetic& geo)
+    {
+        ToEci(dt, geo);
+    }
+
+    /**
+     * @returns the position
+     */
     Vector GetPosition() const
     {
-        return position_;
+        return m_position;
     }
 
+    /**
+     * @returns the velocity
+     */
     Vector GetVelocity() const
     {
-        return velocity_;
+        return m_velocity;
     }
 
-    Julian GetDate() const
+    /**
+     * @returns the date
+     */
+    DateTime GetDateTime() const
     {
-        return date_;
+        return m_dt;
     }
 
+    /**
+     * @returns the position in geodetic form
+     */
     CoordGeodetic ToGeodetic() const;
 
-protected:
-    void ToEci(const Julian& date, double latitude, double longitude,
-            double altitude);
-    void ToEci(const Julian& date, const CoordGeodetic& g);
-
 private:
-    Julian date_;
-    Vector position_;
-    Vector velocity_;
+    void ToEci(const DateTime& dt, const CoordGeodetic& geo);
+
+    DateTime m_dt;
+    Vector m_position;
+    Vector m_velocity;
 };
 
 #endif
-

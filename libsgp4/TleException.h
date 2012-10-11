@@ -2,28 +2,38 @@
 #define TLEEXCEPTION_H_
 
 #include <exception>
-#include <iostream>
 
 class TleException : public std::exception
 {
 public:
-
+    /**
+     * Constructor
+     * @param message Exception message
+     */
     TleException(const char* message)
-        : message_(message)
+        : m_message(message)
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~TleException(void) throw ()
     {
     }
 
+    /**
+     * Get the exception message
+     * @returns the exception message
+     */
     virtual const char* what() const throw ()
     {
-        return message_.c_str();
+        return m_message.c_str();
     }
 
 private:
-    std::string message_;
+    /** the exception message */
+    std::string m_message;
 };
 
 #endif

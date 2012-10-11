@@ -84,7 +84,7 @@ namespace Util
             }
         }
     }
-
+    
     void TrimLeft(std::string& s);
     void TrimRight(std::string& s);
     void Trim(std::string& s);

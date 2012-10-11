@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-Eci SolarPosition::FindPosition(const Julian& j)
+Eci SolarPosition::FindPosition(const DateTime& dt)
 {
     const double mjd = j.FromJan1_12h_1900();
     const double year = 1900 + mjd / 365.25;

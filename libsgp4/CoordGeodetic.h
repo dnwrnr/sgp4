@@ -1,106 +1,129 @@
 #ifndef COORDGEODETIC_H_
 #define COORDGEODETIC_H_
 
-#include "Globals.h"
 #include "Util.h"
 
 #include <string>
 #include <sstream>
 #include <iomanip>
 
+/**
+ * Stores a geodetic position
+ */
 struct CoordGeodetic
 {
 public:
-    CoordGeodetic()
-        : latitude(0.0), longitude(0.0), altitude(0.0)
-    {
-    }
-
-    /*
-     * default is in degrees 
+    /**
+     * Default constructor
      */
-    CoordGeodetic(double lat, double lon, double alt, bool radians = false)
+    CoordGeodetic()
+        : latitude(0.0),
+        longitude(0.0),
+        altitude(0.0)
     {
-        if (radians)
-        {
-            latitude = lat;
-            longitude = lon;
-        }
-        else
-        {
-            latitude = Util::DegreesToRadians(lat);
-            longitude = Util::DegreesToRadians(lon);
-        }
-        altitude = alt;
     }
 
-    CoordGeodetic(const CoordGeodetic& g)
+    /**
+     * Constructor
+     * @param[in] arg_latitude the latitude in degrees
+     * @param[in] arg_longitude the longitude in degrees
+     * @param[in] arg_altitude the altitude in kilometers
+     */
+    CoordGeodetic(
+            double arg_latitude,
+            double arg_longitude,
+            double arg_altitude)
     {
-        latitude = g.latitude;
-        longitude = g.longitude;
-        altitude = g.altitude;
+        latitude = Util::DegreesToRadians(arg_latitude);
+        longitude = Util::DegreesToRadians(arg_longitude);
+        altitude = arg_altitude;
     }
 
+    /**
+     * Copy constructor
+     * @param[in] geo object to copy from
+     */
+    CoordGeodetic(const CoordGeodetic& geo)
+    {
+        latitude = geo.latitude;
+        longitude = geo.longitude;
+        altitude = geo.altitude;
+    }
+
+    /**
+     * Destructor
+     */
     virtual ~CoordGeodetic()
     {
     }
 
-    CoordGeodetic& operator=(const CoordGeodetic& g)
+    /**
+     * Assignment operator
+     * @param[in] geo object to copy from
+     */
+    CoordGeodetic& operator=(const CoordGeodetic& geo)
     {
-        if (this != &g)
+        if (this != &geo)
         {
-            latitude = g.latitude;
-            longitude = g.longitude;
-            altitude = g.altitude;
+            latitude = geo.latitude;
+            longitude = geo.longitude;
+            altitude = geo.altitude;
         }
         return *this;
     }
 
-    bool operator==(const CoordGeodetic& g) const
+    /**
+     * Equality operator
+     * @param[in] geo the object to compare with
+     * @returns whether the object is equal
+     */
+    bool operator==(const CoordGeodetic& geo) const
     {
-        return IsEqual(g);
+        return IsEqual(geo);
     }
 
-    bool operator!=(const CoordGeodetic& g) const
+    /**
+     * Inequality operator
+     * @param[in] geo the object to compare with
+     * @returns whether the object is not equal
+     */
+    bool operator!=(const CoordGeodetic& geo) const
     {
-        return !IsEqual(g);
+        return !IsEqual(geo);
     }
 
+    /**
+     * Dump this object to a string
+     * @returns string
+     */
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << std::right << std::fixed << std::setprecision(2);
+        ss << std::right << std::fixed << std::setprecision(3);
         ss << "Lat: " << std::setw(7) << Util::RadiansToDegrees(latitude);
         ss << ", Lon: " << std::setw(7) << Util::RadiansToDegrees(longitude);
         ss << ", Alt: " << std::setw(9) << altitude;
         return ss.str();
     }
 
-    /*
-     * radians (north positive, south negative)
-     */
+    /** latitude in radians (-PI >= latitude < PI) */
     double latitude;
-    /*
-     * radians (east positive, west negative)
-     */
+    /** latitude in radians (-PI/2 >= latitude <= PI/2) */
     double longitude;
-    /*
-     * kilometers
-     */
+    /** altitude in kilometers */
     double altitude;
 
-protected:
-    bool IsEqual(const CoordGeodetic& g) const
+private:
+    bool IsEqual(const CoordGeodetic& geo) const
     {
-        if (latitude == g.latitude && longitude == g.longitude &&
-            altitude == g.altitude)
+        bool equal = false;
+        if (latitude == geo.latitude &&
+                longitude == geo.longitude &&
+                altitude == geo.altitude)
         {
-            return false;
+            equal = false;
         }
-        else
-        {
-            return true;
-        }
+        return equal;
     }
 };
 
@@ -110,4 +133,3 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordGeodetic& g)
 }
 
 #endif
-

@@ -1,7 +1,10 @@
 #ifndef ORBITALELEMENTS_H_
 #define ORBITALELEMENTS_H_
 
-#include "Tle.h"
+#include "Util.h"
+#include "DateTime.h"
+
+class Tle;
 
 class OrbitalElements
 {
@@ -103,7 +106,7 @@ public:
     /*
      * EPOCH
      */
-    Julian Epoch() const
+    DateTime Epoch() const
     {
         return epoch_;
     }
@@ -121,8 +124,7 @@ private:
     double recovered_mean_motion_;
     double perigee_;
     double period_;
-    Julian epoch_;
+    DateTime epoch_;
 };
 
 #endif
-

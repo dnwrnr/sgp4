@@ -2,8 +2,10 @@ AC_PREREQ([2.61])
 AC_INIT([sgp4], 1.0, [info@danrw.com])
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
+#AC_CANONICAL_BUILD
 
 AC_CONFIG_SRCDIR([libsgp4/Tle.cpp])
+AM_CONFIG_HEADER([config.h])
 
 CFLAGS=" $CFLAGS"
 CXXFLAGS=" $CXXFLAGS"
@@ -19,10 +21,12 @@ AC_ARG_ENABLE(debug,
               enable_debug=no)
 
 if test x$enable_debug = xyes; then
-  AM_CXXFLAGS="-g -O0 -Wall -Werror"
+  AM_CXXFLAGS="-g       -O0                      -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long"
 else
-  AM_CXXFLAGS="-DNDEBUG -O2 -Wall -Werror -fomit-frame-pointer"
+  AM_CXXFLAGS="-DNDEBUG -O2 -fomit-frame-pointer -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long"
 fi
+
+AC_SEARCH_LIBS(clock_gettime, [rt])
 
 AC_SUBST(AM_CXXFLAGS)
 
@@ -33,3 +37,17 @@ AC_CONFIG_FILES([Makefile
                  sattrack/Makefile])
 
 AC_OUTPUT
+echo "---"
+echo "Configuration summary for $PACKAGE_NAME version $VERSION"
+echo ""
+echo " * Installation prefix: $prefix"
+echo " * System type: $build_vendor-$build_os"
+echo " * Host CPU: $build_cpu"
+echo "        C Compiler: ${CC}"
+echo "      C++ Compiler: ${CXX}"
+echo "    Compiler flags: ${AM_CXXFLAGS}"
+echo "      Linker flags: ${AM_LDFLAGS}"
+echo "         Libraries: ${LIBS}"
+echo "     Debug enabled: $enable_debug"
+echo ""
+echo "---"
