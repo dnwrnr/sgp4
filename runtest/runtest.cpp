@@ -47,8 +47,8 @@ void RunTle(Tle tle, double start, double end, double inc)
             }
 
             Eci eci = model.FindPosition(tsince);
-            position = eci.GetPosition();
-            velocity = eci.GetVelocity();
+            position = eci.Position();
+            velocity = eci.Velocity();
         }
         catch (SatelliteException& e)
         {
@@ -60,8 +60,8 @@ void RunTle(Tle tle, double start, double end, double inc)
         {
             std::cerr << e.what() << std::endl;
 
-            position = e.GetPosition();
-            velocity = e.GetVelocity();
+            position = e.Position();
+            velocity = e.Velocity();
 
             if (!first_run)
             {
@@ -182,9 +182,9 @@ void RunTest(const char* infile)
         {
             try
             {
-                if (line.length() >= Tle::GetLineLength())
+                if (line.length() >= Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 1);
+                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
                     /*
                      * store line and now read in second line
                      */
@@ -208,15 +208,15 @@ void RunTest(const char* infile)
              * split line, first 69 is the second line of the tle
              * the rest is the test parameters, if there is any
              */
-            line2 = line.substr(0, Tle::GetLineLength());
+            line2 = line.substr(0, Tle::LineLength());
             double start = 0.0;
             double end = 1440.0;
             double inc = 120.0;
             if (line.length() > 69)
             {
                 std::vector<std::string> tokens;
-                parameters = line.substr(Tle::GetLineLength() + 1,
-                        line.length() - Tle::GetLineLength());
+                parameters = line.substr(Tle::LineLength() + 1,
+                        line.length() - Tle::LineLength());
                 tokenize(parameters, tokens);
                 if (tokens.size() >= 3)
                 {
@@ -231,9 +231,9 @@ void RunTest(const char* infile)
              */
             try
             {
-                if (line.length() >= Tle::GetLineLength())
+                if (line.length() >= Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::GetLineLength()), 2);
+                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
                     Tle tle("Test", line1, line2);
                     RunTle(tle, start, end, inc);
                 }

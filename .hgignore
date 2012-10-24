@@ -1,8 +1,8 @@
 # Exact paths to config junk
 ^INSTALL$
 ^aclocal.m4$
-^(config.guess|config.sub|depcomp|install-sh|ltmain.sh|missing)$
-^config.(log|status)$
+^(stamp-h1|depcomp|install-sh|ltmain.sh|missing)$
+^config.(h|log|status|guess|sub)$
 ^autom4te.cache$
 
 # Build artifacts

@@ -1,12 +1,17 @@
 lib_LIBRARIES = libsgp4.a
-libsgp4_a_SOURCES = Tle.cpp \
-			OrbitalElements.cpp \
-			Observer.cpp \
-			Util.cpp \
+libsgp4_a_SOURCES = \
+			CoordGeodetic.cpp \
+			CoordTopographic.cpp \
+			DateTime.cpp \
 			Eci.cpp \
+			Globals.cpp \
+			Observer.cpp \
+			OrbitalElements.cpp \
 			SGP4.cpp \
 			TimeSpan.cpp \
-			DateTime.cpp
+			Tle.cpp \
+			Util.cpp \
+			Vector.cpp
 include_HEADERS = CoordGeodetic.h \
 			Eci.h \
 			OrbitalElements.h \

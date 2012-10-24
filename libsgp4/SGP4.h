@@ -7,6 +7,12 @@
 #include "SatelliteException.h"
 #include "DecayedException.h"
 
+/**
+ * @mainpage
+ *
+ * This documents the SGP4 tracking library.
+ */
+
 class SGP4
 {
 public:

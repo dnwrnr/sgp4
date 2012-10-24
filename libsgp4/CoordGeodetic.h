@@ -25,18 +25,28 @@ public:
 
     /**
      * Constructor
-     * @param[in] arg_latitude the latitude in degrees
-     * @param[in] arg_longitude the longitude in degrees
-     * @param[in] arg_altitude the altitude in kilometers
+     * @param[in] lat the latitude (degrees by default)
+     * @param[in] lon the longitude (degrees by default)
+     * @param[in] alt the altitude in kilometers
+     * @param[in] is_radians whether the latitude/longitude is in radians
      */
     CoordGeodetic(
-            double arg_latitude,
-            double arg_longitude,
-            double arg_altitude)
+            double lat,
+            double lon,
+            double alt,
+            bool is_radians = false)
     {
-        latitude = Util::DegreesToRadians(arg_latitude);
-        longitude = Util::DegreesToRadians(arg_longitude);
-        altitude = arg_altitude;
+        if (is_radians)
+        {
+            latitude = lat;
+            longitude = lon;
+        }
+        else
+        {
+            latitude = Util::DegreesToRadians(lat);
+            longitude = Util::DegreesToRadians(lon);
+        }
+        altitude = alt;
     }
 
     /**
@@ -127,6 +137,11 @@ private:
     }
 };
 
+/**
+ * Dump a Coordgeodetic to a stream
+ * @params[in,out] strm stream to output to
+ * @params[in] g the CoordGeodetic to print
+ */
 inline std::ostream& operator<<(std::ostream& strm, const CoordGeodetic& g)
 {
     return strm << g.ToString();

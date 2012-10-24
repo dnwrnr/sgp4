@@ -1,6 +1,11 @@
 #ifndef TIMESPAN_H_
 #define TIMESPAN_H_
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
+
 namespace
 {
     static const long long TicksPerDay =  86400000000LL;
@@ -71,34 +76,34 @@ public:
         return m_ticks == ts.m_ticks;
     }
 
-    int Days()
+    int Days() const
     {
-        return m_ticks / TicksPerDay;
+        return static_cast<int>(m_ticks / TicksPerDay);
     }
 
-    int Hours()
+    int Hours() const
     {
-        return (m_ticks % TicksPerDay / TicksPerHour);
+        return static_cast<int>(m_ticks % TicksPerDay / TicksPerHour);
     }
 
     int Minutes() const
     {
-        return (m_ticks % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(m_ticks % TicksPerHour / TicksPerMinute);
     }
 
     int Seconds() const
     {
-        return (m_ticks % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(m_ticks % TicksPerMinute / TicksPerSecond);
     }
 
     int Milliseconds() const
     {
-        return (m_ticks % TicksPerSecond / TicksPerMillisecond);
+        return static_cast<int>(m_ticks % TicksPerSecond / TicksPerMillisecond);
     }
     
     int Microseconds() const
     {
-        return (m_ticks % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(m_ticks % TicksPerSecond / TicksPerMicrosecond);
     }
 
     long long Ticks() const
@@ -108,32 +113,60 @@ public:
 
     double TotalDays() const
     {
-        return m_ticks / static_cast<double>(TicksPerDay);
+        return static_cast<double>(m_ticks) / TicksPerDay;
     }
 
     double TotalHours() const
     {
-        return m_ticks / static_cast<double>(TicksPerHour);
+        return static_cast<double>(m_ticks) / TicksPerHour;
     }
 
     double TotalMinutes() const
     {
-        return m_ticks / static_cast<double>(TicksPerMinute);
+        return static_cast<double>(m_ticks) / TicksPerMinute;
     }
 
     double TotalSeconds() const
     {
-        return m_ticks / static_cast<double>(TicksPerSecond);
+        return static_cast<double>(m_ticks) / TicksPerSecond;
     }
     
     double TotalMilliseconds() const
     {
-        return m_ticks / static_cast<double>(TicksPerMillisecond);
+        return static_cast<double>(m_ticks) / TicksPerMillisecond;
     }
     
     double TotalMicroseconds() const
     {
-        return m_ticks / static_cast<double>(TicksPerMicrosecond);
+        return static_cast<double>(m_ticks) / TicksPerMicrosecond;
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+
+        ss << std::right << std::setfill('0');
+        
+        if (m_ticks < 0)
+        {
+            ss << '-';
+        }
+
+        if (Days() != 0)
+        {
+            ss << std::setw(2) << std::abs(Days()) << '.';
+        }
+
+        ss << std::setw(2) << std::abs(Hours()) << ':';
+        ss << std::setw(2) << std::abs(Minutes()) << ':';
+        ss << std::setw(2) << std::abs(Seconds());
+
+        if (Microseconds() != 0)
+        {
+            ss << '.' << std::setw(6) << std::abs(Microseconds());
+        }
+
+        return ss.str();
     }
 
 private:
@@ -150,6 +183,11 @@ private:
             microseconds * TicksPerMicrosecond;
     }
 };
+
+inline std::ostream& operator<<(std::ostream& strm, const TimeSpan& t)
+{
+    return strm << t.ToString();
+}
 
 inline TimeSpan operator+(const TimeSpan& ts1, const TimeSpan& ts2)
 {

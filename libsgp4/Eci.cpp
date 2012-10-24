@@ -39,7 +39,7 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
     m_position.x = achcp * cos(theta);
     m_position.y = achcp * sin(theta);
     m_position.z = (kXKMPER * s + geo.altitude) * sin(geo.latitude);
-    m_position.w = m_position.GetMagnitude();
+    m_position.w = m_position.Magnitude();
 
     /*
      * X velocity in km/s
@@ -50,7 +50,7 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
     m_velocity.x = -mfactor * m_position.y;
     m_velocity.y = mfactor * m_position.x;
     m_velocity.z = 0.0;
-    m_velocity.w = m_velocity.GetMagnitude();
+    m_velocity.w = m_velocity.Magnitude();
 }
 
 /**
@@ -85,5 +85,5 @@ CoordGeodetic Eci::ToGeodetic() const
 
     const double alt = r / cos(lat) - kXKMPER * c;
 
-    return CoordGeodetic(lat, lon, alt);
+    return CoordGeodetic(lat, lon, alt, true);
 }

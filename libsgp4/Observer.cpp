@@ -16,10 +16,10 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci)
     /*
      * calculate differences
      */
-    Vector range_rate = eci.GetVelocity() - m_eci.GetVelocity();
-    Vector range = eci.GetPosition() - m_eci.GetPosition();
+    Vector range_rate = eci.Velocity() - m_eci.Velocity();
+    Vector range = eci.Position() - m_eci.Position();
 
-    range.w = range.GetMagnitude();
+    range.w = range.Magnitude();
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude

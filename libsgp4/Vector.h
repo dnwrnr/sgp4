@@ -97,7 +97,7 @@ public:
      * Calculates the magnitude of the vector
      * @returns magnitude of the vector
      */
-    double GetMagnitude() const
+    double Magnitude() const
     {
         return sqrt(x * x + y * y + z * z);
     }

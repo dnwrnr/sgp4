@@ -77,7 +77,7 @@ public:
      * Get the satellite name
      * @returns the satellite name
      */
-    std::string GetName() const
+    std::string Name() const
     {
         return name_;
     }
@@ -86,7 +86,7 @@ public:
      * Get the first line of the tle
      * @returns the first line of the tle
      */
-    std::string GetLine1() const
+    std::string Line1() const
     {
         return line_one_;
     }
@@ -95,7 +95,7 @@ public:
      * Get the second line of the tle
      * @returns the second line of the tle
      */
-    std::string GetLine2() const
+    std::string Line2() const
     {
         return line_two_;
     }
@@ -253,7 +253,7 @@ public:
      * Get the expected tle line length
      * @returns the tle line length
      */
-    static unsigned int GetLineLength()
+    static unsigned int LineLength()
     {
         return TLE_LEN_LINE_DATA;
     }

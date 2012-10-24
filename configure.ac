@@ -2,10 +2,8 @@ AC_PREREQ([2.61])
 AC_INIT([sgp4], 1.0, [info@danrw.com])
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
-#AC_CANONICAL_BUILD
 
 AC_CONFIG_SRCDIR([libsgp4/Tle.cpp])
-AM_CONFIG_HEADER([config.h])
 
 CFLAGS=" $CFLAGS"
 CXXFLAGS=" $CXXFLAGS"
@@ -21,12 +19,16 @@ AC_ARG_ENABLE(debug,
               enable_debug=no)
 
 if test x$enable_debug = xyes; then
-  AM_CXXFLAGS="-g       -O0                      -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long"
+  AM_CXXFLAGS="-g       -O0                      -Werror -Wextra -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long -Wconversion"
 else
-  AM_CXXFLAGS="-DNDEBUG -O2 -fomit-frame-pointer -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long"
+  AM_CXXFLAGS="-DNDEBUG -O2 -fomit-frame-pointer -Wextra -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long -Wconversion"
 fi
 
-AC_SEARCH_LIBS(clock_gettime, [rt])
+AC_SEARCH_LIBS([clock_gettime],
+               [rt],
+               [AC_DEFINE(HAVE_CLOCK_GETTIME,
+                          [1],
+                          [Define if clock_gettime is available.])])
 
 AC_SUBST(AM_CXXFLAGS)
 

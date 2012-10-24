@@ -98,7 +98,7 @@ public:
     /**
      * @returns the position
      */
-    Vector GetPosition() const
+    Vector Position() const
     {
         return m_position;
     }
@@ -106,7 +106,7 @@ public:
     /**
      * @returns the velocity
      */
-    Vector GetVelocity() const
+    Vector Velocity() const
     {
         return m_velocity;
     }

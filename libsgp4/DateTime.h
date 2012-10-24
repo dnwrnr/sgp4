@@ -24,42 +24,69 @@ namespace
 class DateTime
 {
 public:
+    /**
+     * Default contructor
+     * Initialise to 0001/01/01 00:00:00.000000
+     */
     DateTime()
     {
         Initialise(1, 1, 1, 0, 0, 0, 0);
     }
 
+    /**
+     * Constructor
+     * @param[in] ticks raw tick value
+     */
     DateTime(unsigned long long ticks)
         : m_encoded(ticks)
     {
     }
 
+    /**
+     * Constructor
+     * @param[in] year the year
+     * @param[in] doy the day of the year
+     */
     DateTime(int year, double doy)
     {
-        m_encoded = TimeSpan(AbsoluteDays(year, doy) * TicksPerDay).Ticks();
+        m_encoded = TimeSpan(static_cast<long long int>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
     }
 
+    /**
+     * Constructor
+     * @param[in] year the year
+     * @param[in] month the month
+     * @param[in] day the day
+     */
     DateTime(int year, int month, int day)
     {
         Initialise(year, month, day, 0, 0, 0, 0);
     }
 
+    /**
+     * Constructor
+     * @param[in] year the year
+     * @param[in] month the month
+     * @param[in] day the day
+     * @param[in] hour the hour
+     * @param[in] minute the minute
+     * @param[in] second the second
+     */
     DateTime(int year, int month, int day, int hour, int minute, int second)
     {
         Initialise(year, month, day, hour, minute, second, 0);
     }
 
-    DateTime(int year,
-            int month,
-            int day,
-            int hour,
-            int minute,
-            int second,
-            int microsecond)
-    {
-        Initialise(year, month, day, hour, minute, second, microsecond);
-    }
-
+    /**
+     * Constructor
+     * @param[in] year the year
+     * @param[in] month the month
+     * @param[in] day the day
+     * @param[in] hour the hour
+     * @param[in] minute the minute
+     * @param[in] second the second
+     * @param[in] microsecond the microsecond
+     */
     void Initialise(int year,
             int month,
             int day,
@@ -84,6 +111,11 @@ public:
                 microsecond).Ticks();
     }
 
+    /**
+     * Return the current time
+     * @param[in] microseconds whether to set the microsecond component
+     * @returns a DateTime object set to the current date and time
+     */
     static DateTime Now(bool microseconds = false)
     {
         DateTime dt;
@@ -111,6 +143,11 @@ public:
         return dt;
     }
 
+    /**
+     * Find whether a year is a leap year
+     * @param[in] year the year to check
+     * @returns whether the year is a leap year
+     */
     static bool IsLeapYear(int year)
     {
         if (!IsValidYear(year))
@@ -121,6 +158,11 @@ public:
         return (((year % 4) == 0 && (year % 100) != 0) || (year % 400) == 0);
     }
 
+    /**
+     * Checks whether the given year is valid
+     * @param[in] year the year to check
+     * @returns whether the year is valid
+     */
     static bool IsValidYear(int year)
     {
         bool valid = true;
@@ -131,6 +173,12 @@ public:
         return valid;
     }
 
+    /**
+     * Check whether the year/month is valid
+     * @param[in] year the year to check
+     * @param[in] month the month to check
+     * @returns whether the year/month is valid
+     */
     static bool IsValidYearMonth(int year, int month)
     {
         bool valid = true;
@@ -148,6 +196,13 @@ public:
         return valid;
     }
     
+    /**
+     * Check whether the year/month/day is valid
+     * @param[in] year the year to check
+     * @param[in] month the month to check
+     * @param[in] day the day to check
+     * @returns whether the year/month/day is valid
+     */
     static bool IsValidYearMonthDay(int year, int month, int day)
     {
         bool valid = true;
@@ -165,6 +220,12 @@ public:
         return valid;
     }
 
+    /**
+     * Find the number of days in a month given the year/month
+     * @param[in] year the year
+     * @param[in] month the month
+     * @returns the days in the given month
+     */
     static int DaysInMonth(int year, int month)
     {
         if (!IsValidYearMonth(year, month))
@@ -186,6 +247,13 @@ public:
         return daysInMonthPtr[month];
     }
 
+    /**
+     * Find the day of the year given the year/month/day
+     * @param[in] year the year
+     * @param[in] month the month
+     * @param[in] day the day
+     * @returns the day of the year
+     */
     int DayOfYear(int year, int month, int day) const
     {
         if (!IsValidYearMonthDay(year, month, day))
@@ -207,6 +275,9 @@ public:
         return daysThisYear;
     }
 
+    /**
+     *
+     */
     double AbsoluteDays(int year, double doy) const
     {
 
@@ -223,7 +294,7 @@ public:
             - previousYear / 100
             + previousYear / 400;
 
-        return daysSoFar + doy - 1.0;
+        return static_cast<double>(daysSoFar) + doy - 1.0;
     }
 
     int AbsoluteDays(int year, int month, int day) const
@@ -263,7 +334,7 @@ public:
          * 5 Friday
          * 6 Saturday
          */
-        return (((m_encoded / TicksPerDay) + 1) % 7);
+        return static_cast<int>(((m_encoded / TicksPerDay) + 1LL) % 7LL);
     }
 
     bool Equals(const DateTime& dt) const
@@ -318,6 +389,11 @@ public:
         return DateTime(year, month, day).Add(TimeOfDay());
     }
 
+    /**
+     * Add a TimeSpan to this DateTime
+     * @param[in] t the TimeSpan to add
+     * @returns a DateTime which has the given TimeSpan added
+     */
     DateTime Add(const TimeSpan& t) const
     {
         return AddTicks(t.Ticks());
@@ -345,7 +421,7 @@ public:
 
     DateTime AddMicroseconds(const double microseconds) const
     {
-        long long ticks = microseconds * TicksPerMicrosecond;
+        long long ticks = static_cast<long long>(microseconds * TicksPerMicrosecond);
         return AddTicks(ticks);
     }
 
@@ -354,6 +430,10 @@ public:
         return DateTime(m_encoded + ticks);
     }
 
+    /**
+     * Get the number of ticks
+     * @returns the number of ticks
+     */
     long long Ticks() const
     {
         return m_encoded;
@@ -361,7 +441,7 @@ public:
 
     void FromTicks(int& year, int& month, int& day) const
     {
-        int totalDays = m_encoded / TicksPerDay;
+        int totalDays = static_cast<int>(m_encoded / TicksPerDay);
         
         /*
          * number of 400 year cycles
@@ -452,36 +532,60 @@ public:
         return day;
     }
 
+    /**
+     * Hour component
+     * @returns the hour component
+     */
     int Hour() const
     {
-        return m_encoded % TicksPerDay / TicksPerHour;
+        return static_cast<int>(m_encoded % TicksPerDay / TicksPerHour);
     }
 
+    /**
+     * Minute component
+     * @returns the minute component
+     */
     int Minute() const
     {
-        return m_encoded % TicksPerHour / TicksPerMinute;
+        return static_cast<int>(m_encoded % TicksPerHour / TicksPerMinute);
     }
 
+    /**
+     * Second component
+     * @returns the Second component
+     */
     int Second() const
     {
-        return m_encoded % TicksPerMinute / TicksPerSecond;
+        return static_cast<int>(m_encoded % TicksPerMinute / TicksPerSecond);
     }
 
+    /**
+     * Microsecond component
+     * @returns the microsecond component
+     */
     int Microsecond() const
     {
-        return m_encoded % TicksPerSecond / TicksPerMicrosecond;
+        return static_cast<int>(m_encoded % TicksPerSecond / TicksPerMicrosecond);
     }
 
-    double Julian() const
+    /**
+     * Convert to a julian date
+     * @returns the julian date
+     */
+    double ToJulian() const
     {
         TimeSpan ts = TimeSpan(Ticks());
         return ts.TotalDays() + 1721425.5;
     }
 
+    /**
+     * Convert to greenwich sidereal time
+     * @returns the greenwich sidereal time
+     */
     double ToGreenwichSiderealTime() const
     {
         // t = Julian centuries from 2000 Jan. 1 12h UT1
-        const double t = (Julian() - 2451545.0) / 36525.0;
+        const double t = (ToJulian() - 2451545.0) / 36525.0;
 
         // Rotation angle in arcseconds
         double theta = 67310.54841
@@ -493,7 +597,12 @@ public:
         return Util::WrapTwoPI(Util::DegreesToRadians(theta / 240.0));
     }
 
-    double ToLocalMeanSiderealTime(const double& lon) const
+    /**
+     * Convert to local mean sidereal time (GMST plus the observer's longitude)
+     * @param[in] lon observers longitude
+     * @returns the local mean sidereal time
+     */
+    double ToLocalMeanSiderealTime(const double lon) const
     {
         return Util::WrapTwoPI(ToGreenwichSiderealTime() + lon);
     }

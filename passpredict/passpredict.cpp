@@ -15,6 +15,7 @@ struct PassDetails
     double max_elevation;
 };
 
+#if 0
 double FindMaxElevation(
         const CoordGeodetic& user_geo,
         SGP4& sgp4,
@@ -101,6 +102,88 @@ double FindMaxElevation(
 
     return max_elevation;
 }
+#endif
+
+double FindMaxElevation(
+        const CoordGeodetic& user_geo,
+        SGP4& sgp4,
+        const DateTime& aos,
+        const DateTime& los)
+{
+    Observer obs(user_geo);
+
+    bool running;
+    int cnt;
+
+    double time_step = (los - aos).TotalSeconds() / 9.0;
+    DateTime current_time(aos); //! current time
+    DateTime time1(aos); //! start time of search period
+    DateTime time2(los); //! end time of search period
+    double max_elevation; //! max elevation
+
+    running = true;
+    cnt = 0;
+
+    do
+    {
+        running = true;
+        max_elevation = -99999999999999.0;
+        while (running && current_time < time2)
+        {
+            /*
+             * find position
+             */
+            Eci eci = sgp4.FindPosition(current_time);
+            CoordTopographic topo = obs.GetLookAngle(eci);
+
+            if (topo.elevation > max_elevation)
+            {
+                /*
+                 * still going up
+                 */
+                max_elevation = topo.elevation;
+                /*
+                 * move time along
+                 */
+                current_time = current_time.AddSeconds(time_step);
+                if (current_time > time2)
+                {
+                    /*
+                     * dont go past end time
+                     */
+                    current_time = time2;
+                }
+            }
+            else
+            {
+                /*
+                 * stop
+                 */
+                running = false;
+            }
+        }
+
+        /*
+         * make start time to 2 time steps back
+         */
+        time1 = current_time.AddSeconds(-2.0 * time_step);
+        /*
+         * make end time to current time
+         */
+        time2 = current_time;
+        /*
+         * current time to start time
+         */
+        current_time = time1;
+        /*
+         * recalculate time step
+         */
+        time_step = (time2 - time1).TotalSeconds() / 9.0;
+    }
+    while (time_step > 1.0);
+
+    return max_elevation;
+}
 
 DateTime FindCrossingPoint(
         const CoordGeodetic& user_geo,
@@ -111,25 +194,18 @@ DateTime FindCrossingPoint(
 {
     Observer obs(user_geo);
 
-    bool searching = true;
-    int cnt = 0;
+    bool running;
+    int cnt;
 
     DateTime time1(initial_time1);
     DateTime time2(initial_time2);
+    DateTime middle_time;
 
-    double diff = (time2 - time1).TotalSeconds();
-    if (finding_aos)
+    running = true;
+    cnt = 0;
+    while (running && cnt++ < 16)
     {
-        diff = std::floor(diff);
-    }
-    else
-    {
-        diff = std::ceil(diff);
-    }
-    DateTime middle_time(time1.AddSeconds(diff));
-
-    while (searching && cnt < 25)
-    {
+        middle_time = time1.AddSeconds((time2 - time1).TotalSeconds() / 2.0);
         /*
          * calculate satellite position
          */
@@ -138,6 +214,9 @@ DateTime FindCrossingPoint(
 
         if (topo.elevation > 0.0)
         {
+            /*
+             * satellite above horizon
+             */
             if (finding_aos)
             {
                 time2 = middle_time;
@@ -159,28 +238,41 @@ DateTime FindCrossingPoint(
             }
         }
 
-        /*
-         * when two times are within a second, stop
-         */
-        if ((time2 - time1).TotalSeconds() < 1.5)
+        if ((time2 - time1).TotalSeconds() < 1.0)
         {
-            searching = false;
+            /*
+             * two times are within a second, stop
+             */
+            running = false;
+            /*
+             * remove microseconds
+             */
+            int us = middle_time.Microsecond();
+            middle_time = middle_time.AddMicroseconds(-us);
+            /*
+             * step back into the pass by 1 second
+             */
+            middle_time = middle_time.AddSeconds(finding_aos ? 1 : -1);
+        }
+    }
+
+    /*
+     * go back/forward 1second until below the horizon
+     */
+    running = true;
+    cnt = 0;
+    while (running && cnt++ < 6)
+    {
+        Eci eci = sgp4.FindPosition(middle_time);
+        CoordTopographic topo = obs.GetLookAngle(eci);
+        if (topo.elevation > 0)
+        {
+            middle_time = middle_time.AddSeconds(finding_aos ? -1 : 1);
         }
         else
         {
-            diff = (time2 - time1).TotalSeconds();
-            if (finding_aos)
-            {
-                diff = std::floor(diff);
-            }
-            else
-            {
-                diff = std::ceil(diff);
-            }
-            middle_time = time1.AddSeconds(diff);
+            running = false;
         }
-        
-        cnt++;
     }
 
     return middle_time;
@@ -201,30 +293,30 @@ std::list<struct PassDetails> GeneratePassList(
     DateTime los_time;
 
     bool found_aos = false;
-    bool found_los = false;
 
     DateTime previous_time(start_time);
     DateTime current_time(start_time);
 
     while (current_time < end_time)
     {
+        bool end_of_pass = false;
+
         /*
          * calculate satellite position
          */
         Eci eci = sgp4.FindPosition(current_time);
         CoordTopographic topo = obs.GetLookAngle(eci);
 
-        std::cout << std::fixed << current_time << " " << topo.elevation << std::endl;
-
-        if (topo.elevation > 0.0)
+        if (!found_aos && topo.elevation > 0.0)
         {
             /*
-             * satellite is above horizon
+             * aos hasnt occured yet, but the satellite is now above horizon
+             * this must have occured within the last time_step
              */
             if (start_time == current_time)
             {
                 /*
-                 * satellite was already above the horizon at the start time,
+                 * satellite was already above the horizon at the start,
                  * so use the start time
                  */
                 aos_time = start_time;
@@ -241,15 +333,18 @@ std::list<struct PassDetails> GeneratePassList(
                         current_time,
                         true);
             }
-
             found_aos = true;
-            found_los = false;
         }
-        else if (found_aos)
+        else if (found_aos && topo.elevation < 0.0)
         {
+            found_aos = false;
             /*
-             * satellite now below horizon and we have an AOS, so record the
-             * pass
+             * end of pass, so move along more than time_step
+             */
+            end_of_pass = true;
+            /*
+             * already have the aos, but now the satellite is below the horizon,
+             * so find the los
              */
             los_time = FindCrossingPoint(
                     user_geo,
@@ -257,9 +352,6 @@ std::list<struct PassDetails> GeneratePassList(
                     previous_time,
                     current_time,
                     false);
-
-            found_aos = false;
-            found_los = true;
 
             struct PassDetails pd;
             pd.aos = aos_time;
@@ -273,14 +365,17 @@ std::list<struct PassDetails> GeneratePassList(
             pass_list.push_back(pd);
         }
 
+        /*
+         * save current time
+         */
         previous_time = current_time;
 
-        if (found_los)
+        if (end_of_pass)
         {
             /*
-             * at the end of the pass move the time along by 20mins
+             * at the end of the pass move the time along by 30mins
              */
-            current_time = current_time + TimeSpan(0, 20, 0);
+            current_time = current_time + TimeSpan(0, 30, 0);
         }
         else
         {
@@ -297,8 +392,6 @@ std::list<struct PassDetails> GeneratePassList(
              */
             current_time = end_time;
         }
-
-        found_los = false;
     };
 
     if (found_aos)
@@ -310,7 +403,7 @@ std::list<struct PassDetails> GeneratePassList(
         struct PassDetails pd;
         pd.aos = aos_time;
         pd.los = end_time;
-        pd.max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, los_time);
+        pd.max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, end_time);
             
         pass_list.push_back(pd);
     }
@@ -318,24 +411,23 @@ std::list<struct PassDetails> GeneratePassList(
     return pass_list;
 }
 
-int main() {
-
+int main()
+{
     CoordGeodetic geo(51.507406923983446, -0.12773752212524414, 0.05);
-    Tle tle("UK-DMC 2                ",
-        "1 25544U 98067A   12285.65009259  .00017228  00000-0  30018-3 0  4501",
-        "2 25544 051.6477 262.7396 0017757 155.0745 185.1532 15.50683239796101");
+    Tle tle("GALILEO-PFM (GSAT0101)  ",
+        "1 37846U 11060A   12293.53312491  .00000049  00000-0  00000-0 0  1435",
+        "2 37846  54.7963 119.5777 0000994 319.0618  40.9779  1.70474628  6204");
     SGP4 sgp4(tle);
 
     std::cout << tle << std::endl;
 
     /*
-     * generate 1 day schedule
+     * generate 7 day schedule
      */
-    DateTime start_date = DateTime::Now();
-    DateTime end_date(start_date.AddDays(1.0));
+    DateTime start_date = DateTime::Now(true);
+    DateTime end_date(start_date.AddDays(7.0));
 
     std::list<struct PassDetails> pass_list;
-    std::list<struct PassDetails>::const_iterator itr;
 
     std::cout << "Start time: " << start_date << std::endl;
     std::cout << "End time  : " << end_date << std::endl << std::endl;
@@ -351,16 +443,22 @@ int main() {
     }
     else
     {
-        itr = pass_list.begin();
+        std::stringstream ss;
+
+        ss << std::right << std::setprecision(1) << std::fixed;
+
+        std::list<struct PassDetails>::const_iterator itr = pass_list.begin();
         do
         {
-            std::cout
-                << "AOS: " << itr->aos
+            ss  << "AOS: " << itr->aos
                 << ", LOS: " << itr->los
-                << ", Max El: " << Util::RadiansToDegrees(itr->max_elevation)
+                << ", Max El: " << std::setw(4) << Util::RadiansToDegrees(itr->max_elevation)
+                << ", Duration: " << (itr->los - itr->aos)
                 << std::endl;
         }
         while (++itr != pass_list.end());
+
+        std::cout << ss.str();
     }
 
     return 0;

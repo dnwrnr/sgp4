@@ -1,10 +1,10 @@
 #ifndef DECAYEDEXCEPTION_H_
 #define DECAYEDEXCEPTION_H_
 
-#include <exception>
-
 #include "DateTime.h"
 #include "Vector.h"
+
+#include <exception>
 
 class DecayedException : public std::exception
 {
@@ -38,7 +38,7 @@ public:
     /**
      * @returns the date
      */
-    DateTime GetDateTime() const
+    DateTime Decayed() const
     {
         return _dt;
     }
@@ -46,7 +46,7 @@ public:
     /**
      * @returns the position
      */
-    Vector GetPosition() const
+    Vector Position() const
     {
         return _pos;
     }
@@ -54,7 +54,7 @@ public:
     /**
      * @returns the velocity
      */
-    Vector GetVelocity() const
+    Vector Velocity() const
     {
         return _vel;
     }

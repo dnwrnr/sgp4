@@ -140,7 +140,7 @@ void Tle::Initialize()
  */
 bool Tle::IsValidLineLength(const std::string& str)
 {
-    return str.length() == GetLineLength() ? true : false;
+    return str.length() == LineLength() ? true : false;
 }
 
 /**
