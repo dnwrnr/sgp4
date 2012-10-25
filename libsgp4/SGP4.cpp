@@ -8,15 +8,11 @@
 #include <cmath>
 #include <iomanip>
 
-
-namespace
-{
-    const struct SGP4::CommonConstants     Empty_CommonConstants = SGP4::CommonConstants();
-    const struct SGP4::NearSpaceConstants  Empty_NearSpaceConstants = SGP4::NearSpaceConstants();
-    const struct SGP4::DeepSpaceConstants  Empty_DeepSpaceConstants = SGP4::DeepSpaceConstants();
-    const struct SGP4::IntegratorConstants Empty_IntegratorConstants = SGP4::IntegratorConstants();
-    const struct SGP4::IntegratorParams    Empty_IntegratorParams = SGP4::IntegratorParams();
-}
+const SGP4::CommonConstants SGP4::Empty_CommonConstants = SGP4::CommonConstants();
+const SGP4::NearSpaceConstants SGP4::Empty_NearSpaceConstants = SGP4::NearSpaceConstants();
+const SGP4::DeepSpaceConstants SGP4::Empty_DeepSpaceConstants = SGP4::DeepSpaceConstants();
+const SGP4::IntegratorConstants SGP4::Empty_IntegratorConstants = SGP4::IntegratorConstants();
+const SGP4::IntegratorParams SGP4::Empty_IntegratorParams = SGP4::IntegratorParams();
 
 void SGP4::SetTle(const Tle& tle)
 {
@@ -1475,6 +1471,4 @@ void SGP4::Reset()
     deepspace_consts_  = Empty_DeepSpaceConstants;
     integrator_consts_ = Empty_IntegratorConstants;
     integrator_params_ = Empty_IntegratorParams;
-
-    //OrbitalElements elements_;
 }
