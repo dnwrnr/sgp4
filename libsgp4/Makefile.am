@@ -1,7 +1,7 @@
 lib_LIBRARIES = libsgp4.a
 libsgp4_a_SOURCES = \
 			CoordGeodetic.cpp \
-			CoordTopographic.cpp \
+			CoordTopocentric.cpp \
 			DateTime.cpp \
 			Eci.cpp \
 			Globals.cpp \
@@ -18,7 +18,7 @@ include_HEADERS = CoordGeodetic.h \
 			SatelliteException.h \
 			TleException.h \
 			Vector.h \
-			CoordTopographic.h \
+			CoordTopocentric.h \
 			Globals.h \
 			Observer.h \
 			SGP4.h \

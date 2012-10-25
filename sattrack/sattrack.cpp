@@ -1,4 +1,4 @@
-#include <CoordTopographic.h>
+#include <CoordTopocentric.h>
 #include <CoordGeodetic.h>
 #include <Observer.h>
 #include <SGP4.h>
@@ -28,7 +28,7 @@ int main()
         /*
          * get look angle for observer to satellite
          */
-        CoordTopographic topo = obs.GetLookAngle(eci);
+        CoordTopocentric topo = obs.GetLookAngle(eci);
         /*
          * convert satellite position to geodetic coordinates
          */

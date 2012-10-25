@@ -1,7 +1,7 @@
 #include <Observer.h>
 #include <SGP4.h>
 #include <Util.h>
-#include <CoordTopographic.h>
+#include <CoordTopocentric.h>
 #include <CoordGeodetic.h>
 
 #include <cmath>
@@ -14,95 +14,6 @@ struct PassDetails
     DateTime los;
     double max_elevation;
 };
-
-#if 0
-double FindMaxElevation(
-        const CoordGeodetic& user_geo,
-        SGP4& sgp4,
-        const DateTime& aos,
-        const DateTime& los)
-{
-    Observer obs(user_geo);
-
-    double max_elevation = 0.0;
-
-    /*
-     * time step in seconds
-     */
-    double time_step = 180.0;
-    /*
-     * still searching for max elevation
-     */
-    bool searching = true;
-    /*
-     * fine tune the max elevation value
-     */
-    bool fine_tune = false;
-
-    DateTime current_time(aos);
-    while (current_time < los && searching)
-    {
-        /*
-         * find position
-         */
-        Eci eci = sgp4.FindPosition(current_time);
-        CoordTopographic topo = obs.GetLookAngle(eci);
-
-        /*
-         * keep updating max elevation
-         */
-        if (topo.elevation > max_elevation)
-        {
-            max_elevation = topo.elevation;
-        }
-        else if (!fine_tune)
-        {
-            /*
-             * passed max elevation
-             * max elevation happened in the last 6 minutes
-             * go back and fine tune max elevation value
-             */
-            current_time = current_time.AddSeconds(-2.0 * time_step);
-            /*
-             * dont go back before aos
-             */
-            if (current_time < aos)
-                current_time = aos;
-
-            /*
-             * 1 second increment
-             */
-            time_step = 1.0;
-            fine_tune = true;
-
-            /*
-             * reset elevation
-             */
-            max_elevation = -99.9;
-
-        }
-        else
-        {
-            /*
-             * found max elevation
-             */
-
-            searching = false;
-        }
-
-        if (searching)
-        {
-            current_time = current_time.AddSeconds(time_step);
-            if (current_time > los)
-            {
-                current_time = los;
-            }
-        }
-    }
-
-    return max_elevation;
-}
-#endif
 
 double FindMaxElevation(
         const CoordGeodetic& user_geo,
@@ -134,7 +45,7 @@ double FindMaxElevation(
              * find position
              */
             Eci eci = sgp4.FindPosition(current_time);
-            CoordTopographic topo = obs.GetLookAngle(eci);
+            CoordTopocentric topo = obs.GetLookAngle(eci);
 
             if (topo.elevation > max_elevation)
             {
@@ -210,7 +121,7 @@ DateTime FindCrossingPoint(
          * calculate satellite position
          */
         Eci eci = sgp4.FindPosition(middle_time);
-        CoordTopographic topo = obs.GetLookAngle(eci);
+        CoordTopocentric topo = obs.GetLookAngle(eci);
 
         if (topo.elevation > 0.0)
         {
@@ -264,7 +175,7 @@ DateTime FindCrossingPoint(
     while (running && cnt++ < 6)
     {
         Eci eci = sgp4.FindPosition(middle_time);
-        CoordTopographic topo = obs.GetLookAngle(eci);
+        CoordTopocentric topo = obs.GetLookAngle(eci);
         if (topo.elevation > 0)
         {
             middle_time = middle_time.AddSeconds(finding_aos ? -1 : 1);
@@ -305,7 +216,7 @@ std::list<struct PassDetails> GeneratePassList(
          * calculate satellite position
          */
         Eci eci = sgp4.FindPosition(current_time);
-        CoordTopographic topo = obs.GetLookAngle(eci);
+        CoordTopocentric topo = obs.GetLookAngle(eci);
 
         if (!found_aos && topo.elevation > 0.0)
         {

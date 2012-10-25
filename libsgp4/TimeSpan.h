@@ -23,6 +23,13 @@ namespace
     static const long long GregorianStart = 49916304000000000LL;
 }
 
+/**
+ * @brief Represents a time interval.
+ *
+ * Represents a time interval (duration/elapsed) that is measured as a positive
+ * or negative number of days, hours, minutes, seconds, and fractions
+ * of a second.
+ */
 class TimeSpan
 {
 public:

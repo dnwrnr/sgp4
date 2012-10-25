@@ -4,6 +4,9 @@
 #include "DateTime.h"
 #include "Eci.h"
 
+/**
+ * @brief Find the position of the sun
+ */
 class SolarPosition
 {
 public:

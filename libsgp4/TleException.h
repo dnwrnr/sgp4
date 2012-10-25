@@ -3,6 +3,11 @@
 
 #include <exception>
 
+/**
+ * @brief The exception that the Tle class throws on an error.
+ *
+ * The exception that the Tle decoder will throw on an error.
+ */
 class TleException : public std::exception
 {
 public:

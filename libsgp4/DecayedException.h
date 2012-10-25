@@ -6,6 +6,9 @@
 
 #include <exception>
 
+/**
+ * @brief The exception that the SGP4 class throws when a satellite decays.
+ */
 class DecayedException : public std::exception
 {
 public:

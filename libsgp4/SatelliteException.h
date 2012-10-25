@@ -3,6 +3,9 @@
 
 #include <exception>
 
+/**
+ * @brief The exception that the SGP4 class throws upon an error.
+ */
 class SatelliteException : public std::exception
 {
 public:

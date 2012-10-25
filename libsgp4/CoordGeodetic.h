@@ -8,7 +8,9 @@
 #include <iomanip>
 
 /**
- * Stores a geodetic position
+ * @brief Stores a geodetic location (latitude, longitude, altitude).
+ *
+ * Internally the values are stored in radians and kilometres.
  */
 struct CoordGeodetic
 {

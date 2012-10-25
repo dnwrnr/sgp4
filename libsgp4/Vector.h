@@ -6,6 +6,11 @@
 #include <sstream>
 #include <iomanip>
 
+/**
+ * @brief Generic vector
+ *
+ * Stores x, y, z, w
+ */
 struct Vector
 {
 public:

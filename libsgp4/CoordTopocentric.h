@@ -1,5 +1,5 @@
-#ifndef COORDTOPOGRAPHIC_H_
-#define COORDTOPOGRAPHIC_H_
+#ifndef COORDTOPOCENTRIC_H_
+#define COORDTOPOCENTRIC_H_
 
 #include "Util.h"
 
@@ -8,15 +8,19 @@
 #include <iomanip>
 
 /**
- * Stores a topographic position
+ * @brief Stores a topocentric location (azimuth, elevation, range and range
+ * rate).
+ *
+ * Azimuth and elevation are stored in radians. Range in kilometres. Range
+ * rate in kilometres/second.
  */
-struct CoordTopographic
+struct CoordTopocentric
 {
 public:
     /**
      * Default constructor
      */
-    CoordTopographic()
+    CoordTopocentric()
         : azimuth(0.0), 
         elevation(0.0),
         range(0.0),
@@ -26,20 +30,20 @@ public:
 
     /**
      * Constructor
-     * @param[in] arg_azimuth azimuth in radians
-     * @param[in] arg_elevation elevation in radians
-     * @param[in] arg_range range in kilometers
-     * @param[in] arg_range_rate range rate in kilometers per second
+     * @param[in] az azimuth in radians
+     * @param[in] el elevation in radians
+     * @param[in] rnge range in kilometers
+     * @param[in] rnge_rate range rate in kilometers per second
      */
-    CoordTopographic(
-            double arg_azimuth,
-            double arg_elevation,
-            double arg_range,
-            double arg_range_rate)
-        : azimuth(arg_azimuth),
-        elevation(arg_elevation),
-        range(arg_range),
-        range_rate(arg_range_rate)
+    CoordTopocentric(
+            double az,
+            double el,
+            double rnge,
+            double rnge_rate)
+        : azimuth(az),
+        elevation(el),
+        range(rnge),
+        range_rate(rnge_rate)
     {
     }
 
@@ -47,7 +51,7 @@ public:
      * Copy constructor
      * @param[in] topo object to copy from
      */
-    CoordTopographic(const CoordTopographic& topo)
+    CoordTopocentric(const CoordTopocentric& topo)
     {
         azimuth = topo.azimuth;
         elevation = topo.elevation;
@@ -58,7 +62,7 @@ public:
     /**
      * Destructor
      */
-    virtual ~CoordTopographic()
+    virtual ~CoordTopocentric()
     {
     }
 
@@ -66,7 +70,7 @@ public:
      * Assignment operator
      * @param[in] topo object to copy from
      */
-    CoordTopographic& operator=(const CoordTopographic& topo)
+    CoordTopocentric& operator=(const CoordTopocentric& topo)
     {
         if (this != &topo)
         {
@@ -83,7 +87,7 @@ public:
      * @param[in] topo value to check
      * @returns whether the object is equal
      */
-    bool operator==(const CoordTopographic& topo) const
+    bool operator==(const CoordTopocentric& topo) const
     {
         return IsEqual(topo);
     }
@@ -93,7 +97,7 @@ public:
      * @param[in] topo the object to compare with
      * @returns whether the object is not equal
      */    
-    bool operator !=(const CoordTopographic& topo) const
+    bool operator !=(const CoordTopocentric& topo) const
     {
         return !IsEqual(topo);
     }
@@ -123,7 +127,7 @@ public:
     double range_rate;
 
 private:
-    bool IsEqual(const CoordTopographic& topo) const
+    bool IsEqual(const CoordTopocentric& topo) const
     {
         bool equal = false;
         if (azimuth == topo.azimuth &&
@@ -138,7 +142,7 @@ private:
 };
 
 
-inline std::ostream& operator<<(std::ostream& strm, const CoordTopographic& t)
+inline std::ostream& operator<<(std::ostream& strm, const CoordTopocentric& t)
 {
     return strm << t.ToString();
 }

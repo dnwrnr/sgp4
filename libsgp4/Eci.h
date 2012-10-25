@@ -6,8 +6,7 @@
 #include "DateTime.h"
 
 /**
- * A class store to store an Earth-centered inertial position.
- * This is only valid for the date specified.
+ * @brief Stores an Earth-centered inertial position for a particular time.
  */
 class Eci
 {

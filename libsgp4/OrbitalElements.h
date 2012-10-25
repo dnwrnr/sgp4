@@ -6,6 +6,9 @@
 
 class Tle;
 
+/**
+ * @brief The extracted orbital elements used by the SGP4 propagator.
+ */
 class OrbitalElements
 {
 public:
@@ -112,7 +115,6 @@ public:
     }
 
 private:
-
     double mean_anomoly_;
     double ascending_node_;
     double argument_perigee_;

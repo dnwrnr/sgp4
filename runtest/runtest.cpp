@@ -2,7 +2,7 @@
 #include <SGP4.h>
 #include <Observer.h>
 #include <CoordGeodetic.h>
-#include <CoordTopographic.h>
+#include <CoordTopocentric.h>
 
 #include <list>
 #include <string>

@@ -1,11 +1,11 @@
 #include "Observer.h"
 
-#include "CoordTopographic.h"
+#include "CoordTopocentric.h"
 
 /*
  * calculate lookangle between the observer and the passed in Eci object
  */
-CoordTopographic Observer::GetLookAngle(const Eci &eci)
+CoordTopocentric Observer::GetLookAngle(const Eci &eci)
 {
     /*
      * update the observers Eci to match the time of the Eci passed in
@@ -58,7 +58,7 @@ CoordTopographic Observer::GetLookAngle(const Eci &eci)
      * range in km
      * range rate in km/s
      */
-    return CoordTopographic(az,
+    return CoordTopocentric(az,
             el,
             range.w,
             rate);

@@ -5,8 +5,11 @@
 #include "Eci.h"
 
 class DateTime;
-class CoordTopographic;
+class CoordTopocentric;
 
+/**
+ * @brief Stores an observers location in Eci coordinates.
+ */
 class Observer
 {
 public:
@@ -65,7 +68,7 @@ public:
      * @param[in] eci the object to find the look angle to
      * @returns the lookup angle
      */
-    CoordTopographic GetLookAngle(const Eci &eci);
+    CoordTopocentric GetLookAngle(const Eci &eci);
 
 private:
     /**

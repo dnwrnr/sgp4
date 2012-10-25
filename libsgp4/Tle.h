@@ -6,8 +6,9 @@
 #include "TleException.h"
 
 /**
- * Tle class
- * @details Loads and validates a tle.
+ * @brief Processes a two-line element set used to convey OrbitalElements.
+ *
+ * Used to extract the various raw fields from a two-line element set.
  */
 class Tle
 {
