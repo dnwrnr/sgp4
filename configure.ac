@@ -19,9 +19,9 @@ AC_ARG_ENABLE(debug,
               enable_debug=no)
 
 if test x$enable_debug = xyes; then
-  AM_CXXFLAGS="-g       -O0                      -Werror -Wextra -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long -Wconversion"
+  AM_CXXFLAGS="-g       -O0                      -Werror -Wextra -W -Wall -Wconversion"
 else
-  AM_CXXFLAGS="-DNDEBUG -O2 -fomit-frame-pointer -Wextra -Werror -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long -Wconversion"
+  AM_CXXFLAGS="-DNDEBUG -O2 -fomit-frame-pointer -Wextra -Werror -W -Wall -Wconversion"
 fi
 
 AC_SEARCH_LIBS([clock_gettime],
