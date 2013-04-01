@@ -1,9 +1,5 @@
 # Exact paths to config junk
-#^INSTALL$
-#^aclocal.m4$
-#^(stamp-h1|depcomp|install-sh|ltmain.sh|missing)$
-#^config.(h|log|status|guess|sub)$
-#^autom4te.cache$
+^config.(h|log|status|guess|sub)$
 
 # Build artifacts
 ^libsgp4/libsgp4.a$

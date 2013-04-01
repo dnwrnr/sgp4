@@ -24,7 +24,6 @@ double FindMaxElevation(
     Observer obs(user_geo);
 
     bool running;
-    int cnt;
 
     double time_step = (los - aos).TotalSeconds() / 9.0;
     DateTime current_time(aos); //! current time
@@ -33,7 +32,6 @@ double FindMaxElevation(
     double max_elevation; //! max elevation
 
     running = true;
-    cnt = 0;
 
     do
     {
