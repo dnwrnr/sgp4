@@ -24,7 +24,7 @@
 
 Eci SolarPosition::FindPosition(const DateTime& dt)
 {
-    const double mjd = j.FromJan1_12h_1900();
+    const double mjd = dt.ToJulian() - kEPOCH_JAN1_12H_1900;
     const double year = 1900 + mjd / 365.25;
     const double T = (mjd + Delta_ET(year) / kSECONDS_PER_DAY) / 36525.0;
     const double M = Util::DegreesToRadians(Util::Wrap360(358.47583
@@ -48,12 +48,12 @@ Eci SolarPosition::FindPosition(const DateTime& dt)
                 + (0.00000164 - 0.000000503 * T) * T) * T + 0.00256 * cos(O));
     R = R * kAU;
 
-    Vector solar_position = Vector(R * cos(Lsa),
+    Vector solar_position(R * cos(Lsa),
             R * sin(Lsa) * cos(eps),
             R * sin(Lsa) * sin(eps),
             R);
 
-    return Eci(j, solar_position);
+    return Eci(dt, solar_position);
 }
 
 double SolarPosition::Delta_ET(double year) const

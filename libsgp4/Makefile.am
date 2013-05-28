@@ -8,6 +8,7 @@ libsgp4_a_SOURCES = \
 			Observer.cpp \
 			OrbitalElements.cpp \
 			SGP4.cpp \
+			SolarPosition.cpp \
 			TimeSpan.cpp \
 			Tle.cpp \
 			Util.cpp \
@@ -22,6 +23,7 @@ include_HEADERS = CoordGeodetic.h \
 			Globals.h \
 			Observer.h \
 			SGP4.h \
+			SolarPosition.h \
 			Tle.h \
 			Util.h \
 			TimeSpan.h \
