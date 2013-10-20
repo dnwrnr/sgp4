@@ -11,7 +11,6 @@
 autom4te.cache/*$
 doxygen/*$
 
-Makefile(.in)?$
 .(deps|libs)$
 \.l?o$
 
