@@ -168,15 +168,15 @@ bool Tle::IsValidLineLength(const std::string& str)
  */
 void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 {
-    std::string temp;
     bool found_digit = false;
+    unsigned int temp = 0;
 
     for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
     {
         if (isdigit(*i))
         {
             found_digit = true;
-            temp += *i;
+            temp = (temp * 10) + (*i - '0');
         }
         else if (found_digit)
         {
@@ -188,14 +188,13 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
         }
     }
 
-    if (temp.length() == 0)
+    if (!found_digit)
     {
-        temp += '0';
+        val = 0;
     }
-
-    if (!Util::FromString<unsigned int>(temp, val))
+    else
     {
-        throw TleException("Failed to convert value to integer");
+        val = temp;
     }
 }
 
