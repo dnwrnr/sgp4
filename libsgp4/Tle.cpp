@@ -215,7 +215,7 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
         /*
          * integer part
          */
-        if (i < str.begin() + point_pos - 1)
+        if (point_pos >= 0 && i < str.begin() + point_pos - 1)
         {
             bool done = false;
 
@@ -251,7 +251,7 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
         /*
          * decimal point
          */
-        else if (i == str.begin() + point_pos - 1)
+        else if (point_pos >= 0 && i == str.begin() + point_pos - 1)
         {
             if (temp.length() == 0)
             {
