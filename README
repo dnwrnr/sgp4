@@ -1,0 +1,5 @@
+cd <src directory>
+mkdir build
+cd build
+cmake ../
+make
