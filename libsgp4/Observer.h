@@ -39,8 +39,8 @@ public:
     Observer(const double latitude,
             const double longitude,
             const double altitude)
-        : m_geo(latitude, longitude, altitude),
-        m_eci(DateTime(), m_geo)
+        : m_geo(latitude, longitude, altitude)
+        , m_eci(DateTime(), m_geo)
     {
     }
 
@@ -49,15 +49,8 @@ public:
      * @param[in] geo the observers position
      */
     Observer(const CoordGeodetic &geo)
-        : m_geo(geo),
-        m_eci(DateTime(), geo)
-    {
-    }
-
-    /**
-     * Destructor
-     */
-    virtual ~Observer()
+        : m_geo(geo)
+        , m_eci(DateTime(), geo)
     {
     }
 

@@ -80,13 +80,6 @@ public:
     }
 
     /**
-     * Destructor
-     */
-    virtual ~CoordGeodetic()
-    {
-    }
-
-    /**
      * Assignment operator
      * @param[in] geo object to copy from
      */
@@ -158,8 +151,8 @@ private:
 
 /**
  * Dump a Coordgeodetic to a stream
- * @params[in,out] strm stream to output to
- * @params[in] g the CoordGeodetic to print
+ * @param[in,out] strm stream to output to
+ * @param[in] g the CoordGeodetic to print
  */
 inline std::ostream& operator<<(std::ostream& strm, const CoordGeodetic& g)
 {

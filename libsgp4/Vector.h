@@ -81,13 +81,6 @@ public:
     }
 
     /**
-     * Destructor
-     */
-    virtual ~Vector()
-    {
-    }
-
-    /**
      * Assignment operator
      * @param v value to copy from
      */

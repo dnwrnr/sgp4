@@ -18,14 +18,15 @@
 #ifndef TLEEXCEPTION_H_
 #define TLEEXCEPTION_H_
 
-#include <exception>
+#include <stdexcept>
+#include <string>
 
 /**
  * @brief The exception that the Tle class throws on an error.
  *
  * The exception that the Tle decoder will throw on an error.
  */
-class TleException : public std::exception
+class TleException : public std::runtime_error
 {
 public:
     /**
@@ -33,29 +34,13 @@ public:
      * @param message Exception message
      */
     TleException(const char* message)
-        : m_message(message)
+        : runtime_error(message)
     {
     }
 
-    /**
-     * Destructor
-     */
-    virtual ~TleException(void) throw ()
-    {
-    }
+    TleException(const TleException&) = default;
 
-    /**
-     * Get the exception message
-     * @returns the exception message
-     */
-    virtual const char* what() const throw ()
-    {
-        return m_message.c_str();
-    }
-
-private:
-    /** the exception message */
-    std::string m_message;
+    virtual ~TleException();
 };
 
 #endif

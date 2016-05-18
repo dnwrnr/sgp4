@@ -25,9 +25,9 @@ namespace
     static const unsigned int TLE1_LEN_NORADNUM = 5;
     static const unsigned int TLE1_COL_INTLDESC_A = 9;
     static const unsigned int TLE1_LEN_INTLDESC_A = 2;
-    static const unsigned int TLE1_COL_INTLDESC_B = 11;
+//  static const unsigned int TLE1_COL_INTLDESC_B = 11;
     static const unsigned int TLE1_LEN_INTLDESC_B = 3;
-    static const unsigned int TLE1_COL_INTLDESC_C = 14;
+//  static const unsigned int TLE1_COL_INTLDESC_C = 14;
     static const unsigned int TLE1_LEN_INTLDESC_C = 3;
     static const unsigned int TLE1_COL_EPOCH_A = 18;
     static const unsigned int TLE1_LEN_EPOCH_A = 2;
@@ -39,10 +39,10 @@ namespace
     static const unsigned int TLE1_LEN_MEANMOTIONDDT6 = 8;
     static const unsigned int TLE1_COL_BSTAR = 53;
     static const unsigned int TLE1_LEN_BSTAR = 8;
-    static const unsigned int TLE1_COL_EPHEMTYPE = 62;
-    static const unsigned int TLE1_LEN_EPHEMTYPE = 1;
-    static const unsigned int TLE1_COL_ELNUM = 64;
-    static const unsigned int TLE1_LEN_ELNUM = 4;
+//  static const unsigned int TLE1_COL_EPHEMTYPE = 62;
+//  static const unsigned int TLE1_LEN_EPHEMTYPE = 1;
+//  static const unsigned int TLE1_COL_ELNUM = 64;
+//  static const unsigned int TLE1_LEN_ELNUM = 4;
 
     static const unsigned int TLE2_COL_NORADNUM = 2;
     static const unsigned int TLE2_LEN_NORADNUM = 5;
@@ -147,6 +147,7 @@ void Tle::Initialize()
         year += 2000;
     else
         year += 1900;
+
     epoch_ = DateTime(year, day);
 }
 
@@ -176,7 +177,7 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
         if (isdigit(*i))
         {
             found_digit = true;
-            temp = (temp * 10) + (*i - '0');
+            temp = (temp * 10) + (static_cast<unsigned char>(*i) - '0');
         }
         else if (found_digit)
         {
@@ -335,7 +336,7 @@ void Tle::ExtractExponential(const std::string& str, double& val)
                 throw TleException("Invalid sign");
             }
         }
-        else if (i == str.begin() + str.length() - 2)
+        else if (i == str.end() - 2)
         {
             if (*i == '-' || *i == '+')
             {

@@ -31,10 +31,6 @@ class OrbitalElements
 public:
     OrbitalElements(const Tle& tle);
 
-    virtual ~OrbitalElements()
-    {
-    }
-
     /*
      * XMO
      */

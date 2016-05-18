@@ -215,8 +215,6 @@ void SGP4::Initialise()
     }
 }
 
-#include <iomanip>
-
 Eci SGP4::FindPosition(const DateTime& dt) const
 {
     return FindPosition((dt - elements_.Epoch()).TotalMinutes());
@@ -433,23 +431,6 @@ Eci SGP4::FindPositionSGP4(double tsince) const
 
 }
 
-/**
- * @param[in] tsince
- * @param[in] e
- * @param[in] a
- * @param[in] omega
- * @param[in] xl
- * @param[in] xnode
- * @param[in] xincl
- * @param[in] xlcof
- * @param[in] aycof
- * @param[in] x3thml
- * @param[in] x1mth2
- * @param[in] x7thm1
- * @param[in] cosio
- * @param[in] sinio
- * @returns Eci result
- */
 Eci SGP4::CalculateFinalPositionVelocity(
         const double tsince,
         const double e,
@@ -633,14 +614,6 @@ Eci SGP4::CalculateFinalPositionVelocity(
     return Eci(elements_.Epoch().AddMinutes(tsince), position, velocity);
 }
 
-/**
- * @param[in] x
- * @param[in] constant
- * @param[in] linear
- * @param[in] squared
- * @param[in] cubed
- * @returns result
- */
 static inline double EvaluateCubicPolynomial(
         const double x,
         const double constant,
@@ -651,18 +624,6 @@ static inline double EvaluateCubicPolynomial(
     return constant + x * (linear + x * (squared + x * cubed));
 }
 
-/**
- * Deep space initialisation
- * @param[in] eosq
- * @param[in] sinio
- * @param[in] cosio
- * @param[in] betao
- * @param[in] theta2
- * @param[in] betao2
- * @param[in] xmdot
- * @param[in] omgdot
- * @param[in] xnodot
- */
 void SGP4::DeepSpaceInitialise(
         const double eosq,
         const double sinio,
@@ -1073,15 +1034,6 @@ void SGP4::DeepSpaceInitialise(
     }
 }
 
-/*
- * Calculate lunar / solar terms
- * @param[in]  tsince
- * @param[out] pe
- * @param[out] pinc
- * @param[out] pl
- * @param[out] pgh
- * @param[out] ph
- */
 void SGP4::DeepSpaceCalculateLunarSolarTerms(
         const double tsince,
         double& pe,
@@ -1149,15 +1101,6 @@ void SGP4::DeepSpaceCalculateLunarSolarTerms(
     ph = shs + shl;
 }
 
-/*
- * Calculate lunar / solar periodics and apply
- * @param[in]     tsince
- * @param[in,out] em
- * @param[in,out] xinc
- * @param[in,out] omgasm
- * @param[in,out] xnodes
- * @param[in,out] xll
- */
 void SGP4::DeepSpacePeriodics(
         const double tsince,
         double& em,
@@ -1261,16 +1204,6 @@ void SGP4::DeepSpacePeriodics(
     }
 }
 
-/*
- * Deep space secular effects
- * @param[in]     tsince
- * @param[in,out] xll
- * @param[in,out] omgasm
- * @param[in,out] xnodes
- * @param[in,out] em
- * @param[in,out] xinc
- * @param[in,out] xn
- */
 void SGP4::DeepSpaceSecular(
         const double tsince,
         double& xll,
@@ -1372,10 +1305,6 @@ void SGP4::DeepSpaceSecular(
     }
 }
 
-/*
- * Calculate dot terms
- * @param[in,out] the integrator values
- */
 void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues& values) const
 {
     static const double G22 = 5.7686396;
@@ -1455,12 +1384,6 @@ void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues& values) const
     values.xnddt *= values.xldot;
 }
 
-/*
- * Deep space integrator for time period of delt
- * @param[in] delt
- * @param[in] step2
- * @param[in] values
- */
 void SGP4::DeepSpaceIntegrator(
         const double delt,
         const double step2,

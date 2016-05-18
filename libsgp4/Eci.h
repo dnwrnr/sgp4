@@ -54,11 +54,11 @@ public:
 
     /**
      * @param[in] dt the date to be used for this position
-     * @param[in] position
+     * @param[in] position the position
      */
     Eci(const DateTime &dt, const Vector &position)
-        : m_dt(dt),
-        m_position(position)
+        : m_dt(dt)
+        , m_position(position)
     {
     }
 
@@ -68,16 +68,9 @@ public:
      * @param[in] velocity the velocity
      */
     Eci(const DateTime &dt, const Vector &position, const Vector &velocity)
-        : m_dt(dt),
-        m_position(position),
-        m_velocity(velocity)
-    {
-    }
-
-    /**
-     * Destructor
-     */
-    virtual ~Eci()
+        : m_dt(dt)
+        , m_position(position)
+        , m_velocity(velocity)
     {
     }
 

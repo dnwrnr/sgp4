@@ -33,17 +33,13 @@
 /**
  * @brief The simplified perturbations model 4 propagater.
  */
-class SGP4
+class SGP4 final
 {
 public:
     SGP4(const Tle& tle)
         : elements_(tle)
     {
         Initialise();
-    }
-
-    virtual ~SGP4()
-    {
     }
 
     void SetTle(const Tle& tle);
@@ -91,16 +87,7 @@ private:
         double gsto;
         double zmol;
         double zmos;
-        /*
-         * whether the deep space orbit is
-         * geopotential resonance for 12 hour orbits
-         */
-        bool resonance_flag;
-        /*
-         * whether the deep space orbit is
-         * 24h synchronous resonance
-         */
-        bool synchronous_flag;
+
         /*
          * lunar / solar constants for epoch
          * applied during DeepSpaceSecular()
@@ -154,6 +141,16 @@ private:
         double del1;
         double del2;
         double del3;
+        /*
+         * whether the deep space orbit is
+         * geopotential resonance for 12 hour orbits
+         */
+        bool resonance_flag;
+        /*
+         * whether the deep space orbit is
+         * 24h synchronous resonance
+         */
+        bool synchronous_flag;
     };
 
     struct IntegratorValues
@@ -209,6 +206,9 @@ private:
             const double x7thm1,
             const double cosio,
             const double sinio) const;
+    /**
+     * Deep space initialisation
+     */
     void DeepSpaceInitialise(
             const double eosq,
             const double sinio,
@@ -219,6 +219,9 @@ private:
             const double xmdot,
             const double omgdot,
             const double xnodot);
+    /*
+     * Calculate lunar / solar terms
+     */
     void DeepSpaceCalculateLunarSolarTerms(
             const double tsince,
             double& pe,
@@ -226,6 +229,9 @@ private:
             double& pl,
             double& pgh,
             double& ph) const;
+    /**
+     * Calculate lunar / solar periodics and apply
+     */
     void DeepSpacePeriodics(
             const double tsince,
             double& em,
@@ -233,6 +239,9 @@ private:
             double& omgasm,
             double& xnodes,
             double& xll) const;
+    /**
+     * Deep space secular effects
+     */
     void DeepSpaceSecular(
             const double tsince,
             double& xll,
@@ -241,18 +250,19 @@ private:
             double& em,
             double& xinc,
             double& xn) const;
+    /**
+     * Calculate dot terms
+     * @param[in,out] values the integrator values
+     */
     void DeepSpaceCalcDotTerms(struct IntegratorValues& values) const;
+    /**
+     * Deep space integrator for time period of delt
+     */
     void DeepSpaceIntegrator(
             const double delt,
             const double step2,
             const struct IntegratorValues& values) const;
     void Reset();
-
-    /*
-     * flags
-     */
-    bool use_simple_model_;
-    bool use_deep_space_;
 
     /*
      * the constants used
@@ -267,6 +277,12 @@ private:
      * the orbit data
      */
     OrbitalElements elements_;
+
+    /*
+     * flags
+     */
+    bool use_simple_model_;
+    bool use_deep_space_;
 
     static const struct SGP4::CommonConstants Empty_CommonConstants;
     static const struct SGP4::NearSpaceConstants Empty_NearSpaceConstants;

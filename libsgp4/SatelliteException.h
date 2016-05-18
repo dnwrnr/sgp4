@@ -18,30 +18,23 @@
 #ifndef SATELLITEEXCEPTION_H_
 #define SATELLITEEXCEPTION_H_
 
-#include <exception>
+#include <stdexcept>
+#include <string>
 
 /**
  * @brief The exception that the SGP4 class throws upon an error.
  */
-class SatelliteException : public std::exception
+class SatelliteException : public std::runtime_error
 {
 public:
     SatelliteException(const char* message)
-        : message_(message)
+        : runtime_error(message)
     {
     }
 
-    virtual ~SatelliteException(void) throw ()
-    {
-    }
+    SatelliteException(const SatelliteException&) = default;
 
-    virtual const char* what() const throw ()
-    {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+    virtual ~SatelliteException();
 };
 
 #endif

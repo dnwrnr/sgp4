@@ -31,17 +31,17 @@
  * Azimuth and elevation are stored in radians. Range in kilometres. Range
  * rate in kilometres/second.
  */
-struct CoordTopocentric
+struct CoordTopocentric final
 {
 public:
     /**
      * Default constructor
      */
     CoordTopocentric()
-        : azimuth(0.0), 
-        elevation(0.0),
-        range(0.0),
-        range_rate(0.0)
+        : azimuth(0.0)
+        , elevation(0.0)
+        , range(0.0)
+        , range_rate(0.0)
     {
     }
 
@@ -57,10 +57,10 @@ public:
             double el,
             double rnge,
             double rnge_rate)
-        : azimuth(az),
-        elevation(el),
-        range(rnge),
-        range_rate(rnge_rate)
+        : azimuth(az)
+        , elevation(el)
+        , range(rnge)
+        , range_rate(rnge_rate)
     {
     }
 
@@ -74,13 +74,6 @@ public:
         elevation = topo.elevation;
         range = topo.range;
         range_rate = topo.range_rate;
-    }
-
-    /**
-     * Destructor
-     */
-    virtual ~CoordTopocentric()
-    {
     }
 
     /**

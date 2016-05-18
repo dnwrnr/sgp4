@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <cstdint>
 #include "TimeSpan.h"
 #include "Util.h"
 
@@ -57,7 +58,7 @@ public:
      * Constructor
      * @param[in] ticks raw tick value
      */
-    DateTime(unsigned long long ticks)
+    DateTime(int64_t ticks)
         : m_encoded(ticks)
     {
     }
@@ -67,9 +68,10 @@ public:
      * @param[in] year the year
      * @param[in] doy the day of the year
      */
-    DateTime(int year, double doy)
+    DateTime(unsigned int year, double doy)
     {
-        m_encoded = TimeSpan(static_cast<long long int>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
+        m_encoded = TimeSpan(
+                static_cast<int64_t>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
     }
 
     /**
@@ -298,10 +300,9 @@ public:
     /**
      *
      */
-    double AbsoluteDays(int year, double doy) const
+    double AbsoluteDays(unsigned int year, double doy) const
     {
-
-        int previousYear = year - 1;
+        int64_t previousYear = year - 1;
 
         /*
          * + days in previous years ignoring leap days
@@ -309,10 +310,10 @@ public:
          * - minus prior century years
          * + plus prior years divisible by 400 days
          */
-        long long daysSoFar = 365 * previousYear
-            + previousYear / 4
-            - previousYear / 100
-            + previousYear / 400;
+        int64_t daysSoFar = 365 * previousYear
+            + previousYear / 4LL
+            - previousYear / 100LL
+            + previousYear / 400LL;
 
         return static_cast<double>(daysSoFar) + doy - 1.0;
     }
@@ -441,11 +442,11 @@ public:
 
     DateTime AddMicroseconds(const double microseconds) const
     {
-        long long ticks = static_cast<long long>(microseconds * TicksPerMicrosecond);
+        int64_t ticks = static_cast<int64_t>(microseconds * TicksPerMicrosecond);
         return AddTicks(ticks);
     }
 
-    DateTime AddTicks(long long ticks) const
+    DateTime AddTicks(int64_t ticks) const
     {
         return DateTime(m_encoded + ticks);
     }
@@ -454,7 +455,7 @@ public:
      * Get the number of ticks
      * @returns the number of ticks
      */
-    long long Ticks() const
+    int64_t Ticks() const
     {
         return m_encoded;
     }
@@ -646,7 +647,7 @@ public:
     }
 
 private:
-    unsigned long long m_encoded;
+    int64_t m_encoded;
 };
 
 inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)
@@ -656,24 +657,12 @@ inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)
 
 inline DateTime operator+(const DateTime& dt, TimeSpan ts)
 {
-    long long int res = dt.Ticks() + ts.Ticks();
-    if (res < 0 || res > MaxValueTicks)
-    {
-           throw 1;
-    }
-
-    return DateTime(res);
+    return DateTime(dt.Ticks() + ts.Ticks());
 }
 
 inline DateTime operator-(const DateTime& dt, const TimeSpan& ts)
 {
-    long long int res = dt.Ticks() - ts.Ticks();
-    if (res < 0 || res > MaxValueTicks)
-    {
-        throw 1;
-    }
-
-    return DateTime(res);
+    return DateTime(dt.Ticks() - ts.Ticks());
 }
 
 inline TimeSpan operator-(const DateTime& dt1, const DateTime& dt2)

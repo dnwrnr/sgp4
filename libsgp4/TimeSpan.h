@@ -22,22 +22,23 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <cstdint>
 
 namespace
 {
-    static const long long TicksPerDay =  86400000000LL;
-    static const long long TicksPerHour =  3600000000LL;
-    static const long long TicksPerMinute =  60000000LL;
-    static const long long TicksPerSecond =   1000000LL;
-    static const long long TicksPerMillisecond = 1000LL;
-    static const long long TicksPerMicrosecond =    1LL;
+    static const int64_t TicksPerDay =  86400000000LL;
+    static const int64_t TicksPerHour =  3600000000LL;
+    static const int64_t TicksPerMinute =  60000000LL;
+    static const int64_t TicksPerSecond =   1000000LL;
+    static const int64_t TicksPerMillisecond = 1000LL;
+    static const int64_t TicksPerMicrosecond =    1LL;
 
-    static const long long UnixEpoch = 62135596800000000LL;
+    static const int64_t UnixEpoch = 62135596800000000LL;
 
-    static const long long MaxValueTicks = 315537897599999999LL;
+    static const int64_t MaxValueTicks = 315537897599999999LL;
 
     // 1582-Oct-15
-    static const long long GregorianStart = 49916304000000000LL;
+    static const int64_t GregorianStart = 49916304000000000LL;
 }
 
 /**
@@ -50,7 +51,7 @@ namespace
 class TimeSpan
 {
 public:
-    TimeSpan(long long ticks)
+    TimeSpan(int64_t ticks)
         : m_ticks(ticks)
     {
     }
@@ -130,7 +131,7 @@ public:
         return static_cast<int>(m_ticks % TicksPerSecond / TicksPerMicrosecond);
     }
 
-    long long Ticks() const
+    int64_t Ticks() const
     {
         return m_ticks;
     }
@@ -194,7 +195,7 @@ public:
     }
 
 private:
-    long long m_ticks;
+    int64_t m_ticks;
 
     void CalculateTicks(int days,
             int hours,

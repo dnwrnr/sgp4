@@ -37,8 +37,8 @@ public:
      */
     Tle(const std::string& line_one,
             const std::string& line_two)
-        : line_one_(line_one),
-        line_two_(line_two)
+        : line_one_(line_one)
+        , line_two_(line_two)
     {
         Initialize();
     }
@@ -52,9 +52,9 @@ public:
     Tle(const std::string& name,
             const std::string& line_one,
             const std::string& line_two)
-        : name_(name),
-        line_one_(line_one),
-        line_two_(line_two)
+        : name_(name)
+        , line_one_(line_one)
+        , line_two_(line_two)
     {
         Initialize();
     }
@@ -82,13 +82,6 @@ public:
         mean_anomaly_ = tle.mean_anomaly_;
         mean_motion_ = tle.mean_motion_;
         orbit_number_ = tle.orbit_number_;
-    }
-
-    /**
-     * Destructor
-     */
-    virtual ~Tle()
-    {
     }
 
     /**
@@ -322,7 +315,6 @@ private:
     std::string line_one_;
     std::string line_two_;
 
-    unsigned int norad_number_;
     std::string int_designator_;
     DateTime epoch_;
     double mean_motion_dt2_;
@@ -334,6 +326,7 @@ private:
     double argument_perigee_;
     double mean_anomaly_;
     double mean_motion_;
+    unsigned int norad_number_;
     unsigned int orbit_number_;
 
     static const unsigned int TLE_LEN_LINE_DATA = 69;

@@ -38,7 +38,7 @@ namespace Util
      */
     inline double Mod(const double x, const double y)
     {
-        if (y == 0)
+        if (y == 0.0)
         {
             return x;
         }

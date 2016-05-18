@@ -102,8 +102,10 @@ libsgp4_a_LIBADD =
 am_libsgp4_a_OBJECTS = CoordGeodetic.$(OBJEXT) \
 	CoordTopocentric.$(OBJEXT) DateTime.$(OBJEXT) Eci.$(OBJEXT) \
 	Globals.$(OBJEXT) Observer.$(OBJEXT) OrbitalElements.$(OBJEXT) \
-	SGP4.$(OBJEXT) SolarPosition.$(OBJEXT) TimeSpan.$(OBJEXT) \
-	Tle.$(OBJEXT) Util.$(OBJEXT) Vector.$(OBJEXT)
+	DecayedException.$(OBJEXT) SatelliteException.$(OBJEXT) \
+	TleException.$(OBJEXT) SGP4.$(OBJEXT) SolarPosition.$(OBJEXT) \
+	TimeSpan.$(OBJEXT) Tle.$(OBJEXT) Util.$(OBJEXT) \
+	Vector.$(OBJEXT)
 libsgp4_a_OBJECTS = $(am_libsgp4_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -233,6 +235,9 @@ libsgp4_a_SOURCES = \
 	Globals.cpp          \
 	Observer.cpp         \
 	OrbitalElements.cpp  \
+	DecayedException.cpp \
+	SatelliteException.cpp \
+	TleException.cpp     \
 	SGP4.cpp             \
 	SolarPosition.cpp    \
 	TimeSpan.cpp         \
@@ -337,14 +342,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoordGeodetic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CoordTopocentric.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DateTime.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DecayedException.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Eci.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Globals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Observer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OrbitalElements.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SGP4.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SatelliteException.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SolarPosition.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TimeSpan.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Tle.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TleException.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vector.Po@am__quote@
 

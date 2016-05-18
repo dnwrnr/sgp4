@@ -7,6 +7,9 @@ libsgp4_a_SOURCES = \
 	Globals.cpp          \
 	Observer.cpp         \
 	OrbitalElements.cpp  \
+	DecayedException.cpp \
+	SatelliteException.cpp \
+	TleException.cpp     \
 	SGP4.cpp             \
 	SolarPosition.cpp    \
 	TimeSpan.cpp         \
@@ -14,7 +17,7 @@ libsgp4_a_SOURCES = \
 	Util.cpp             \
 	Vector.cpp
 
-include_HEADERS =  \
+include_HEADERS =        \
 	CoordGeodetic.h      \
 	CoordTopocentric.h   \
 	DateTime.h           \

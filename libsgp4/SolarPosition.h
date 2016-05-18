@@ -31,10 +31,6 @@ public:
     {
     }
 
-    virtual ~SolarPosition()
-    {
-    }
-
     Eci FindPosition(const DateTime& dt);
 
 private:
