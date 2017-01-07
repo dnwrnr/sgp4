@@ -37,10 +37,6 @@ public:
         : runtime_error(message)
     {
     }
-
-    TleException(const TleException&) = default;
-
-    virtual ~TleException();
 };
 
 #endif

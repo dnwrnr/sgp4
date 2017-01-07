@@ -31,10 +31,6 @@ public:
         : runtime_error(message)
     {
     }
-
-    SatelliteException(const SatelliteException&) = default;
-
-    virtual ~SatelliteException();
 };
 
 #endif

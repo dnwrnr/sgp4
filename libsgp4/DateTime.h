@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <cstdint>
+#include <stdint.h>
 #include "TimeSpan.h"
 #include "Util.h"
 

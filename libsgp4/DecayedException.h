@@ -44,10 +44,6 @@ public:
     {
     }
 
-    DecayedException(const DecayedException&) = default;
-
-    virtual ~DecayedException();
-
     /**
      * @returns the date
      */

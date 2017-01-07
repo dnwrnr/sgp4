@@ -33,7 +33,7 @@
 /**
  * @brief The simplified perturbations model 4 propagater.
  */
-class SGP4 final
+class SGP4
 {
 public:
     SGP4(const Tle& tle)

@@ -22,7 +22,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
-#include <cstdint>
+#include <stdint.h>
 
 namespace
 {
