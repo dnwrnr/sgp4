@@ -29,15 +29,6 @@ matrix:
           packages:
             - clang-3.5
       env: COMPILER=clang++-3.5
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
-          packages:
-            - clang-3.9
-      env: COMPILER=clang++-3.9
 
 before_install:
   - sudo apt-get update -qq
