@@ -31,7 +31,7 @@
  * Azimuth and elevation are stored in radians. Range in kilometres. Range
  * rate in kilometres/second.
  */
-struct CoordTopocentric final
+struct CoordTopocentric
 {
 public:
     /**
