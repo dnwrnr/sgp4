@@ -1,6 +1,8 @@
 SGP4 library
 ============
 
+[![Build Status](https://travis-ci.org/dnwrnr/sgp4.svg?branch=master)](https://travis-ci.org/dnwrnr/sgp4)
+
 License
 -------
 
