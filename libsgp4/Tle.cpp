@@ -177,7 +177,7 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
         if (isdigit(*i))
         {
             found_digit = true;
-            temp = (temp * 10) + (static_cast<unsigned char>(*i) - '0');
+            temp = (temp * 10) + static_cast<unsigned int>(*i - '0');
         }
         else if (found_digit)
         {

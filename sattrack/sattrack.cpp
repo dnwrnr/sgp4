@@ -32,7 +32,7 @@ int main()
 
     std::cout << tle << std::endl;
 
-    while (true)
+    for (int i = 0; i < 10; ++i)
     {
         /*
          * current time
