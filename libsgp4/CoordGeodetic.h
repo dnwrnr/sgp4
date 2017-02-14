@@ -95,26 +95,6 @@ public:
     }
 
     /**
-     * Equality operator
-     * @param[in] geo the object to compare with
-     * @returns whether the object is equal
-     */
-    bool operator==(const CoordGeodetic& geo) const
-    {
-        return IsEqual(geo);
-    }
-
-    /**
-     * Inequality operator
-     * @param[in] geo the object to compare with
-     * @returns whether the object is not equal
-     */
-    bool operator!=(const CoordGeodetic& geo) const
-    {
-        return !IsEqual(geo);
-    }
-
-    /**
      * Dump this object to a string
      * @returns string
      */
@@ -134,19 +114,6 @@ public:
     double longitude;
     /** altitude in kilometers */
     double altitude;
-
-private:
-    bool IsEqual(const CoordGeodetic& geo) const
-    {
-        bool equal = false;
-        if (latitude == geo.latitude &&
-                longitude == geo.longitude &&
-                altitude == geo.altitude)
-        {
-            equal = false;
-        }
-        return equal;
-    }
 };
 
 /**

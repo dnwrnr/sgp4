@@ -93,26 +93,6 @@ public:
     }
 
     /**
-     * Equality operator
-     * @param[in] topo value to check
-     * @returns whether the object is equal
-     */
-    bool operator==(const CoordTopocentric& topo) const
-    {
-        return IsEqual(topo);
-    }
-
-    /**
-     * Inequality operator
-     * @param[in] topo the object to compare with
-     * @returns whether the object is not equal
-     */    
-    bool operator !=(const CoordTopocentric& topo) const
-    {
-        return !IsEqual(topo);
-    }
-
-    /**
      * Dump this object to a string
      * @returns string
      */
@@ -135,20 +115,6 @@ public:
     double range;
     /** range rate in kilometers per second */
     double range_rate;
-
-private:
-    bool IsEqual(const CoordTopocentric& topo) const
-    {
-        bool equal = false;
-        if (azimuth == topo.azimuth &&
-                elevation == topo.elevation &&
-                range == topo.range &&
-                range_rate == topo.range_rate)
-        {
-            equal = true;
-        }
-        return equal;
-    }
 };
 
 
