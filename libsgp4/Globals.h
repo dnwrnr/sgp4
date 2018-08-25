@@ -70,14 +70,5 @@ const double kSECONDS_PER_DAY = 86400.0;
 const double kMINUTES_PER_DAY = 1440.0;
 const double kHOURS_PER_DAY = 24.0;
 
-// Jan 1.0 1900 = Jan 1 1900 00h UTC
-const double kEPOCH_JAN1_00H_1900 = 2415019.5;
-
-// Jan 1.5 1900 = Jan 1 1900 12h UTC
-const double kEPOCH_JAN1_12H_1900 = 2415020.0;
-
-// Jan 1.5 2000 = Jan 1 2000 12h UTC
-const double kEPOCH_JAN1_12H_2000 = 2451545.0;
-
 #endif
 

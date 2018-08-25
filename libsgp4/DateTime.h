@@ -619,6 +619,15 @@ public:
     }
 
     /**
+     * Return the modified julian date
+     * @returns the modified julian date
+     */
+    double ToModifiedJulian() const
+    {
+        return ToJulian() - 2415020.0;
+    }
+
+    /**
      * Convert to local mean sidereal time (GMST plus the observer's longitude)
      * @param[in] lon observers longitude
      * @returns the local mean sidereal time
