@@ -24,7 +24,7 @@
 
 Eci SolarPosition::FindPosition(const DateTime& dt)
 {
-    const double mjd = dt.ToModifiedJulian();
+    const double mjd = dt.ToJ2000();
     const double year = 1900 + mjd / 365.25;
     const double T = (mjd + Delta_ET(year) / kSECONDS_PER_DAY) / 36525.0;
     const double M = Util::DegreesToRadians(Util::Wrap360(358.47583
