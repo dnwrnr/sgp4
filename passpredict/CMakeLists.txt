@@ -1,5 +1,5 @@
 set(SRCS
-    passpredict.cpp)
+    passpredict.cc)
 
 add_executable(passpredict
     ${SRCS})

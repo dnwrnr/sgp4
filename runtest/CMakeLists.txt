@@ -1,5 +1,5 @@
 set(SRCS
-    runtest.cpp)
+    runtest.cc)
 
 add_executable(runtest
     ${SRCS})

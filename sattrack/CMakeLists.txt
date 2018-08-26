@@ -1,5 +1,5 @@
 set(SRCS
-    sattrack.cpp)
+    sattrack.cc)
 
 add_executable(sattrack
     ${SRCS})
