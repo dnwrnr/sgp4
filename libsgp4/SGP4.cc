@@ -171,9 +171,15 @@ void SGP4::Initialise()
     {
         deepspace_consts_.gsto = elements_.Epoch().ToGreenwichSiderealTime();
 
-        DeepSpaceInitialise(eosq, common_consts_.sinio, common_consts_.cosio, betao,
-                theta2, betao2,
-                common_consts_.xmdot, common_consts_.omgdot, common_consts_.xnodot);
+        DeepSpaceInitialise(eosq,
+                            common_consts_.sinio,
+                            common_consts_.cosio,
+                            betao,
+                            theta2,
+                            betao2,
+                            common_consts_.xmdot,
+                            common_consts_.omgdot,
+                            common_consts_.xnodot);
     }
     else
     {
@@ -337,12 +343,20 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * using calculated values, find position and velocity
      */
-    return CalculateFinalPositionVelocity(tsince, e,
-            a, omega, xl, xnode,
-            xincl, perturbed_xlcof, perturbed_aycof,
-            perturbed_x3thm1, perturbed_x1mth2, perturbed_x7thm1,
-            perturbed_cosio, perturbed_sinio);
-
+    return CalculateFinalPositionVelocity(tsince,
+                                          e,
+                                          a,
+                                          omega,
+                                          xl,
+                                          xnode,
+                                          xincl,
+                                          perturbed_xlcof,
+                                          perturbed_aycof,
+                                          perturbed_x3thm1,
+                                          perturbed_x1mth2,
+                                          perturbed_x7thm1,
+                                          perturbed_cosio,
+                                          perturbed_sinio);
 }
 
 Eci SGP4::FindPositionSGP4(double tsince) const
@@ -423,12 +437,20 @@ Eci SGP4::FindPositionSGP4(double tsince) const
      * using calculated values, find position and velocity
      * we can pass in constants from Initialise() as these dont change
      */
-    return CalculateFinalPositionVelocity(tsince, e,
-            a, omega, xl, xnode,
-            xincl, common_consts_.xlcof, common_consts_.aycof,
-            common_consts_.x3thm1, common_consts_.x1mth2, common_consts_.x7thm1,
-            common_consts_.cosio, common_consts_.sinio);
-
+    return CalculateFinalPositionVelocity(tsince,
+                                          e,
+                                          a,
+                                          omega,
+                                          xl,
+                                          xnode,
+                                          xincl,
+                                          common_consts_.xlcof,
+                                          common_consts_.aycof,
+                                          common_consts_.x3thm1,
+                                          common_consts_.x1mth2,
+                                          common_consts_.x7thm1,
+                                          common_consts_.cosio,
+                                          common_consts_.sinio);
 }
 
 Eci SGP4::CalculateFinalPositionVelocity(
