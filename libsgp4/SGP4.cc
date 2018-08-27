@@ -327,7 +327,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * using calculated values, find position and velocity
      */
-    return CalculateFinalPositionVelocity(tsince,
+    return CalculateFinalPositionVelocity(elements_.Epoch().AddMinutes(tsince),
                                           e,
                                           a,
                                           omega,
@@ -450,7 +450,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
      * using calculated values, find position and velocity
      * we can pass in constants from Initialise() as these dont change
      */
-    return CalculateFinalPositionVelocity(tsince,
+    return CalculateFinalPositionVelocity(elements_.Epoch().AddMinutes(tsince),
                                           e,
                                           a,
                                           omega,
@@ -467,7 +467,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
 }
 
 Eci SGP4::CalculateFinalPositionVelocity(
-        const double tsince,
+        const DateTime& dt,
         const double e,
         const double a,
         const double omega,
@@ -480,7 +480,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
         const double x1mth2,
         const double x7thm1,
         const double cosio,
-        const double sinio) const
+        const double sinio)
 {
     const double beta2 = 1.0 - e * e;
     const double xn = kXKE / pow(a, 1.5);
@@ -641,12 +641,12 @@ Eci SGP4::CalculateFinalPositionVelocity(
     if (rk < 1.0)
     {
         throw DecayedException(
-                elements_.Epoch().AddMinutes(tsince),
+                dt,
                 position,
                 velocity);
     }
 
-    return Eci(elements_.Epoch().AddMinutes(tsince), position, velocity);
+    return Eci(dt, position, velocity);
 }
 
 static inline double EvaluateCubicPolynomial(
