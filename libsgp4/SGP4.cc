@@ -383,7 +383,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     double omega;
     double xl;
     double xnode;
-    double xincl;
+    const double xincl = elements_.Inclination();
 
     /*
      * update for secular gravity and atmospheric drag
@@ -395,15 +395,14 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     const double xnoddf = elements_.AscendingNode()
         + common_consts_.xnodot * tsince;
 
+    omega = omgadf;
+    double xmp = xmdf;
+
     const double tsq = tsince * tsince;
     xnode = xnoddf + common_consts_.xnodcf * tsq;
     double tempa = 1.0 - common_consts_.c1 * tsince;
     double tempe = elements_.BStar() * common_consts_.c4 * tsince;
     double templ = common_consts_.t2cof * tsq;
-
-    xincl = elements_.Inclination();
-    omega = omgadf;
-    double xmp = xmdf;
 
     if (!use_simple_model_)
     {
