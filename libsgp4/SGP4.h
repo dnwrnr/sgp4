@@ -141,36 +141,17 @@ private:
         double del2;
         double del3;
         /*
-         * whether the deep space orbit is
-         * geopotential resonance for 12 hour orbits
-         */
-        bool resonance_flag;
-        /*
-         * whether the deep space orbit is
-         * 24h synchronous resonance
-         */
-        bool synchronous_flag;
-    };
-
-    struct IntegratorValues
-    {
-        double xndot;
-        double xnddt;
-        double xldot;
-    };
-
-    struct IntegratorConstants
-    {
-        /*
          * integrator constants
          */
         double xfact;
         double xlamo;
 
-        /*
-         * integrator values for epoch
-         */
-        struct IntegratorValues values_0;
+        enum TOrbitShape
+        {
+            NONE,
+            RESONANCE,
+            SYNCHRONOUS
+        } shape;
     };
 
     struct IntegratorParams
@@ -181,10 +162,6 @@ private:
         double xli;
         double xni;
         double atime;
-        /*
-         * itegrator values for current d_atime_
-         */
-        struct IntegratorValues values_t;
     };
     
     void Initialise();
@@ -226,49 +203,36 @@ private:
             const double xmdot,
             const double omgdot,
             const double xnodot);
-    /*
-     * Calculate lunar / solar terms
-     */
-    void DeepSpaceCalculateLunarSolarTerms(
-            const double tsince,
-            double& pe,
-            double& pinc,
-            double& pl,
-            double& pgh,
-            double& ph) const;
     /**
      * Calculate lunar / solar periodics and apply
      */
-    void DeepSpacePeriodics(
+    static void DeepSpacePeriodics(
             const double tsince,
+            const DeepSpaceConstants& ds_constants,
             double& em,
             double& xinc,
             double& omgasm,
             double& xnodes,
-            double& xll) const;
+            double& xll);
     /**
      * Deep space secular effects
      */
-    void DeepSpaceSecular(
+    static void DeepSpaceSecular(
             const double tsince,
+            const OrbitalElements& elements,
+            const CommonConstants& c_constants,
+            const DeepSpaceConstants& ds_constants,
+            IntegratorParams& integ_params,
             double& xll,
             double& omgasm,
             double& xnodes,
             double& em,
             double& xinc,
-            double& xn) const;
+            double& xn);
+
     /**
-     * Calculate dot terms
-     * @param[in,out] values the integrator values
+     * Reset
      */
-    void DeepSpaceCalcDotTerms(struct IntegratorValues& values) const;
-    /**
-     * Deep space integrator for time period of delt
-     */
-    void DeepSpaceIntegrator(
-            const double delt,
-            const double step2,
-            const struct IntegratorValues& values) const;
     void Reset();
 
     /*
@@ -277,7 +241,6 @@ private:
     struct CommonConstants common_consts_;
     struct NearSpaceConstants nearspace_consts_;
     struct DeepSpaceConstants deepspace_consts_;
-    struct IntegratorConstants integrator_consts_;
     mutable struct IntegratorParams integrator_params_;
 
     /*

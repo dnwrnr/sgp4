@@ -257,7 +257,17 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     double em = elements_.Eccentricity();
     xinc = elements_.Inclination();
 
-    DeepSpaceSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
+    DeepSpaceSecular(tsince,
+                     elements_,
+                     common_consts_,
+                     deepspace_consts_,
+                     integrator_params_,
+                     xmdf,
+                     omgadf,
+                     xnode,
+                     em,
+                     xinc,
+                     xn);
 
     if (xn <= 0.0)
     {
@@ -268,7 +278,13 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     e = em - tempe;
     double xmam = xmdf + elements_.RecoveredMeanMotion() * templ;
 
-    DeepSpacePeriodics(tsince, e, xinc, omgadf, xnode, xmam);
+    DeepSpacePeriodics(tsince,
+                       deepspace_consts_,
+                       e,
+                       xinc,
+                       omgadf,
+                       xnode,
+                       xmam);
 
     /*
      * keeping xinc positive important unless you need to display xinc
@@ -651,7 +667,7 @@ static inline double EvaluateCubicPolynomial(
         const double squared,
         const double cubed)
 {
-    return constant + x * (linear + x * (squared + x * cubed));
+    return constant + x * linear + x * x * squared + x * x * x * cubed;
 }
 
 void SGP4::DeepSpaceInitialise(
@@ -867,9 +883,7 @@ void SGP4::DeepSpaceInitialise(
     deepspace_consts_.ssg += sgh - cosio * shdq;
     deepspace_consts_.ssh += shdq;
 
-    deepspace_consts_.resonance_flag = false;
-    deepspace_consts_.synchronous_flag = false;
-    bool initialise_integrator = true;
+    deepspace_consts_.shape = DeepSpaceConstants::NONE;
 
     if (elements_.RecoveredMeanMotion() < 0.0052359877
             && elements_.RecoveredMeanMotion() > 0.0034906585)
@@ -877,8 +891,7 @@ void SGP4::DeepSpaceInitialise(
         /*
          * 24h synchronous resonance terms initialisation
          */
-        deepspace_consts_.resonance_flag = true;
-        deepspace_consts_.synchronous_flag = true;
+        deepspace_consts_.shape = DeepSpaceConstants::SYNCHRONOUS;
 
         const double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
         const double g310 = 1.0 + 2.0 * eosq;
@@ -898,7 +911,7 @@ void SGP4::DeepSpaceInitialise(
         deepspace_consts_.del1 = deepspace_consts_.del1
             * f311 * g310 * Q31 * aqnv;
 
-        integrator_consts_.xlamo = Util::WrapTwoPI(elements_.MeanAnomoly()
+        deepspace_consts_.xlamo = Util::WrapTwoPI(elements_.MeanAnomoly()
                 + elements_.AscendingNode()
                 + elements_.ArgumentPerigee()
                 - deepspace_consts_.gsto);
@@ -911,14 +924,14 @@ void SGP4::DeepSpaceInitialise(
             || elements_.RecoveredMeanMotion() > 9.24e-3
             || elements_.Eccentricity() < 0.5)
     {
-        initialise_integrator = false;
+        // do nothing
     }
     else
     {
         /*
          * geopotential resonance initialisation for 12 hour orbits
          */
-        deepspace_consts_.resonance_flag = true;
+        deepspace_consts_.shape = DeepSpaceConstants::RESONANCE;
 
         double g211;
         double g310;
@@ -932,7 +945,7 @@ void SGP4::DeepSpaceInitialise(
         if (elements_.Eccentricity() <= 0.65)
         {
             g211 = EvaluateCubicPolynomial(elements_.Eccentricity(),
-                    3.616, -13.247, +16.290, 0.0);
+                    3.616, -13.247, 16.290, 0.0);
             g310 = EvaluateCubicPolynomial(elements_.Eccentricity(),
                     -19.302, 117.390, -228.419, 156.591);
             g322 = EvaluateCubicPolynomial(elements_.Eccentricity(),
@@ -1038,7 +1051,7 @@ void SGP4::DeepSpaceInitialise(
         deepspace_consts_.d5421 = temp * f542 * g521;
         deepspace_consts_.d5433 = temp * f543 * g533;
 
-        integrator_consts_.xlamo = Util::WrapTwoPI(
+        deepspace_consts_.xlamo = Util::WrapTwoPI(
                 elements_.MeanAnomoly()
                 + elements_.AscendingNode()
                 + elements_.AscendingNode()
@@ -1052,111 +1065,83 @@ void SGP4::DeepSpaceInitialise(
             + deepspace_consts_.ssh;
     }
 
-    if (initialise_integrator)
+    if (deepspace_consts_.shape != DeepSpaceConstants::NONE)
     {
         /*
          * initialise integrator
          */
-        integrator_consts_.xfact = bfact - elements_.RecoveredMeanMotion();
+        deepspace_consts_.xfact = bfact - elements_.RecoveredMeanMotion();
         integrator_params_.atime = 0.0;
         integrator_params_.xni = elements_.RecoveredMeanMotion();
-        integrator_params_.xli = integrator_consts_.xlamo;
-        /*
-         * precompute dot terms for epoch
-         */
-        DeepSpaceCalcDotTerms(integrator_consts_.values_0);
+        integrator_params_.xli = deepspace_consts_.xlamo;
     }
 }
 
-void SGP4::DeepSpaceCalculateLunarSolarTerms(
+/**
+ * From DeepSpaceConstants, this uses:
+ * zmos, se2, se3, si2, si3, sl2, sl3, sl4, sgh2, sgh3, sgh4, sh2, sh3
+ * zmol, ee2,  e3, xi2, xi3, xl2, xl3, xl4, xgh2, xgh3, xgh4, xh2, xh3
+ */
+void SGP4::DeepSpacePeriodics(
         const double tsince,
-        double& pe,
-        double& pinc,
-        double& pl,
-        double& pgh,
-        double& ph) const
+        const DeepSpaceConstants& ds_constants,
+        double& em,
+        double& xinc,
+        double& omgasm,
+        double& xnodes,
+        double& xll)
 {
     static const double ZES = 0.01675;
     static const double ZNS = 1.19459E-5;
     static const double ZNL = 1.5835218E-4;
     static const double ZEL = 0.05490;
 
-    /*
-     * calculate solar terms for time tsince
-     */
-    double zm = deepspace_consts_.zmos + ZNS * tsince;
+    // calculate solar terms for time tsince
+    double zm = ds_constants.zmos + ZNS * tsince;
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
     double f3 = -0.5 * sinzf * cos(zf);
 
-    const double ses = deepspace_consts_.se2 * f2
-        + deepspace_consts_.se3 * f3;
-    const double sis = deepspace_consts_.si2 * f2
-        + deepspace_consts_.si3 * f3;
-    const double sls = deepspace_consts_.sl2 * f2
-        + deepspace_consts_.sl3 * f3
-        + deepspace_consts_.sl4 * sinzf;
-    const double sghs = deepspace_consts_.sgh2 * f2
-        + deepspace_consts_.sgh3 * f3
-        + deepspace_consts_.sgh4 * sinzf;
-    const double shs = deepspace_consts_.sh2 * f2
-        + deepspace_consts_.sh3 * f3;
+    const double ses = ds_constants.se2 * f2
+        + ds_constants.se3 * f3;
+    const double sis = ds_constants.si2 * f2
+        + ds_constants.si3 * f3;
+    const double sls = ds_constants.sl2 * f2
+        + ds_constants.sl3 * f3
+        + ds_constants.sl4 * sinzf;
+    const double sghs = ds_constants.sgh2 * f2
+        + ds_constants.sgh3 * f3
+        + ds_constants.sgh4 * sinzf;
+    const double shs = ds_constants.sh2 * f2
+        + ds_constants.sh3 * f3;
 
-    /*
-     * calculate lunar terms for time tsince
-     */
-    zm = deepspace_consts_.zmol + ZNL * tsince;
+    // calculate lunar terms for time tsince
+    zm = ds_constants.zmol + ZNL * tsince;
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * cos(zf);
 
-    const double sel = deepspace_consts_.ee2 * f2
-        + deepspace_consts_.e3 * f3;
-    const double sil = deepspace_consts_.xi2 * f2
-        + deepspace_consts_.xi3 * f3;
-    const double sll = deepspace_consts_.xl2 * f2
-        + deepspace_consts_.xl3 * f3
-        + deepspace_consts_.xl4 * sinzf;
-    const double sghl = deepspace_consts_.xgh2 * f2
-        + deepspace_consts_.xgh3 * f3
-        + deepspace_consts_.xgh4 * sinzf;
-    const double shl = deepspace_consts_.xh2 * f2
-        + deepspace_consts_.xh3 * f3;
+    const double sel = ds_constants.ee2 * f2
+        + ds_constants.e3 * f3;
+    const double sil = ds_constants.xi2 * f2
+        + ds_constants.xi3 * f3;
+    const double sll = ds_constants.xl2 * f2
+        + ds_constants.xl3 * f3
+        + ds_constants.xl4 * sinzf;
+    const double sghl = ds_constants.xgh2 * f2
+        + ds_constants.xgh3 * f3
+        + ds_constants.xgh4 * sinzf;
+    const double shl = ds_constants.xh2 * f2
+        + ds_constants.xh3 * f3;
 
-    /*
-     * merge calculated values
-     */
-    pe = ses + sel;
-    pinc = sis + sil;
-    pl = sls + sll;
-    pgh = sghs + sghl;
-    ph = shs + shl;
-}
-
-void SGP4::DeepSpacePeriodics(
-        const double tsince,
-        double& em,
-        double& xinc,
-        double& omgasm,
-        double& xnodes,
-        double& xll) const
-{
-    /*
-     * storage for lunar / solar terms
-     * set by DeepSpaceCalculateLunarSolarTerms()
-     */
-    double pe = 0.0;
-    double pinc = 0.0;
-    double pl = 0.0;
-    double pgh = 0.0;
-    double ph = 0.0;
-
-    /*
-     * calculate lunar / solar terms for current time
-     */
-    DeepSpaceCalculateLunarSolarTerms(tsince, pe, pinc, pl, pgh, ph);
+    // merge calculated values
+    const double pe = ses + sel;
+    const double pinc = sis + sil;
+    const double pl = sls + sll;
+    const double pgh = sghs + sghl;
+    const double ph = shs + shl;
 
     xinc += pinc;
     em += pe;
@@ -1175,48 +1160,29 @@ void SGP4::DeepSpacePeriodics(
 
     if (xinc >= 0.2)
     {
-        /*
-         * apply periodics directly
-         */
-        ph /= sinis;
-
-        omgasm += pgh - cosis * ph;
-        xnodes += ph;
+        // apply periodics directly
+        omgasm += pgh - cosis * ph / sinis;
+        xnodes += ph / sinis;
         xll += pl;
     }
     else
     {
-        /*
-         * apply periodics with lyddane modification
-         */
+        // apply periodics with lyddane modification
         const double sinok = sin(xnodes);
         const double cosok = cos(xnodes);
         double alfdp = sinis * sinok;
         double betdp = sinis * cosok;
         const double dalf = ph * cosok + pinc * cosis * sinok;
         const double dbet = -ph * sinok + pinc * cosis * cosok;
-
         alfdp += dalf;
         betdp += dbet;
-
         xnodes = Util::WrapTwoPI(xnodes);
-
         double xls = xll + omgasm + cosis * xnodes;
         double dls = pl + pgh - pinc * xnodes * sinis;
         xls += dls;
-
-        /*
-         * save old xnodes value
-         */
         const double oldxnodes = xnodes;
-
         xnodes = atan2(alfdp, betdp);
-        if (xnodes < 0.0)
-        {
-            xnodes += kTWOPI;
-        }
-
-        /*
+        /**
          * Get perturbed xnodes in to same quadrant as original.
          * RAAN is in the range of 0 to 360 degrees
          * atan2 is in the range of -180 to 180 degrees
@@ -1240,106 +1206,16 @@ void SGP4::DeepSpacePeriodics(
 
 void SGP4::DeepSpaceSecular(
         const double tsince,
+        const OrbitalElements& elements,
+        const CommonConstants& c_constants,
+        const DeepSpaceConstants& ds_constants,
+        IntegratorParams& integ_params,
         double& xll,
         double& omgasm,
         double& xnodes,
         double& em,
         double& xinc,
-        double& xn) const
-{
-    static const double STEP = 720.0;
-    static const double STEP2 = 259200.0;
-
-    xll += deepspace_consts_.ssl * tsince;
-    omgasm += deepspace_consts_.ssg * tsince;
-    xnodes += deepspace_consts_.ssh * tsince;
-    em += deepspace_consts_.sse * tsince;
-    xinc += deepspace_consts_.ssi * tsince;
-
-    if (deepspace_consts_.resonance_flag)
-    {
-        /*
-         * 1st condition (if tsince is less than one time step from epoch)
-         * 2nd condition (if integrator_params_.atime and
-         *     tsince are of opposite signs, so zero crossing required)
-         * 3rd condition (if tsince is closer to zero than 
-         *     integrator_params_.atime, only integrate away from zero)
-         */
-        if (fabs(tsince) < STEP ||
-                tsince * integrator_params_.atime <= 0.0 ||
-                fabs(tsince) < fabs(integrator_params_.atime))
-        {
-            /*
-             * restart from epoch
-             */
-            integrator_params_.atime = 0.0;
-            integrator_params_.xni = elements_.RecoveredMeanMotion();
-            integrator_params_.xli = integrator_consts_.xlamo;
-
-            /*
-             * restore precomputed values for epoch
-             */
-            integrator_params_.values_t = integrator_consts_.values_0;
-        }
-
-        double ft = tsince - integrator_params_.atime;
-
-        /*
-         * if time difference (ft) is greater than the time step (720.0)
-         * loop around until integrator_params_.atime is within one time step of
-         * tsince
-         */
-        if (fabs(ft) >= STEP)
-        {
-            /*
-             * calculate step direction to allow integrator_params_.atime
-             * to catch up with tsince
-             */
-            double delt = -STEP;
-            if (ft >= 0.0)
-            {
-                delt = STEP;
-            }
-
-            do
-            {
-                /*
-                 * integrate using current dot terms
-                 */
-                DeepSpaceIntegrator(delt, STEP2, integrator_params_.values_t);
-
-                /*
-                 * calculate dot terms for next integration
-                 */
-                DeepSpaceCalcDotTerms(integrator_params_.values_t);
-
-                ft = tsince - integrator_params_.atime;
-            } while (fabs(ft) >= STEP);
-        }
-
-        /*
-         * integrator
-         */
-        xn = integrator_params_.xni 
-            + integrator_params_.values_t.xndot * ft
-            + integrator_params_.values_t.xnddt * ft * ft * 0.5;
-        const double xl = integrator_params_.xli
-            + integrator_params_.values_t.xldot * ft
-            + integrator_params_.values_t.xndot * ft * ft * 0.5;
-        const double temp = -xnodes + deepspace_consts_.gsto + tsince * kTHDT;
-
-        if (deepspace_consts_.synchronous_flag)
-        {
-            xll = xl + temp - omgasm;
-        }
-        else
-        {
-            xll = xl + temp + temp;
-        }
-    }
-}
-
-void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues& values) const
+        double& xn)
 {
     static const double G22 = 5.7686396;
     static const double G32 = 0.95240898;
@@ -1350,89 +1226,114 @@ void SGP4::DeepSpaceCalcDotTerms(struct IntegratorValues& values) const
     static const double FASX4 = 2.8843198;
     static const double FASX6 = 0.37448087;
 
-    if (deepspace_consts_.synchronous_flag)
+    static const double STEP = 720.0;
+    static const double STEP2 = 259200.0;
+
+    xll += ds_constants.ssl * tsince;
+    omgasm += ds_constants.ssg * tsince;
+    xnodes += ds_constants.ssh * tsince;
+    em += ds_constants.sse * tsince;
+    xinc += ds_constants.ssi * tsince;
+
+    if (ds_constants.shape != DeepSpaceConstants::NONE)
     {
+        double xndot = 0.0;
+        double xnddt = 0.0;
+        double xldot = 0.0;
+        /*
+         * 1st condition (if tsince is less than one time step from epoch)
+         * 2nd condition (if atime and
+         *     tsince are of opposite signs, so zero crossing required)
+         * 3rd condition (if tsince is closer to zero than 
+         *     atime, only integrate away from zero)
+         */
+        if (fabs(tsince) < STEP ||
+            tsince * integ_params.atime <= 0.0 ||
+            fabs(tsince) < fabs(integ_params.atime))
+        {
+            // restart back at the epoch
+            integ_params.atime = 0.0;
+            // TODO: check
+            integ_params.xni = elements.RecoveredMeanMotion();
+            // TODO: check
+            integ_params.xli = ds_constants.xlamo;
+        }
 
-        values.xndot = deepspace_consts_.del1
-            * sin(integrator_params_.xli - FASX2)
-            + deepspace_consts_.del2
-            * sin(2.0 * (integrator_params_.xli - FASX4))
-            + deepspace_consts_.del3
-            * sin(3.0 * (integrator_params_.xli - FASX6));
-        values.xnddt = deepspace_consts_.del1
-            * cos(integrator_params_.xli - FASX2)
-            + 2.0 * deepspace_consts_.del2
-            * cos(2.0 * (integrator_params_.xli - FASX4))
-            + 3.0 * deepspace_consts_.del3
-            * cos(3.0 * (integrator_params_.xli - FASX6));
+        bool running = true;
+        while (running)
+        {
+            // always calculate dot terms ready for integration beginning
+            // from the start of the range which is 'atime'
+            if (ds_constants.shape == DeepSpaceConstants::SYNCHRONOUS)
+            {
+                xndot = ds_constants.del1 * sin(integ_params.xli - FASX2)
+                    + ds_constants.del2 * sin(2.0 * (integ_params.xli - FASX4))
+                    + ds_constants.del3 * sin(3.0 * (integ_params.xli - FASX6));
+                xnddt = ds_constants.del1 * cos(integ_params.xli - FASX2)
+                    + 2.0 * ds_constants.del2 * cos(2.0 * (integ_params.xli - FASX4))
+                    + 3.0 * ds_constants.del3 * cos(3.0 * (integ_params.xli - FASX6));
+            }
+            else
+            {
+                // TODO: check
+                const double xomi = elements.ArgumentPerigee() + c_constants.omgdot * integ_params.atime;
+                const double x2omi = xomi + xomi;
+                const double x2li = integ_params.xli + integ_params.xli;
+                xndot = ds_constants.d2201 * sin(x2omi + integ_params.xli - G22)
+                    + ds_constants.d2211 * sin(integ_params.xli - G22)
+                    + ds_constants.d3210 * sin(xomi + integ_params.xli - G32)
+                    + ds_constants.d3222 * sin(-xomi + integ_params.xli - G32)
+                    + ds_constants.d4410 * sin(x2omi + x2li - G44)
+                    + ds_constants.d4422 * sin(x2li - G44)
+                    + ds_constants.d5220 * sin(xomi + integ_params.xli - G52)
+                    + ds_constants.d5232 * sin(-xomi + integ_params.xli - G52)
+                    + ds_constants.d5421 * sin(xomi + x2li - G54)
+                    + ds_constants.d5433 * sin(-xomi + x2li - G54);
+                xnddt = ds_constants.d2201 * cos(x2omi + integ_params.xli - G22)
+                    + ds_constants.d2211 * cos(integ_params.xli - G22)
+                    + ds_constants.d3210 * cos(xomi + integ_params.xli - G32)
+                    + ds_constants.d3222 * cos(-xomi + integ_params.xli - G32)
+                    + ds_constants.d5220 * cos(xomi + integ_params.xli - G52)
+                    + ds_constants.d5232 * cos(-xomi + integ_params.xli - G52)
+                    + 2.0 * (ds_constants.d4410 * cos(x2omi + x2li - G44)
+                    + ds_constants.d4422 * cos(x2li - G44)
+                    + ds_constants.d5421 * cos(xomi + x2li - G54)
+                    + ds_constants.d5433 * cos(-xomi + x2li - G54));
+            }
+            xldot = integ_params.xni + ds_constants.xfact;
+            xnddt *= xldot;
+
+            double ft = tsince - integ_params.atime;
+            if (fabs(ft) >= STEP)
+            {
+                const double delt = (ft >= 0.0 ? STEP : -STEP);
+                // integrate by a full step ('delt'), updating the cached
+                // values for the new 'atime'
+                integ_params.xli = integ_params.xli + xldot * delt + xndot * STEP2;
+                integ_params.xni = integ_params.xni + xndot * delt + xnddt * STEP2;
+                integ_params.atime += delt;
+            }
+            else
+            {
+                // integrate by the difference 'ft' remaining
+                xn = integ_params.xni + xndot * ft
+                    + xnddt * ft * ft * 0.5;
+                const double xl_temp = integ_params.xli + xldot * ft
+                    + xndot * ft * ft * 0.5;
+
+                const double theta = Util::WrapTwoPI(ds_constants.gsto + tsince * kTHDT);
+                if (ds_constants.shape == DeepSpaceConstants::SYNCHRONOUS)
+                {
+                    xll = xl_temp + theta - xnodes - omgasm;
+                }
+                else
+                {
+                    xll = xl_temp + 2.0 * (theta - xnodes);
+                }
+                running = false;
+            }
+        }
     }
-    else
-    {
-        const double xomi = elements_.ArgumentPerigee()
-            + common_consts_.omgdot * integrator_params_.atime;
-        const double x2omi = xomi + xomi;
-        const double x2li = integrator_params_.xli + integrator_params_.xli;
-
-        values.xndot = deepspace_consts_.d2201
-            * sin(x2omi + integrator_params_.xli - G22)
-            * + deepspace_consts_.d2211
-            * sin(integrator_params_.xli - G22)
-            + deepspace_consts_.d3210
-            * sin(xomi + integrator_params_.xli - G32)
-            + deepspace_consts_.d3222
-            * sin(-xomi + integrator_params_.xli - G32)
-            + deepspace_consts_.d4410
-            * sin(x2omi + x2li - G44)
-            + deepspace_consts_.d4422
-            * sin(x2li - G44)
-            + deepspace_consts_.d5220
-            * sin(xomi + integrator_params_.xli - G52)
-            + deepspace_consts_.d5232
-            * sin(-xomi + integrator_params_.xli - G52)
-            + deepspace_consts_.d5421
-            * sin(xomi + x2li - G54)
-            + deepspace_consts_.d5433
-            * sin(-xomi + x2li - G54);
-        values.xnddt = deepspace_consts_.d2201
-            * cos(x2omi + integrator_params_.xli - G22)
-            + deepspace_consts_.d2211
-            * cos(integrator_params_.xli - G22)
-            + deepspace_consts_.d3210
-            * cos(xomi + integrator_params_.xli - G32)
-            + deepspace_consts_.d3222
-            * cos(-xomi + integrator_params_.xli - G32)
-            + deepspace_consts_.d5220
-            * cos(xomi + integrator_params_.xli - G52)
-            + deepspace_consts_.d5232
-            * cos(-xomi + integrator_params_.xli - G52)
-            + 2.0 * (deepspace_consts_.d4410 * cos(x2omi + x2li - G44)
-            + deepspace_consts_.d4422
-            * cos(x2li - G44)
-            + deepspace_consts_.d5421
-            * cos(xomi + x2li - G54)
-            + deepspace_consts_.d5433
-            * cos(-xomi + x2li - G54));
-    }
-
-    values.xldot = integrator_params_.xni + integrator_consts_.xfact;
-    values.xnddt *= values.xldot;
-}
-
-void SGP4::DeepSpaceIntegrator(
-        const double delt,
-        const double step2,
-        const struct IntegratorValues &values) const
-{
-    /*
-     * integrator
-     */
-    integrator_params_.xli += values.xldot * delt + values.xndot * step2;
-    integrator_params_.xni += values.xndot * delt + values.xnddt * step2;
-
-    /*
-     * increment integrator time
-     */
-    integrator_params_.atime += delt;
 }
 
 void SGP4::Reset()
@@ -1443,6 +1344,5 @@ void SGP4::Reset()
     std::memset(&common_consts_, 0, sizeof(common_consts_));
     std::memset(&nearspace_consts_, 0, sizeof(nearspace_consts_));
     std::memset(&deepspace_consts_, 0, sizeof(deepspace_consts_));
-    std::memset(&integrator_consts_, 0, sizeof(integrator_consts_));
     std::memset(&integrator_params_, 0, sizeof(integrator_params_));
 }
