@@ -198,8 +198,8 @@ private:
                                    double& aycof);
     Eci FindPositionSDP4(const double tsince) const;
     Eci FindPositionSGP4(double tsince) const;
-    Eci CalculateFinalPositionVelocity(
-            const double tsince,
+    static Eci CalculateFinalPositionVelocity(
+            const DateTime& date,
             const double e,
             const double a,
             const double omega,
@@ -212,7 +212,7 @@ private:
             const double x1mth2,
             const double x7thm1,
             const double cosio,
-            const double sinio) const;
+            const double sinio);
     /**
      * Deep space initialisation
      */
