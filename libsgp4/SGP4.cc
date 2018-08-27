@@ -704,10 +704,9 @@ void SGP4::DeepSpaceInitialise(
      */
     const double jday = elements_.Epoch().ToJ2000();
 
-    const double xnodce = 4.5236020 - 9.2422029e-4 * jday;
-    const double xnodce_temp = fmod(xnodce, kTWOPI);
-    const double stem = sin(xnodce_temp);
-    const double ctem = cos(xnodce_temp);
+    const double xnodce = Util::WrapTwoPI(4.5236020 - 9.2422029e-4 * jday);
+    const double stem = sin(xnodce);
+    const double ctem = cos(xnodce);
     const double zcosil = 0.91375164 - 0.03568096 * ctem;
     const double zsinil = sqrt(1.0 - zcosil * zcosil);
     const double zsinhl = 0.089683511 * stem / zsinil;
@@ -718,7 +717,7 @@ void SGP4::DeepSpaceInitialise(
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     zx = atan2(zx, zy);
-    zx = fmod(gam + zx - xnodce, kTWOPI);
+    zx = gam + zx - xnodce;
 
     const double zcosgl = cos(zx);
     const double zsingl = sin(zx);
@@ -899,12 +898,12 @@ void SGP4::DeepSpaceInitialise(
         deepspace_consts_.del1 = deepspace_consts_.del1
             * f311 * g310 * Q31 * aqnv;
 
-        integrator_consts_.xlamo = elements_.MeanAnomoly()
-            + elements_.AscendingNode()
-            + elements_.ArgumentPerigee()
-            - deepspace_consts_.gsto;
-        bfact = xmdot + xpidot - kTHDT;
-        bfact += deepspace_consts_.ssl
+        integrator_consts_.xlamo = Util::WrapTwoPI(elements_.MeanAnomoly()
+                + elements_.AscendingNode()
+                + elements_.ArgumentPerigee()
+                - deepspace_consts_.gsto);
+        bfact = xmdot + xpidot - kTHDT
+            + deepspace_consts_.ssl
             + deepspace_consts_.ssg
             + deepspace_consts_.ssh;
     }
@@ -1019,31 +1018,36 @@ void SGP4::DeepSpaceInitialise(
         double temp = temp1 * ROOT22;
         deepspace_consts_.d2201 = temp * f220 * g201;
         deepspace_consts_.d2211 = temp * f221 * g211;
-        temp1 = temp1 * aqnv;
+
+        temp1 *= aqnv;
         temp = temp1 * ROOT32;
         deepspace_consts_.d3210 = temp * f321 * g310;
         deepspace_consts_.d3222 = temp * f322 * g322;
-        temp1 = temp1 * aqnv;
+
+        temp1 *= aqnv;
         temp = 2.0 * temp1 * ROOT44;
         deepspace_consts_.d4410 = temp * f441 * g410;
         deepspace_consts_.d4422 = temp * f442 * g422;
-        temp1 = temp1 * aqnv;
+
+        temp1 *= aqnv;
         temp = temp1 * ROOT52;
         deepspace_consts_.d5220 = temp * f522 * g520;
         deepspace_consts_.d5232 = temp * f523 * g532;
+
         temp = 2.0 * temp1 * ROOT54;
         deepspace_consts_.d5421 = temp * f542 * g521;
         deepspace_consts_.d5433 = temp * f543 * g533;
 
-        integrator_consts_.xlamo = elements_.MeanAnomoly()
-            + elements_.AscendingNode()
-            + elements_.AscendingNode()
-            - deepspace_consts_.gsto
-            - deepspace_consts_.gsto;
+        integrator_consts_.xlamo = Util::WrapTwoPI(
+                elements_.MeanAnomoly()
+                + elements_.AscendingNode()
+                + elements_.AscendingNode()
+                - deepspace_consts_.gsto
+                - deepspace_consts_.gsto);
         bfact = xmdot
             + xnodot + xnodot
-            - kTHDT - kTHDT;
-        bfact = bfact + deepspace_consts_.ssl
+            - kTHDT - kTHDT
+            + deepspace_consts_.ssl
             + deepspace_consts_.ssh
             + deepspace_consts_.ssh;
     }
