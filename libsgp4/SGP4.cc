@@ -409,7 +409,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
         const double delomg = nearspace_consts_.omgcof * tsince;
         const double delm = nearspace_consts_.xmcof
             * (pow(1.0 + common_consts_.eta * cos(xmdf), 3.0)
-                    * - nearspace_consts_.delmo);
+                    - nearspace_consts_.delmo);
         const double temp = delomg + delm;
 
         xmp += temp;
