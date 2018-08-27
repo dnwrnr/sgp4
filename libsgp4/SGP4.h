@@ -290,12 +290,6 @@ private:
      */
     bool use_simple_model_;
     bool use_deep_space_;
-
-    static const struct SGP4::CommonConstants Empty_CommonConstants;
-    static const struct SGP4::NearSpaceConstants Empty_NearSpaceConstants;
-    static const struct SGP4::DeepSpaceConstants Empty_DeepSpaceConstants;
-    static const struct SGP4::IntegratorConstants Empty_IntegratorConstants;
-    static const struct SGP4::IntegratorParams Empty_IntegratorParams;
 };
 
 #endif

@@ -24,12 +24,7 @@
 
 #include <cmath>
 #include <iomanip>
-
-const SGP4::CommonConstants SGP4::Empty_CommonConstants = SGP4::CommonConstants();
-const SGP4::NearSpaceConstants SGP4::Empty_NearSpaceConstants = SGP4::NearSpaceConstants();
-const SGP4::DeepSpaceConstants SGP4::Empty_DeepSpaceConstants = SGP4::DeepSpaceConstants();
-const SGP4::IntegratorConstants SGP4::Empty_IntegratorConstants = SGP4::IntegratorConstants();
-const SGP4::IntegratorParams SGP4::Empty_IntegratorParams = SGP4::IntegratorParams();
+#include <cstring>
 
 void SGP4::SetTle(const Tle& tle)
 {
@@ -1441,9 +1436,9 @@ void SGP4::Reset()
     use_simple_model_ = false;
     use_deep_space_ = false;
 
-    common_consts_     = Empty_CommonConstants;
-    nearspace_consts_  = Empty_NearSpaceConstants;
-    deepspace_consts_  = Empty_DeepSpaceConstants;
-    integrator_consts_ = Empty_IntegratorConstants;
-    integrator_params_ = Empty_IntegratorParams;
+    std::memset(&common_consts_, 0, sizeof(common_consts_));
+    std::memset(&nearspace_consts_, 0, sizeof(nearspace_consts_));
+    std::memset(&deepspace_consts_, 0, sizeof(deepspace_consts_));
+    std::memset(&integrator_consts_, 0, sizeof(integrator_consts_));
+    std::memset(&integrator_params_, 0, sizeof(integrator_params_));
 }
