@@ -178,7 +178,7 @@ void SGP4::Initialise()
         double c3 = 0.0;
         if (elements_.Eccentricity() > 1.0e-4)
         {
-            c3 = coef * tsi * common_consts_.a3ovk2 * elements_.RecoveredMeanMotion() * kAE *
+            c3 = coef * tsi * kA3OVK2 * elements_.RecoveredMeanMotion() * kAE *
                     common_consts_.sinio / elements_.Eccentricity();
         }
 

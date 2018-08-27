@@ -53,7 +53,6 @@ private:
         double sinio;
         double eta;
         double t2cof;
-        double a3ovk2;
         double x1mth2;
         double x3thm1;
         double x7thm1;

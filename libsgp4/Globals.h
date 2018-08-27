@@ -70,5 +70,7 @@ const double kSECONDS_PER_DAY = 86400.0;
 const double kMINUTES_PER_DAY = 1440.0;
 const double kHOURS_PER_DAY = 24.0;
 
+const double kA3OVK2 = -kXJ3 / kCK2 * kAE * kAE * kAE;
+
 #endif
 
