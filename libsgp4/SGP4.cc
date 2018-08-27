@@ -61,10 +61,16 @@ void SGP4::Initialise()
         throw SatelliteException("Inclination out of range");
     }
 
-    common_consts_.cosio = cos(elements_.Inclination());
-    common_consts_.sinio = sin(elements_.Inclination());
+    RecomputeConstants(elements_.Inclination(),
+                       common_consts_.sinio,
+                       common_consts_.cosio,
+                       common_consts_.x3thm1,
+                       common_consts_.x1mth2,
+                       common_consts_.x7thm1,
+                       common_consts_.xlcof,
+                       common_consts_.aycof);
+
     const double theta2 = common_consts_.cosio * common_consts_.cosio;
-    common_consts_.x3thm1 = 3.0 * theta2 - 1.0;
     const double eosq = elements_.Eccentricity() * elements_.Eccentricity();
     const double betao2 = 1.0 - eosq;
     const double betao = sqrt(betao2);
@@ -127,8 +133,6 @@ void SGP4::Initialise()
         + 0.75 * kCK2 * tsi / psisq * common_consts_.x3thm1
         * (8.0 + 3.0 * etasq * (8.0 + etasq)));
     common_consts_.c1 = elements_.BStar() * c2;
-    common_consts_.a3ovk2 = -kXJ3 / kCK2 * kAE * kAE * kAE;
-    common_consts_.x1mth2 = 1.0 - theta2;
     common_consts_.c4 = 2.0 * elements_.RecoveredMeanMotion()
         * coef1 * elements_.RecoveredSemiMajorAxis() * betao2
         * (common_consts_.eta * (2.0 + 0.5 * etasq) + elements_.Eccentricity()
@@ -154,18 +158,6 @@ void SGP4::Initialise()
             (3.0 - 7.0 * theta2)) * common_consts_.cosio;
     common_consts_.xnodcf = 3.5 * betao2 * xhdot1 * common_consts_.c1;
     common_consts_.t2cof = 1.5 * common_consts_.c1;
-
-    if (fabs(common_consts_.cosio + 1.0) > 1.5e-12)
-    {
-        common_consts_.xlcof = 0.125 * common_consts_.a3ovk2 * common_consts_.sinio * (3.0 + 5.0 * common_consts_.cosio) / (1.0 + common_consts_.cosio);
-    }
-    else
-    {
-        common_consts_.xlcof = 0.125 * common_consts_.a3ovk2 * common_consts_.sinio * (3.0 + 5.0 * common_consts_.cosio) / 1.5e-12;
-    }
-
-    common_consts_.aycof = 0.25 * common_consts_.a3ovk2 * common_consts_.sinio;
-    common_consts_.x7thm1 = 7.0 * theta2 - 1.0;
 
     if (use_deep_space_)
     {
@@ -316,29 +308,21 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * re-compute the perturbed values
      */
-    const double perturbed_sinio = sin(xincl);
-    const double perturbed_cosio = cos(xincl);
-
-    const double perturbed_theta2 = perturbed_cosio * perturbed_cosio;
-
-    const double perturbed_x3thm1 = 3.0 * perturbed_theta2 - 1.0;
-    const double perturbed_x1mth2 = 1.0 - perturbed_theta2;
-    const double perturbed_x7thm1 = 7.0 * perturbed_theta2 - 1.0;
-
+    double perturbed_sinio;
+    double perturbed_cosio;
+    double perturbed_x3thm1;
+    double perturbed_x1mth2;
+    double perturbed_x7thm1;
     double perturbed_xlcof;
-    if (fabs(perturbed_cosio + 1.0) > 1.5e-12)
-    {
-        perturbed_xlcof = 0.125 * common_consts_.a3ovk2 * perturbed_sinio
-            * (3.0 + 5.0 * perturbed_cosio) / (1.0 + perturbed_cosio);
-    }
-    else
-    {
-        perturbed_xlcof = 0.125 * common_consts_.a3ovk2 * perturbed_sinio
-            * (3.0 + 5.0 * perturbed_cosio) / 1.5e-12;
-    }
-
-    const double perturbed_aycof = 0.25 * common_consts_.a3ovk2
-        * perturbed_sinio;
+    double perturbed_aycof;
+    RecomputeConstants(xincl,
+                       perturbed_sinio,
+                       perturbed_cosio,
+                       perturbed_x3thm1,
+                       perturbed_x1mth2,
+                       perturbed_x7thm1,
+                       perturbed_xlcof,
+                       perturbed_aycof);
 
     /*
      * using calculated values, find position and velocity
@@ -357,6 +341,36 @@ Eci SGP4::FindPositionSDP4(double tsince) const
                                           perturbed_x7thm1,
                                           perturbed_cosio,
                                           perturbed_sinio);
+}
+
+void SGP4::RecomputeConstants(const double xincl,
+                              double& sinio,
+                              double& cosio,
+                              double& x3thm1,
+                              double& x1mth2,
+                              double& x7thm1,
+                              double& xlcof,
+                              double& aycof)
+{
+    sinio = sin(xincl);
+    cosio = cos(xincl);
+
+    const double theta2 = cosio * cosio;
+
+    x3thm1 = 3.0 * theta2 - 1.0;
+    x1mth2 = 1.0 - theta2;
+    x7thm1 = 7.0 * theta2 - 1.0;
+
+    if (fabs(cosio + 1.0) > 1.5e-12)
+    {
+        xlcof = 0.125 * kA3OVK2 * sinio * (3.0 + 5.0 * cosio) / (1.0 + cosio);
+    }
+    else
+    {
+        xlcof = 0.125 * kA3OVK2 * sinio * (3.0 + 5.0 * cosio) / 1.5e-12;
+    }
+
+    aycof = 0.25 * kA3OVK2 * sinio;
 }
 
 Eci SGP4::FindPositionSGP4(double tsince) const

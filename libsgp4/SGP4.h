@@ -189,6 +189,14 @@ private:
     };
     
     void Initialise();
+    static void RecomputeConstants(const double xincl,
+                                   double& sinio,
+                                   double& cosio,
+                                   double& x3thm1,
+                                   double& x1mth2,
+                                   double& x7thm1,
+                                   double& xlcof,
+                                   double& aycof);
     Eci FindPositionSDP4(const double tsince) const;
     Eci FindPositionSGP4(double tsince) const;
     Eci CalculateFinalPositionVelocity(
