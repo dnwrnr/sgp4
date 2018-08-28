@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 set(SRCS
     CoordGeodetic.cpp
     CoordTopocentric.cpp
@@ -37,5 +38,5 @@ set(SRCS
 
 add_library(sgp4 STATIC ${SRCS} ${INCS})
 add_library(sgp4s SHARED ${SRCS} ${INCS})
-install( TARGETS sgp4s LIBRARY DESTINATION lib )
+install( TARGETS sgp4s LIBRARY DESTINATION lib${LIB_SUFFIX} )
 install( FILES ${INCS} DESTINATION include/SGP4 )
