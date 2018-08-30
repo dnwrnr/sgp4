@@ -235,7 +235,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     double omega;
     double xl;
     double xnode;
-    double xincl;
+    double xinc;
 
     /*
      * update for secular gravity and atmospheric drag
@@ -254,10 +254,10 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     double templ = common_consts_.t2cof * tsq;
 
     double xn = elements_.RecoveredMeanMotion();
-    e = elements_.Eccentricity();
-    xincl = elements_.Inclination();
+    double em = elements_.Eccentricity();
+    xinc = elements_.Inclination();
 
-    DeepSpaceSecular(tsince, xmdf, omgadf, xnode, e, xincl, xn);
+    DeepSpaceSecular(tsince, xmdf, omgadf, xnode, em, xinc, xn);
 
     if (xn <= 0.0)
     {
@@ -265,18 +265,18 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     }
 
     a = pow(kXKE / xn, kTWOTHIRD) * tempa * tempa;
-    e -= tempe;
+    e = em - tempe;
     double xmam = xmdf + elements_.RecoveredMeanMotion() * templ;
 
-    DeepSpacePeriodics(tsince, e, xincl, omgadf, xnode, xmam);
+    DeepSpacePeriodics(tsince, e, xinc, omgadf, xnode, xmam);
 
     /*
-     * keeping xincl positive important unless you need to display xincl
+     * keeping xinc positive important unless you need to display xinc
      * and dislike negative inclinations
      */
-    if (xincl < 0.0)
+    if (xinc < 0.0)
     {
-        xincl = -xincl;
+        xinc = -xinc;
         xnode += kPI;
         omgadf -= kPI;
     }
@@ -310,7 +310,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     double perturbed_x7thm1;
     double perturbed_xlcof;
     double perturbed_aycof;
-    RecomputeConstants(xincl,
+    RecomputeConstants(xinc,
                        perturbed_sinio,
                        perturbed_cosio,
                        perturbed_x3thm1,
@@ -328,7 +328,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
                                           omega,
                                           xl,
                                           xnode,
-                                          xincl,
+                                          xinc,
                                           perturbed_xlcof,
                                           perturbed_aycof,
                                           perturbed_x3thm1,
@@ -338,7 +338,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
                                           perturbed_sinio);
 }
 
-void SGP4::RecomputeConstants(const double xincl,
+void SGP4::RecomputeConstants(const double xinc,
                               double& sinio,
                               double& cosio,
                               double& x3thm1,
@@ -347,8 +347,8 @@ void SGP4::RecomputeConstants(const double xincl,
                               double& xlcof,
                               double& aycof)
 {
-    sinio = sin(xincl);
-    cosio = cos(xincl);
+    sinio = sin(xinc);
+    cosio = cos(xinc);
 
     const double theta2 = cosio * cosio;
 
@@ -378,7 +378,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     double omega;
     double xl;
     double xnode;
-    const double xincl = elements_.Inclination();
+    const double xinc = elements_.Inclination();
 
     /*
      * update for secular gravity and atmospheric drag
@@ -451,7 +451,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
                                           omega,
                                           xl,
                                           xnode,
-                                          xincl,
+                                          xinc,
                                           common_consts_.xlcof,
                                           common_consts_.aycof,
                                           common_consts_.x3thm1,
@@ -468,7 +468,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
         const double omega,
         const double xl,
         const double xnode,
-        const double xincl,
+        const double xinc,
         const double xlcof,
         const double aycof,
         const double x3thm1,
@@ -600,7 +600,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
         + 0.5 * temp42 * x1mth2 * cos2u;
     const double uk = u - 0.25 * temp43 * x7thm1 * sin2u;
     const double xnodek = xnode + 1.5 * temp43 * cosio * sin2u;
-    const double xinck = xincl + 1.5 * temp43 * cosio * sinio * cos2u;
+    const double xinck = xinc + 1.5 * temp43 * cosio * sinio * cos2u;
     const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
     const double rfdotk = rfdot + xn * temp42 * (x1mth2 * cos2u + 1.5 * x3thm1);
 
@@ -1178,10 +1178,10 @@ void SGP4::DeepSpacePeriodics(
         /*
          * apply periodics directly
          */
-        const double tmp_ph = ph / sinis;
+        ph /= sinis;
 
-        omgasm += pgh - cosis * tmp_ph;
-        xnodes += tmp_ph;
+        omgasm += pgh - cosis * ph;
+        xnodes += ph;
         xll += pl;
     }
     else

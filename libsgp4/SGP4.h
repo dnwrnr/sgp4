@@ -188,7 +188,7 @@ private:
     };
     
     void Initialise();
-    static void RecomputeConstants(const double xincl,
+    static void RecomputeConstants(const double xinc,
                                    double& sinio,
                                    double& cosio,
                                    double& x3thm1,
@@ -205,7 +205,7 @@ private:
             const double omega,
             const double xl,
             const double xnode,
-            const double xincl,
+            const double xinc,
             const double xlcof,
             const double aycof,
             const double x3thm1,
