@@ -605,17 +605,17 @@ public:
      */
     double ToGreenwichSiderealTime() const
     {
-        // t = Julian centuries from 2000 Jan. 1 12h UT1
-        const double t = (ToJulian() - 2451545.0) / 36525.0;
+        // julian date of previous midnight
+        double jd0 = floor(ToJulian() + 0.5) - 0.5;
+        // julian centuries since epoch
+        double t   = (jd0 - 2451545.0) / 36525.0;
+        double jdf = ToJulian() - jd0;
 
-        // Rotation angle in arcseconds
-        double theta = 67310.54841
-            + (876600.0 * 3600.0 + 8640184.812866) * t
-            + 0.093104 * t * t
-            - 0.0000062 * t * t * t;
+        double gt  = 24110.54841 + t * (8640184.812866 + t * (0.093104 - t * 6.2E-6));
+        gt  += jdf * 1.00273790935 * 86400.0;
 
         // 360.0 / 86400.0 = 1.0 / 240.0
-        return Util::WrapTwoPI(Util::DegreesToRadians(theta / 240.0));
+        return Util::WrapTwoPI(Util::DegreesToRadians(gt / 240.0));
     }
 
     /**
