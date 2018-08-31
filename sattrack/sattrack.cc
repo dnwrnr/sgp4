@@ -34,14 +34,11 @@ int main()
 
     for (int i = 0; i < 10; ++i)
     {
-        /*
-         * current time
-         */
-        DateTime now = DateTime::Now(true);
+        DateTime dt = tle.Epoch().AddMinutes(i * 10);
         /*
          * calculate satellite position
          */
-        Eci eci = sgp4.FindPosition(now);
+        Eci eci = sgp4.FindPosition(dt);
         /*
          * get look angle for observer to satellite
          */
@@ -51,7 +48,7 @@ int main()
          */
         CoordGeodetic geo = eci.ToGeodetic();
 
-        std::cout << now << " " << topo << " " << geo << std::endl;
+        std::cout << dt << " " << topo << " " << geo << std::endl;
     };
 
     return 0;

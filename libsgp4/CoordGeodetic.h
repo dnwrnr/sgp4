@@ -102,9 +102,9 @@ public:
     {
         std::stringstream ss;
         ss << std::right << std::fixed << std::setprecision(3);
-        ss << "Lat: " << std::setw(7) << Util::RadiansToDegrees(latitude);
-        ss << ", Lon: " << std::setw(7) << Util::RadiansToDegrees(longitude);
-        ss << ", Alt: " << std::setw(9) << altitude;
+        ss << "Lat: " << std::setw(8) << Util::RadiansToDegrees(latitude);
+        ss << ", Lon: " << std::setw(8) << Util::RadiansToDegrees(longitude);
+        ss << ", Alt: " << std::setw(10) << altitude;
         return ss.str();
     }
 
