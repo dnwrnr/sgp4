@@ -273,7 +273,7 @@ void RunTest(const char* infile)
 
 int main()
 {
-    const char* file_name = "SGP4-VER.TLE";
+    const char* file_name = "../SGP4-VER.TLE";
 
     RunTest(file_name);
 

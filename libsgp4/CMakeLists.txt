@@ -32,10 +32,9 @@ set(SRCS
      TleException.h
      Tle.h
      Util.h
-     Vector.h
-     )
+     Vector.h)
 
 add_library(sgp4 STATIC ${SRCS} ${INCS})
 add_library(sgp4s SHARED ${SRCS} ${INCS})
-install( TARGETS sgp4s LIBRARY DESTINATION lib )
-install( FILES ${INCS} DESTINATION include/SGP4 )
+install(TARGETS sgp4s DESTINATION lib)
+install( FILES ${INCS} DESTINATION include/SGP4)
