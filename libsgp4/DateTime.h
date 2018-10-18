@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdint.h>
+#include <algorithm>
 #include "TimeSpan.h"
 #include "Util.h"
 
@@ -141,27 +142,19 @@ public:
     static DateTime Now(bool microseconds = false)
     {
         DateTime dt;
-        struct timespec ts;
-
-        if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
-        {
-            if (microseconds)
-            {
-                dt = DateTime(UnixEpoch
-                    + ts.tv_sec * TicksPerSecond
-                    + ts.tv_nsec / 1000LL * TicksPerMicrosecond);
-            }
-            else
-            {
-                dt = DateTime(UnixEpoch
-                    + ts.tv_sec * TicksPerSecond);
-            }
-        }
+        Util::UnixTimestamp ts = Util::CurrentTime();
+        
+        if (microseconds)
+	{
+	    dt = DateTime(UnixEpoch
+	                  + ts.seconds * TicksPerSecond
+	                  + ts.nanoseconds / 1000LL * TicksPerMicrosecond);
+	}
         else
-        {
-            throw 1;
-        }
-
+	{
+	    dt = DateTime(UnixEpoch
+	                  + ts.nanoseconds * TicksPerSecond);
+	}
         return dt;
     }
 

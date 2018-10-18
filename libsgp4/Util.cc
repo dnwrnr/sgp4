@@ -14,41 +14,68 @@
  * limitations under the License.
  */
 
+#include <Util.h>
 
-#include "Util.h"
-
-#include <algorithm>
-#include <locale>
-#include <functional>
+#ifdef _WIN32
 
 namespace Util
 {
-    namespace
-    {
-        struct IsDigit: std::unary_function<char, bool>
-        {
-            bool operator()(char c) const
-            {
-                return std::isdigit(c, std::locale::classic()) == 0;
-            }
-        };
-    }
 
-    void TrimLeft(std::string& s)
-    {
-        s.erase(s.begin(),
-                std::find_if(s.begin(), s.end(), std::not1(IsDigit())));
-    }
+	std::atomic<WindowsUtcTimeSource*> WindowsUtcTimeSource::m_instance = std::atomic<WindowsUtcTimeSource*>(nullptr);
+	std::mutex WindowsUtcTimeSource::m_mutex;
 
-    void TrimRight(std::string& s)
-    {
-        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(IsDigit())).base(),
-                s.end());
-    }
+	WindowsUtcTimeSource* WindowsUtcTimeSource::Instance()
+	{
+		WindowsUtcTimeSource* tmp = m_instance.load(std::memory_order_relaxed);
+		std::atomic_thread_fence(std::memory_order_acquire);
+		if (tmp == nullptr)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			if (tmp == nullptr)
+			{
+				tmp = new WindowsUtcTimeSource();
+				std::atomic_thread_fence(std::memory_order_release);
+				m_instance.store(tmp, std::memory_order_relaxed);
+			}
 
-    void Trim(std::string& s)
-    {
-        TrimLeft(s);
-        TrimRight(s);
-    }
+		}
+		return tmp;
+	}
+
+	WindowsUtcTimeSource::WindowsUtcTimeSource()
+	{
+		// we check to see if GetSystemTimePreciseAsFileTime exists. If it does, use that. Otherwise, use the non-precise version
+		HINSTANCE hDLL = LoadLibrary("Kernel32.dll");
+		m_getUtcTimeFunc = (FuncT)GetProcAddress((HMODULE)hDLL, "GetSystemTimePreciseAsFileTime");
+
+		if (m_getUtcTimeFunc != nullptr)
+		{
+			m_isPrecise = true;
+		}
+		else
+		{
+			m_isPrecise = false;
+			m_getUtcTimeFunc = (FuncT)GetSystemTimeAsFileTime;
+		}
+	};
+
+	UnixTimestamp WindowsUtcTimeSource::GetUtcTime()
+	{
+		UnixTimestamp stamp;
+		int ticks_per_second = 10000000; // there are 1e7 100ns ticks in a second
+		int nanoseconds_per_tick = 100;
+		ULONGLONG seconds_from_windows_to_unix_epoch = 11644473600; // seconds from 1601-01-01T00:00:00Z to 1970-01-01T00:00:00Z
+		FILETIME ft;
+		m_getUtcTimeFunc(&ft);
+		ULARGE_INTEGER ui;
+		ui.LowPart = ft.dwLowDateTime;
+		ui.HighPart = ft.dwHighDateTime;
+		int64_t diff = ui.QuadPart - seconds_from_windows_to_unix_epoch * ticks_per_second;
+		stamp.seconds = diff / ticks_per_second;
+		stamp.nanoseconds = (diff - stamp.seconds * ticks_per_second) * nanoseconds_per_tick;
+		return stamp;
+	}
+
 }
+
+#endif
