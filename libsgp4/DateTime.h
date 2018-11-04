@@ -21,7 +21,8 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <stdint.h>
+#include <chrono>
+#include <cassert>
 #include "TimeSpan.h"
 #include "Util.h"
 
@@ -123,7 +124,7 @@ public:
                 second < 0 || second > 59 ||
                 microsecond < 0 || microsecond > 999999)
         {
-            throw 1;
+            assert(false && "Invalid date");
         }
         m_encoded = TimeSpan(
                 AbsoluteDays(year, month, day),
@@ -138,31 +139,21 @@ public:
      * @param[in] microseconds whether to set the microsecond component
      * @returns a DateTime object set to the current date and time
      */
-    static DateTime Now(bool microseconds = false)
+    static DateTime Now(bool useMicroseconds = false)
     {
-        DateTime dt;
-        struct timespec ts;
-
-        if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
+        using namespace std::chrono;
+        if (useMicroseconds)
         {
-            if (microseconds)
-            {
-                dt = DateTime(UnixEpoch
-                    + ts.tv_sec * TicksPerSecond
-                    + ts.tv_nsec / 1000LL * TicksPerMicrosecond);
-            }
-            else
-            {
-                dt = DateTime(UnixEpoch
-                    + ts.tv_sec * TicksPerSecond);
-            }
+            return DateTime(UnixEpoch +
+                    duration_cast<microseconds>(system_clock::now()
+                    .time_since_epoch()).count() * TicksPerMicrosecond);
         }
         else
         {
-            throw 1;
+            return DateTime(UnixEpoch +
+                duration_cast<seconds>(system_clock::now()
+                    .time_since_epoch()).count() * TicksPerSecond);
         }
-
-        return dt;
     }
 
     /**
@@ -174,7 +165,7 @@ public:
     {
         if (!IsValidYear(year))
         {
-            throw 1;
+            assert(false && "Invalid year");
         }
 
         return (((year % 4) == 0 && (year % 100) != 0) || (year % 400) == 0);
@@ -252,7 +243,7 @@ public:
     {
         if (!IsValidYearMonth(year, month))
         {
-            throw 1;
+            assert(false && "Invalid year and month");
         }
         
         const int* daysInMonthPtr;
@@ -280,7 +271,7 @@ public:
     {
         if (!IsValidYearMonthDay(year, month, day))
         {
-            throw 1;
+            assert(false && "Invalid year, month and day");
         }
 
         int daysThisYear = day;
