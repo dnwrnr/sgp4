@@ -4,5 +4,4 @@ set(SRCS
 add_executable(sattrack
     ${SRCS})
 target_link_libraries(sattrack
-    sgp4
-    rt)
+    sgp4)

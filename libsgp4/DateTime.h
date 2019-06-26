@@ -18,6 +18,7 @@
 #ifndef DATETIME_H_
 #define DATETIME_H_
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <sstream>

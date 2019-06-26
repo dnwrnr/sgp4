@@ -37,5 +37,11 @@ set(SRCS
 
 add_library(sgp4 STATIC ${SRCS} ${INCS})
 add_library(sgp4s SHARED ${SRCS} ${INCS})
-install( TARGETS sgp4s LIBRARY DESTINATION lib )
+if(WIN32)
+  install(TARGETS sgp4s
+    RUNTIME DESTINATION lib)
+else()
+  install(TARGETS sgp4s
+    LIBRARY DESTINATION lib)
+endif()  
 install( FILES ${INCS} DESTINATION include/SGP4 )
