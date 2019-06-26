@@ -18,8 +18,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
     add_compile_options(-Wsign-conversion)
 endif()
 
-include_directories(libsgp4)
-
 add_subdirectory(libsgp4)
 add_subdirectory(sattrack)
 add_subdirectory(runtest)
