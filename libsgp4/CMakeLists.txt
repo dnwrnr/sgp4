@@ -16,32 +16,32 @@ set(SRCS
     Util.cc
     Vector.cc)
 
-  set(INCS
-     CoordGeodetic.h
-     CoordTopocentric.h
-     DateTime.h
-     DecayedException.h
-     Eci.h
-     Globals.h
-     Observer.h
-     OrbitalElements.h
-     SatelliteException.h
-     SGP4.h
-     SolarPosition.h
-     TimeSpan.h
-     TleException.h
-     Tle.h
-     Util.h
-     Vector.h
-     )
+set(INCS
+    CoordGeodetic.h
+    CoordTopocentric.h
+    DateTime.h
+    DecayedException.h
+    Eci.h
+    Globals.h
+    Observer.h
+    OrbitalElements.h
+    SatelliteException.h
+    SGP4.h
+    SolarPosition.h
+    TimeSpan.h
+    TleException.h
+    Tle.h
+    Util.h
+    Vector.h)
 
 add_library(sgp4 STATIC ${SRCS} ${INCS})
+target_include_directories(sgp4 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(sgp4s SHARED ${SRCS} ${INCS})
+target_include_directories(sgp4s PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
 if(WIN32)
-  install(TARGETS sgp4s
-    RUNTIME DESTINATION lib)
+    install( TARGETS sgp4s RUNTIME DESTINATION lib )
 else()
-  install(TARGETS sgp4s
-    LIBRARY DESTINATION lib)
+    install( TARGETS sgp4s LIBRARY DESTINATION lib )
 endif()  
 install( FILES ${INCS} DESTINATION include/SGP4 )
