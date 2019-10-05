@@ -96,8 +96,10 @@ int main(int argc, char*argv[])
     SGP4 sgp4(tle);
     Observer obs(lat, lng, alt);
 
+    DateTime ft = DateTime::Now(true);    //future time
     while (true) {
       DateTime dt = DateTime::Now(true);
+
       /*
        * calculate satellite position
        */
@@ -106,7 +108,11 @@ int main(int argc, char*argv[])
        * convert satellite position to geodetic coordinates
        */
       CoordGeodetic geo = eci.ToGeodetic();
-      std::cout << "Current Position: " << geo << '\n';
+
+      if (dt > ft) {
+        ft = DateTime::Now(true).AddSeconds(1);
+        std::cout << dt << " Current Position: " << geo << '\n';
+      }
     }
 
     return 0;
