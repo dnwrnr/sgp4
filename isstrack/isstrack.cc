@@ -20,9 +20,94 @@
 #include <SGP4.h>
 
 #include <iostream>
+#include <getopt.h>
+#include <curl/curl.h>
 
-int main()
+void usage()
 {
+    printf("isstrack [options]\n");
+    printf("  h     : print usage\n");
+    printf("  t   : Observer Latitude\n");
+    printf("  g   : Observer Longitude\n");
+    printf("  a   : Observer Altitude (km)\n");
+}
+
+size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
+    std::ostringstream *stream = (std::ostringstream*)userdata;
+    size_t count = size * nmemb;
+    stream->write(ptr, count);
+    return count;
+}
+
+int main(int argc, char*argv[])
+{
+    // varialbles
+    std::stringstream stream;  //stringstream with TLEs from Celestrack
+    std::string name;
+    std::string line1;
+    std::string line2;
+
+    // options
+    float lat = 51.507406923983446;  // Latitude
+    float lng = -0.127737522125244;  // Longitude
+    float alt = 0.05;                // Altitude (km)
+
+    int opt;
+    while((opt = getopt(argc,argv,"hn:t:g:a:")) != EOF){
+        switch (opt) {
+        case 'h': usage();                      return 0;
+        case 't': lat = atof(optarg);   break;
+        case 'g': lng = atof(optarg);   break;
+        case 'a': alt = atof(optarg);   break;
+        default:
+            exit(1);
+        }
+    }
+
+    // configure and execute lib curl
+    CURL *curl;
+    curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL, "http://www.celestrak.com/norad/elements/stations.txt");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
+    curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+
+    // get ISS TLE from stringstream
+    std::string line;
+    while(std::getline(stream,line)){
+      if(line.find("ISS (ZARYA)") != std::string::npos)
+      {
+        // printf("%s\n",line.c_str());
+        name = line.c_str();
+        getline(stream,line);
+        line.pop_back();
+        line1 = line.c_str();
+        // printf("%s\n",line.c_str());
+        getline(stream,line);
+        line.pop_back();
+        line2 = line.c_str();
+        // printf("%s\n",line.c_str());
+      }
+    }
+
+    // SGP4 objects
+    Tle tle = Tle(name, line1, line2);
+    SGP4 sgp4(tle);
+    Observer obs(lat, lng, alt);
+
+    while (true) {
+      DateTime dt = DateTime::Now(true);
+      /*
+       * calculate satellite position
+       */
+      Eci eci = sgp4.FindPosition(dt);
+      /*
+       * convert satellite position to geodetic coordinates
+       */
+      CoordGeodetic geo = eci.ToGeodetic();
+      std::cout << "Current Position: " << geo << '\n';
+    }
 
     return 0;
 }
