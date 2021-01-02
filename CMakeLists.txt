@@ -34,6 +34,8 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-conversion")
 endif(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 include_directories(libsgp4)
 
 add_subdirectory(libsgp4)
