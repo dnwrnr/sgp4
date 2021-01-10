@@ -1,25 +1,13 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.13.4)
 PROJECT(SGP4)
 
 if (POLICY CMP0054)
     cmake_policy(SET CMP0054 NEW)
 endif()
 
-macro(use_cxx11)
-    if (CMAKE_VERSION VERSION_LESS "3.1")
-        include(CheckCXXCompilerFlag)
-        CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-        if(COMPILER_SUPPORTS_CXX11)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-        else()
-            message(STATUS "Unable to determine C++11 option for compiler ${CMAKE_CXX_COMPILER}.")
-        endif()
-    else ()
-        set (CMAKE_CXX_STANDARD 11)
-    endif ()
-endmacro(use_cxx11)
-
-use_cxx11()
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
