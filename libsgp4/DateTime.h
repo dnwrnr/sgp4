@@ -111,6 +111,21 @@ public:
      * @param[in] second the second
      * @param[in] microsecond the microsecond
      */
+    DateTime(int year, int month, int day, int hour, int minute, int second, int microsecond)
+    {
+        Initialise(year, month, day, hour, minute, second, microsecond);
+    }
+
+    /**
+     * Initialise to the given data and time.
+     * @param[in] year the year
+     * @param[in] month the month
+     * @param[in] day the day
+     * @param[in] hour the hour
+     * @param[in] minute the minute
+     * @param[in] second the second
+     * @param[in] microsecond the microsecond
+     */
     void Initialise(int year,
             int month,
             int day,
