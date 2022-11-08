@@ -40,6 +40,19 @@ namespace
         {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
         {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
     };
+    static const unsigned int ISO8601_COL_YEAR = 0;
+    static const unsigned int ISO8601_LEN_YEAR = 4;
+    static const unsigned int ISO8601_COL_MON  = 5;
+    static const unsigned int ISO8601_LEN_MON  = 2;
+    static const unsigned int ISO8601_COL_DAY  = 8;
+    static const unsigned int ISO8601_LEN_DAY  = 2;
+    static const unsigned int ISO8601_COL_HOUR = 11;
+    static const unsigned int ISO8601_LEN_HOUR = 2;
+    static const unsigned int ISO8601_COL_MIN  = 14;
+    static const unsigned int ISO8601_LEN_MIN  = 2;
+    static const unsigned int ISO8601_COL_SEC  = 17;
+    static const unsigned int ISO8601_LEN_SEC  = 2;
+    static const unsigned int ISO8601_COL_MSEC = 19;
 }
 
 /**
@@ -102,29 +115,31 @@ public:
         Initialise(year, month, day, hour, minute, second, 0);
     }
 
-namespace
-{
-    static const unsigned int ISO8601_COL_YEAR = 0;
-    static const unsigned int ISO8601_LEN_YEAR = 4;
-    static const unsigned int ISO8601_COL_MON  = 5;
-    static const unsigned int ISO8601_LEN_MON  = 2;
-    static const unsigned int ISO8601_COL_DAY  = 8;
-    static const unsigned int ISO8601_LEN_DAY  = 2;
-    static const unsigned int ISO8601_COL_HOUR = 10;
-    static const unsigned int ISO8601_LEN_HOUR = 2;
-    static const unsigned int ISO8601_COL_MIN  = 14;
-    static const unsigned int ISO8601_LEN_MIN  = 2;
-    static const unsigned int ISO8601_COL_SEC  = 17;
-    static const unsigned int ISO8601_LEN_SEC  = 2;
-    static const unsigned int ISO8601_COL_MSEC = 19;
-}    
-    DateTime(std::string iso8601)
+    /**
+     * Constructor
+     * @param[in] ISO8601 formatted Date and Time string
+     */
+    DateTime(const std::string iso8601)
     {
-        //  01234567890123456789012345
-        // "2022-11-08T06:14:56.037120"
-        int year = 0;
-        ExtractInteger(iso8601.substr(ISO8601_COL_YEAR,
-                ISO8601_LEN_YEAR), year);
+        std::string s;
+        double microsecond;
+        int year = 1900, month = 1, day = 1, hour = 0, minute = 0, second = 0, usecond = 0;
+        s = iso8601.substr(ISO8601_COL_YEAR, ISO8601_LEN_YEAR);
+        Extract(s, year);
+        s = iso8601.substr(ISO8601_COL_MON,  ISO8601_LEN_MON);
+        Extract(s, month);
+        s = iso8601.substr(ISO8601_COL_DAY,  ISO8601_LEN_DAY);
+        Extract(s, day);
+        s = iso8601.substr(ISO8601_COL_HOUR, ISO8601_LEN_HOUR);
+        Extract(s, hour);
+        s = iso8601.substr(ISO8601_COL_MIN,  ISO8601_LEN_MIN);
+        Extract(s, minute);
+        s = iso8601.substr(ISO8601_COL_SEC,  ISO8601_LEN_SEC);
+        Extract(s, second);
+        s = iso8601.substr(ISO8601_COL_MSEC);
+        Extract(s, microsecond);
+        usecond = 1000000 * microsecond;
+        Initialise(year, month, day, hour, minute, second, usecond);
     }
 
     /**
@@ -676,36 +691,14 @@ namespace
 
 private:
 
-    void ExtractInteger(const std::string& str, unsigned int& val)
+    void Extract(const std::string& str, int& val)
     {
-        bool found_digit = false;
-        unsigned int temp = 0;
-
-        for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
-        {
-            if (isdigit(*i))
-            {
-                found_digit = true;
-                temp = (temp * 10) + static_cast<unsigned int>(*i - '0');
-            }
-            else if (found_digit)
-            {
-                //throw TleException("Unexpected non digit");
-            }
-            else if (*i != ' ')
-            {
-                //throw TleException("Invalid character");
-            }
-        }
-
-        if (!found_digit)
-        {
-            val = 0;
-        }
-        else
-        {
-            val = temp;
-        }
+        val = std::stoi(str);
+    }
+    
+    void Extract(const std::string& str, double& val)
+    {
+        val = std::stod(str);
     }
 
     int64_t m_encoded;
