@@ -20,6 +20,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <sstream>
 #include <chrono>
 #include <algorithm>
@@ -99,6 +100,31 @@ public:
     DateTime(int year, int month, int day, int hour, int minute, int second)
     {
         Initialise(year, month, day, hour, minute, second, 0);
+    }
+
+namespace
+{
+    static const unsigned int ISO8601_COL_YEAR = 0;
+    static const unsigned int ISO8601_LEN_YEAR = 4;
+    static const unsigned int ISO8601_COL_MON  = 5;
+    static const unsigned int ISO8601_LEN_MON  = 2;
+    static const unsigned int ISO8601_COL_DAY  = 8;
+    static const unsigned int ISO8601_LEN_DAY  = 2;
+    static const unsigned int ISO8601_COL_HOUR = 10;
+    static const unsigned int ISO8601_LEN_HOUR = 2;
+    static const unsigned int ISO8601_COL_MIN  = 14;
+    static const unsigned int ISO8601_LEN_MIN  = 2;
+    static const unsigned int ISO8601_COL_SEC  = 17;
+    static const unsigned int ISO8601_LEN_SEC  = 2;
+    static const unsigned int ISO8601_COL_MSEC = 19;
+}    
+    DateTime(std::string iso8601)
+    {
+        //  01234567890123456789012345
+        // "2022-11-08T06:14:56.037120"
+        int year = 0;
+        ExtractInteger(iso8601.substr(ISO8601_COL_YEAR,
+                ISO8601_LEN_YEAR), year);
     }
 
     /**
@@ -649,6 +675,39 @@ public:
     }
 
 private:
+
+    void ExtractInteger(const std::string& str, unsigned int& val)
+    {
+        bool found_digit = false;
+        unsigned int temp = 0;
+
+        for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
+        {
+            if (isdigit(*i))
+            {
+                found_digit = true;
+                temp = (temp * 10) + static_cast<unsigned int>(*i - '0');
+            }
+            else if (found_digit)
+            {
+                //throw TleException("Unexpected non digit");
+            }
+            else if (*i != ' ')
+            {
+                //throw TleException("Invalid character");
+            }
+        }
+
+        if (!found_digit)
+        {
+            val = 0;
+        }
+        else
+        {
+            val = temp;
+        }
+    }
+
     int64_t m_encoded;
 };
 
