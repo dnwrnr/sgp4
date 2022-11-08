@@ -17,22 +17,7 @@
 
 #include <DateTime.h>
 
-#if 0
-#include <Tle.h>
-#include <SGP4.h>
-#include <Observer.h>
-#include <CoordGeodetic.h>
-#include <CoordTopocentric.h>
-#endif
-
-#include <list>
 #include <string>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <cstdlib>
-
 
 int RunTest(void)
 {

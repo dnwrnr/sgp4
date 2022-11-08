@@ -22,6 +22,53 @@
 #include "DateTime.h"
 #include "TleException.h"
 
+/*
+Example of current TLE format in JSON as from Celestrak.
+[{
+    "OBJECT_NAME": "STARLINK-1007",
+    "OBJECT_ID": "2019-074A",
+    "EPOCH": "2022-11-08T06:14:56.037120",
+    "MEAN_MOTION": 15.06405436,
+    "ECCENTRICITY": 0.0001911,
+    "INCLINATION": 53.0559,
+    "RA_OF_ASC_NODE": 251.8795,
+    "ARG_OF_PERICENTER": 48.9031,
+    "MEAN_ANOMALY": 311.2123,
+    "EPHEMERIS_TYPE": 0,
+    "CLASSIFICATION_TYPE": "U",
+    "NORAD_CAT_ID": 44713,
+    "ELEMENT_SET_NO": 999,
+    "REV_AT_EPOCH": 16525,
+    "BSTAR": 0.00033293,
+    "MEAN_MOTION_DOT": 4.682e-5,
+    "MEAN_MOTION_DDOT": 0
+}]
+*/
+
+/**
+ * @brief A struct to pass member values to a constructor.
+ */
+struct TleArgs
+{
+    std::string name;
+    std::string int_designator;
+    std::string epoch;
+    
+    std::string classification_type;
+    double mean_motion_dot;
+    double mean_motion_ddot;
+    double bstar;
+    double inclination;
+    double right_ascending_node;
+    double eccentricity;
+    double argument_perigee;
+    double mean_anomaly;
+    double mean_motion;
+    unsigned int ephemeris_type;
+    unsigned int norad_number;
+    unsigned int orbit_number;
+};
+
 /**
  * @brief Processes a two-line element set used to convey OrbitalElements.
  *
@@ -30,6 +77,30 @@
 class Tle
 {
 public:
+    
+    /**
+     * @details Initialise given a TleArgs struct
+     * @param[in] args The setup parameters.
+     */
+    Tle(const TleArgs& args) :
+        name_(args.name),
+        classification_type_(args.classification_type),
+        int_designator_(args.int_designator),
+        epoch_(DateTime(args.epoch)),
+        mean_motion_dt2_(args.mean_motion_dot),
+        mean_motion_ddt6_(args.mean_motion_ddot),
+        bstar_(args.bstar),
+        inclination_(args.inclination),
+        right_ascending_node_(args.right_ascending_node),
+        eccentricity_(args.eccentricity),
+        argument_perigee_(args.argument_perigee),
+        mean_anomaly_(args.mean_anomaly),
+        mean_motion_(args.mean_motion),
+        ephemeris_type_(args.ephemeris_type),
+        norad_number_(args.norad_number),
+        orbit_number_(args.orbit_number)
+    {}
+    
     /**
      * @details Initialise given the two lines of a tle
      * @param[in] line_one Tle line one
@@ -259,6 +330,16 @@ public:
     {
         return orbit_number_;
     }
+    
+     unsigned int EphemerisType() const
+     {
+         return ephemeris_type_;
+     }
+     
+     std::string ClassificationType() const
+     {
+         return classification_type_;
+     }
 
     /**
      * Get the expected tle line length
@@ -281,6 +362,8 @@ public:
         ss << "Int. Designator:      " << IntDesignator() << std::endl;
         ss << "Epoch:                " << Epoch() << std::endl;
         ss << "Orbit Number:         " << OrbitNumber() << std::endl;
+        ss << "Ephemeris Type        " << EphemerisType() << std::endl;
+        ss << "Classification Type   " << ClassificationType() << std::endl;
         ss << std::setprecision(8);
         ss << "Mean Motion Dt2:      ";
         ss << std::setw(12) << MeanMotionDt2() << std::endl;
@@ -314,7 +397,7 @@ private:
     std::string name_;
     std::string line_one_;
     std::string line_two_;
-
+    std::string classification_type_;
     std::string int_designator_;
     DateTime epoch_;
     double mean_motion_dt2_;
@@ -326,6 +409,7 @@ private:
     double argument_perigee_;
     double mean_anomaly_;
     double mean_motion_;
+    unsigned int ephemeris_type_;
     unsigned int norad_number_;
     unsigned int orbit_number_;
 
