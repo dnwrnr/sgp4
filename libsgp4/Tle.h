@@ -22,29 +22,6 @@
 #include "DateTime.h"
 #include "TleException.h"
 
-/*
-Example of current TLE format in JSON as from Celestrak.
-[{
-    "OBJECT_NAME": "STARLINK-1007",
-    "OBJECT_ID": "2019-074A",
-    "EPOCH": "2022-11-08T06:14:56.037120",
-    "MEAN_MOTION": 15.06405436,
-    "ECCENTRICITY": 0.0001911,
-    "INCLINATION": 53.0559,
-    "RA_OF_ASC_NODE": 251.8795,
-    "ARG_OF_PERICENTER": 48.9031,
-    "MEAN_ANOMALY": 311.2123,
-    "EPHEMERIS_TYPE": 0,
-    "CLASSIFICATION_TYPE": "U",
-    "NORAD_CAT_ID": 44713,
-    "ELEMENT_SET_NO": 999,
-    "REV_AT_EPOCH": 16525,
-    "BSTAR": 0.00033293,
-    "MEAN_MOTION_DOT": 4.682e-5,
-    "MEAN_MOTION_DDOT": 0
-}]
-*/
-
 /**
  * @brief A struct to pass member values to a constructor.
  */
