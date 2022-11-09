@@ -30,7 +30,6 @@ struct TleArgs
     std::string name;
     std::string int_designator;
     std::string epoch;
-    
     std::string classification_type;
     double mean_motion_dot;
     double mean_motion_ddot;

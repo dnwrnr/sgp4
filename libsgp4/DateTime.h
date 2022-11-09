@@ -53,6 +53,7 @@ namespace
     static const unsigned int ISO8601_COL_SEC  = 17;
     static const unsigned int ISO8601_LEN_SEC  = 2;
     static const unsigned int ISO8601_COL_MSEC = 19;
+    static const unsigned int ISO8601_LEN_MSEC = 4;
 }
 
 /**
@@ -124,6 +125,7 @@ public:
         std::string s;
         double microsecond;
         int year = 1900, month = 1, day = 1, hour = 0, minute = 0, second = 0, usecond = 0;
+        if(iso8601.length() < 24) return; // Minimum ISO8601 string length is 24.
         s = iso8601.substr(ISO8601_COL_YEAR, ISO8601_LEN_YEAR);
         Extract(s, year);
         s = iso8601.substr(ISO8601_COL_MON,  ISO8601_LEN_MON);
@@ -136,7 +138,7 @@ public:
         Extract(s, minute);
         s = iso8601.substr(ISO8601_COL_SEC,  ISO8601_LEN_SEC);
         Extract(s, second);
-        s = iso8601.substr(ISO8601_COL_MSEC);
+        s = iso8601.substr(ISO8601_COL_MSEC, ISO8601_LEN_MSEC);
         Extract(s, microsecond);
         usecond = 1000000 * microsecond;
         Initialise(year, month, day, hour, minute, second, usecond);
