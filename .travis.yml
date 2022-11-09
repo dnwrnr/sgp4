@@ -1,5 +1,5 @@
 sudo: required
-dist: jammy
+dist: focal
 language: cpp
 
 matrix:
