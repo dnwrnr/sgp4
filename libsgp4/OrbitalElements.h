@@ -15,8 +15,7 @@
  */
 
 
-#ifndef ORBITALELEMENTS_H_
-#define ORBITALELEMENTS_H_
+#pragma once
 
 #include "Util.h"
 #include "DateTime.h"
@@ -146,5 +145,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif

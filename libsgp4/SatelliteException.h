@@ -15,8 +15,7 @@
  */
 
 
-#ifndef SATELLITEEXCEPTION_H_
-#define SATELLITEEXCEPTION_H_
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -37,5 +36,3 @@ public:
 };
 
 } // namespace libsgp4
-
-#endif

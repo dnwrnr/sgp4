@@ -15,8 +15,7 @@
  */
 
 
-#ifndef VECTOR_H_
-#define VECTOR_H_
+#pragma once
 
 #include <cmath>
 #include <string>
@@ -162,5 +161,3 @@ inline std::ostream& operator<<(std::ostream& strm, const Vector& v)
 }
 
 } // namespace libsgp4
-
-#endif

@@ -15,8 +15,7 @@
  */
 
 
-#ifndef TLEEXCEPTION_H_
-#define TLEEXCEPTION_H_
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -43,5 +42,3 @@ public:
 };
 
 } // namespace libsgp4
-
-#endif

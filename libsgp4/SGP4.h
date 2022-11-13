@@ -15,8 +15,7 @@
  */
 
 
-#ifndef SGP4_H_
-#define SGP4_H_
+#pragma once
 
 #include "Tle.h"
 #include "OrbitalElements.h"
@@ -259,5 +258,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif

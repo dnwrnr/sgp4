@@ -15,8 +15,7 @@
  */
 
 
-#ifndef DATETIME_H_
-#define DATETIME_H_
+#pragma once
 
 #include <iomanip>
 #include <iostream>
@@ -720,5 +719,3 @@ inline bool operator<=(const DateTime& dt1, const DateTime& dt2)
 }
 
 } // namespace libsgp4
-
-#endif

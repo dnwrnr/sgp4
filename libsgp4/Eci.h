@@ -15,8 +15,7 @@
  */
 
 
-#ifndef ECI_H_
-#define ECI_H_
+#pragma once
 
 #include "CoordGeodetic.h"
 #include "Vector.h"
@@ -145,5 +144,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif
