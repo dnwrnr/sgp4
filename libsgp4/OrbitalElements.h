@@ -31,7 +31,7 @@ class Tle;
 class OrbitalElements
 {
 public:
-    OrbitalElements(const Tle& tle);
+    explicit OrbitalElements(const Tle& tle);
 
     /*
      * XMO

@@ -29,9 +29,7 @@ namespace libsgp4
 class SolarPosition
 {
 public:
-    SolarPosition()
-    {
-    }
+    SolarPosition() = default;
 
     Eci FindPosition(const DateTime& dt);
 

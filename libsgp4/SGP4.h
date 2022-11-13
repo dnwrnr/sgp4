@@ -38,7 +38,7 @@ namespace libsgp4
 class SGP4
 {
 public:
-    SGP4(const Tle& tle)
+    explicit SGP4(const Tle& tle)
         : elements_(tle)
     {
         Initialise();

@@ -21,30 +21,17 @@
 #include <locale>
 #include <functional>
 
-namespace libsgp4
+namespace libsgp4::Util
 {
-namespace Util
-{
-    namespace
-    {
-        struct IsDigit: std::unary_function<char, bool>
-        {
-            bool operator()(char c) const
-            {
-                return std::isdigit(c, std::locale::classic()) == 0;
-            }
-        };
-    }
-
     void TrimLeft(std::string& s)
     {
         s.erase(s.begin(),
-                std::find_if(s.begin(), s.end(), std::not1(IsDigit())));
+                std::find_if(s.begin(), s.end(), [](unsigned char c){ return std::isgraph(c) != 0; }));
     }
 
     void TrimRight(std::string& s)
     {
-        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(IsDigit())).base(),
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char c){ return std::isgraph(c) != 0; }).base(),
                 s.end());
     }
 
@@ -53,5 +40,4 @@ namespace Util
         TrimLeft(s);
         TrimRight(s);
     }
-} // namespace Util
-} // namespace libsgp4
+} // namespace libsgp4::Util

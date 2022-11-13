@@ -37,10 +37,7 @@ public:
     /**
      * Default constructor
      */
-    Vector()
-        : x(0.0), y(0.0), z(0.0), w(0.0)
-    {
-    }
+    Vector() = default;
 
     /**
      * Constructor
@@ -51,7 +48,7 @@ public:
     Vector(const double arg_x,
             const double arg_y,
             const double arg_z)
-        : x(arg_x), y(arg_y), z(arg_z), w(0.0)
+        : x(arg_x), y(arg_y), z(arg_z)
     {
     }
 
@@ -69,7 +66,7 @@ public:
         : x(arg_x), y(arg_y), z(arg_z), w(arg_w)
     {
     }
-    
+
     /**
      * Copy constructor
      * @param v value to copy from
@@ -146,13 +143,13 @@ public:
     }
 
     /** x value */
-    double x;
+    double x{};
     /** y value */
-    double y;
+    double y{};
     /** z value */
-    double z;
+    double z{};
     /** w value */
-    double w;
+    double w{};
 };
 
 inline std::ostream& operator<<(std::ostream& strm, const Vector& v)
