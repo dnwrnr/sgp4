@@ -20,6 +20,9 @@
 #include "Globals.h"
 #include "Util.h"
 
+namespace libsgp4
+{
+
 /**
  * Converts a DateTime and Geodetic position to Eci coordinates
  * @param[in] dt the date
@@ -82,7 +85,7 @@ CoordGeodetic Eci::ToGeodetic() const
 
     const double r = sqrt((m_position.x * m_position.x)
             + (m_position.y * m_position.y));
-    
+
     static const double e2 = kF * (2.0 - kF);
 
     double lat = Util::AcTan(m_position.z, r);
@@ -104,3 +107,5 @@ CoordGeodetic Eci::ToGeodetic() const
 
     return CoordGeodetic(lat, lon, alt, true);
 }
+
+} // namespace libsgp4

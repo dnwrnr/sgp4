@@ -29,10 +29,10 @@
 #include <vector>
 #include <cstdlib>
 
-void RunTle(Tle tle, double start, double end, double inc)
+void RunTle(libsgp4::Tle tle, double start, double end, double inc)
 {
     double current = start;
-    SGP4 model(tle);
+    libsgp4::SGP4 model(tle);
     bool running = true;
     bool first_run = true;
 
@@ -42,13 +42,13 @@ void RunTle(Tle tle, double start, double end, double inc)
     while (running)
     {
         bool error = false;
-        Vector position;
-        Vector velocity;
+        libsgp4::Vector position;
+        libsgp4::Vector velocity;
         double tsince;
 
         try
         {
-            if (first_run && current != 0.0) 
+            if (first_run && current != 0.0)
             {
                 /*
                  * make sure first run is always as zero
@@ -63,17 +63,17 @@ void RunTle(Tle tle, double start, double end, double inc)
                 tsince = current;
             }
 
-            Eci eci = model.FindPosition(tsince);
+            libsgp4::Eci eci = model.FindPosition(tsince);
             position = eci.Position();
             velocity = eci.Velocity();
         }
-        catch (SatelliteException& e)
+        catch (libsgp4::SatelliteException& e)
         {
             std::cerr << e.what() << std::endl;
             error = true;
             running = false;
         }
-        catch (DecayedException& e)
+        catch (libsgp4::DecayedException& e)
         {
             std::cerr << e.what() << std::endl;
 
@@ -181,7 +181,7 @@ void RunTest(const char* infile)
         std::string line;
         std::getline(file, line);
 
-        Util::Trim(line);
+        libsgp4::Util::Trim(line);
 
         /*
          * skip blank lines or lines starting with #
@@ -199,7 +199,7 @@ void RunTest(const char* infile)
         {
             try
             {
-                if (line.length() >= Tle::LineLength())
+                if (line.length() >= libsgp4::Tle::LineLength())
                 {
                     //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
                     /*
@@ -209,7 +209,7 @@ void RunTest(const char* infile)
                     line1 = line;
                 }
             }
-            catch (TleException& e)
+            catch (libsgp4::TleException& e)
             {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
@@ -225,15 +225,15 @@ void RunTest(const char* infile)
              * split line, first 69 is the second line of the tle
              * the rest is the test parameters, if there is any
              */
-            line2 = line.substr(0, Tle::LineLength());
+            line2 = line.substr(0, libsgp4::Tle::LineLength());
             double start = 0.0;
             double end = 1440.0;
             double inc = 120.0;
             if (line.length() > 69)
             {
                 std::vector<std::string> tokens;
-                parameters = line.substr(Tle::LineLength() + 1,
-                        line.length() - Tle::LineLength());
+                parameters = line.substr(libsgp4::Tle::LineLength() + 1,
+                        line.length() - libsgp4::Tle::LineLength());
                 tokenize(parameters, tokens);
                 if (tokens.size() >= 3)
                 {
@@ -248,14 +248,14 @@ void RunTest(const char* infile)
              */
             try
             {
-                if (line.length() >= Tle::LineLength())
+                if (line.length() >= libsgp4::Tle::LineLength())
                 {
                     //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
-                    Tle tle("Test", line1, line2);
+                    libsgp4::Tle tle("Test", line1, line2);
                     RunTle(tle, start, end, inc);
                 }
             }
-            catch (TleException& e)
+            catch (libsgp4::TleException& e)
             {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;

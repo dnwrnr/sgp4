@@ -24,6 +24,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace libsgp4
+{
+
 /**
  * @brief The exception that the SGP4 class throws when a satellite decays.
  */
@@ -73,5 +76,7 @@ private:
     Vector _pos;
     Vector _vel;
 };
+
+} // namespace libsgp4
 
 #endif

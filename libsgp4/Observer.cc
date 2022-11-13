@@ -16,8 +16,10 @@
 
 
 #include "Observer.h"
-
 #include "CoordTopocentric.h"
+
+namespace libsgp4
+{
 
 /*
  * calculate lookangle between the observer and the passed in Eci object
@@ -80,3 +82,5 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
             range.w,
             rate);
 }
+
+} // namespace libsgp4

@@ -24,6 +24,9 @@
 #include "SatelliteException.h"
 #include "DecayedException.h"
 
+namespace libsgp4
+{
+
 /**
  * @mainpage
  *
@@ -254,5 +257,7 @@ private:
     bool use_simple_model_;
     bool use_deep_space_;
 };
+
+} // namespace libsgp4
 
 #endif

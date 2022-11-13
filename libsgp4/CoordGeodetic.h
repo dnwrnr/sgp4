@@ -24,6 +24,9 @@
 #include <sstream>
 #include <iomanip>
 
+namespace libsgp4
+{
+
 /**
  * @brief Stores a geodetic location (latitude, longitude, altitude).
  *
@@ -125,5 +128,7 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordGeodetic& g)
 {
     return strm << g.ToString();
 }
+
+} // namespace libsgp4
 
 #endif

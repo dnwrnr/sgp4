@@ -22,6 +22,8 @@
 
 #include <sstream>
 
+namespace libsgp4
+{
 namespace Util
 {
     template
@@ -50,7 +52,7 @@ namespace Util
     {
         return Mod(a + kPI, kTWOPI) - kPI;
     }
-    
+
     inline double WrapTwoPI(const double a)
     {
         return Mod(a, kTWOPI);
@@ -101,10 +103,12 @@ namespace Util
             }
         }
     }
-    
+
     void TrimLeft(std::string& s);
     void TrimRight(std::string& s);
     void Trim(std::string& s);
-}
+
+} // namespace Util
+} // namespace libsgp4
 
 #endif

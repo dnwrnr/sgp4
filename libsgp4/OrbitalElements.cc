@@ -19,6 +19,9 @@
 
 #include "Tle.h"
 
+namespace libsgp4
+{
+
 OrbitalElements::OrbitalElements(const Tle& tle)
 {
     /*
@@ -64,3 +67,4 @@ OrbitalElements::OrbitalElements(const Tle& tle)
     period_ = kTWOPI / RecoveredMeanMotion();
 }
 
+} // namespace libsgp4
