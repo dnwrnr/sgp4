@@ -22,6 +22,9 @@
 #include "Vector.h"
 #include "DateTime.h"
 
+namespace libsgp4
+{
+
 /**
  * @brief Stores an Earth-centered inertial position for a particular time.
  */
@@ -140,5 +143,7 @@ private:
     Vector m_position;
     Vector m_velocity;
 };
+
+} // namespace libsgp4
 
 #endif

@@ -21,6 +21,8 @@
 #include <locale>
 #include <functional>
 
+namespace libsgp4
+{
 namespace Util
 {
     namespace
@@ -51,4 +53,5 @@ namespace Util
         TrimLeft(s);
         TrimRight(s);
     }
-}
+} // namespace Util
+} // namespace libsgp4

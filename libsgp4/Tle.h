@@ -22,6 +22,9 @@
 #include "DateTime.h"
 #include "TleException.h"
 
+namespace libsgp4
+{
+
 /**
  * @brief Processes a two-line element set used to convey OrbitalElements.
  *
@@ -338,5 +341,7 @@ inline std::ostream& operator<<(std::ostream& strm, const Tle& t)
 {
     return strm << t.ToString();
 }
+
+} // namespace libsgp4
 
 #endif

@@ -21,6 +21,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace libsgp4
+{
+
 /**
  * @brief The exception that the Tle class throws on an error.
  *
@@ -38,5 +41,7 @@ public:
     {
     }
 };
+
+} // namespace libsgp4
 
 #endif

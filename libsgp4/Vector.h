@@ -23,6 +23,9 @@
 #include <sstream>
 #include <iomanip>
 
+namespace libsgp4
+{
+
 /**
  * @brief Generic vector
  *
@@ -157,5 +160,7 @@ inline std::ostream& operator<<(std::ostream& strm, const Vector& v)
 {
     return strm << v.ToString();
 }
+
+} // namespace libsgp4
 
 #endif

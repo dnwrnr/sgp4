@@ -21,6 +21,9 @@
 #include "Util.h"
 #include "DateTime.h"
 
+namespace libsgp4
+{
+
 class Tle;
 
 /**
@@ -141,5 +144,7 @@ private:
     double period_;
     DateTime epoch_;
 };
+
+} // namespace libsgp4
 
 #endif

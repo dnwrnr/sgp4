@@ -24,6 +24,9 @@
 #include <cmath>
 #include <stdint.h>
 
+namespace libsgp4
+{
+
 namespace
 {
     static const int64_t TicksPerDay =  86400000000LL;
@@ -253,5 +256,7 @@ inline bool operator<=(const TimeSpan& ts1, const TimeSpan& ts2)
 {
     return (ts1.Compare(ts2) <= 0);
 }
+
+} // namespace libsgp4
 
 #endif

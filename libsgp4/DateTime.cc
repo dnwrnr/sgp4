@@ -80,7 +80,7 @@ int main()
                     std::cout << "F " << dt.Microsecond() << " " << microsecond << std::endl;
                     return 0;
                 }
-                
+
                 if (!jd_dmy(dt.Julian() + 0.5, year, month, day))
                 {
                     std::cout << "julian" << std::endl;
@@ -89,7 +89,7 @@ int main()
             }
         }
     }
-    
+
     for (int hour = 1; hour < 24; hour++)
     {
         std::cout << hour << std::endl;
@@ -127,7 +127,7 @@ int main()
             }
         }
     }
-    
+
     jd_dmy(1721425.5, 0, 0, 0);
 
     DateTime d1(1000, 1, 1);
@@ -142,7 +142,7 @@ int main()
     std::cout << d3.Julian() << std::endl;
     std::cout << d4.Julian() << std::endl;
     std::cout << d5.Julian() << std::endl;
-    
+
     return 0;
 }
 

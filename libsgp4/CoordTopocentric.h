@@ -24,6 +24,9 @@
 #include <sstream>
 #include <iomanip>
 
+namespace libsgp4
+{
+
 /**
  * @brief Stores a topocentric location (azimuth, elevation, range and range
  * rate).
@@ -122,5 +125,7 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordTopocentric& t)
 {
     return strm << t.ToString();
 }
+
+} // namespace libsgp4
 
 #endif

@@ -21,6 +21,9 @@
 #include "DateTime.h"
 #include "Eci.h"
 
+namespace libsgp4
+{
+
 /**
  * @brief Find the position of the sun
  */
@@ -36,5 +39,7 @@ public:
 private:
     double Delta_ET(double year) const;
 };
+
+} // namespace libsgp4
 
 #endif

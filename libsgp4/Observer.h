@@ -21,6 +21,9 @@
 #include "CoordGeodetic.h"
 #include "Eci.h"
 
+namespace libsgp4
+{
+
 class DateTime;
 struct CoordTopocentric;
 
@@ -98,5 +101,6 @@ private:
     Eci m_eci;
 };
 
-#endif
+} // namespace libsgp4
 
+#endif

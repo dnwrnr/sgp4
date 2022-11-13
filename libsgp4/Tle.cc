@@ -17,8 +17,10 @@
 
 #include "Tle.h"
 
-#include <locale> 
+#include <locale>
 
+namespace libsgp4
+{
 namespace
 {
     static const unsigned int TLE1_COL_NORADNUM = 2;
@@ -366,3 +368,5 @@ void Tle::ExtractExponential(const std::string& str, double& val)
         throw TleException("Failed to convert value to double");
     }
 }
+
+} // namespace libsgp4

@@ -22,6 +22,9 @@
 
 #include <cmath>
 
+namespace libsgp4
+{
+
 Eci SolarPosition::FindPosition(const DateTime& dt)
 {
     const double mjd = dt.ToJ2000();
@@ -61,3 +64,5 @@ double SolarPosition::Delta_ET(double year) const
     return 26.465 + 0.747622 * (year - 1950) + 1.886913
         * sin(kTWOPI * (year - 1975) / 33);
 }
+
+} // namespace libsgp4

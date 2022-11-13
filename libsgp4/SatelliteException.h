@@ -21,6 +21,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace libsgp4
+{
+
 /**
  * @brief The exception that the SGP4 class throws upon an error.
  */
@@ -32,5 +35,7 @@ public:
     {
     }
 };
+
+} // namespace libsgp4
 
 #endif

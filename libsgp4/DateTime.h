@@ -27,6 +27,8 @@
 #include "TimeSpan.h"
 #include "Util.h"
 
+namespace libsgp4
+{
 namespace
 {
     static int daysInMonth[2][13] = {
@@ -701,5 +703,7 @@ inline bool operator<=(const DateTime& dt1, const DateTime& dt2)
 {
     return (dt1.Compare(dt2) <= 0);
 }
+
+} // namespace libsgp4
 
 #endif

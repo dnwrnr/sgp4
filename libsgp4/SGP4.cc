@@ -26,6 +26,9 @@
 #include <iomanip>
 #include <cstring>
 
+namespace libsgp4
+{
+
 void SGP4::SetTle(const Tle& tle)
 {
     /*
@@ -1346,3 +1349,5 @@ void SGP4::Reset()
     std::memset(&deepspace_consts_, 0, sizeof(deepspace_consts_));
     std::memset(&integrator_params_, 0, sizeof(integrator_params_));
 }
+
+} // namespace libsgp4
