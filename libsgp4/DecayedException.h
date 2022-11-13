@@ -15,8 +15,7 @@
  */
 
 
-#ifndef DECAYEDEXCEPTION_H_
-#define DECAYEDEXCEPTION_H_
+#pragma once
 
 #include "DateTime.h"
 #include "Vector.h"
@@ -78,5 +77,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif

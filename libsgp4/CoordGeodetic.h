@@ -15,8 +15,7 @@
  */
 
 
-#ifndef COORDGEODETIC_H_
-#define COORDGEODETIC_H_
+#pragma once
 
 #include "Util.h"
 
@@ -130,5 +129,3 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordGeodetic& g)
 }
 
 } // namespace libsgp4
-
-#endif

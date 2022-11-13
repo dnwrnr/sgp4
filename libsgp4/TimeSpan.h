@@ -15,8 +15,7 @@
  */
 
 
-#ifndef TIMESPAN_H_
-#define TIMESPAN_H_
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -207,7 +206,7 @@ private:
             int microseconds)
     {
         m_ticks = days * TicksPerDay +
-            (hours * 3600LL + minutes * 60LL + seconds) * TicksPerSecond + 
+            (hours * 3600LL + minutes * 60LL + seconds) * TicksPerSecond +
             microseconds * TicksPerMicrosecond;
     }
 };
@@ -258,5 +257,3 @@ inline bool operator<=(const TimeSpan& ts1, const TimeSpan& ts2)
 }
 
 } // namespace libsgp4
-
-#endif

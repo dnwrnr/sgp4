@@ -15,8 +15,7 @@
  */
 
 
-#ifndef OBSERVER_H_
-#define OBSERVER_H_
+#pragma once
 
 #include "CoordGeodetic.h"
 #include "Eci.h"
@@ -102,5 +101,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif

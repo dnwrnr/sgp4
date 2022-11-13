@@ -15,8 +15,7 @@
  */
 
 
-#ifndef UTIL_H_
-#define UTIL_H_
+#pragma once
 
 #include "Globals.h"
 
@@ -110,5 +109,3 @@ namespace Util
 
 } // namespace Util
 } // namespace libsgp4
-
-#endif

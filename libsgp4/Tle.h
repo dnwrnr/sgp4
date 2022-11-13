@@ -15,8 +15,7 @@
  */
 
 
-#ifndef TLE_H_
-#define TLE_H_
+#pragma once
 
 #include "Util.h"
 #include "DateTime.h"
@@ -343,5 +342,3 @@ inline std::ostream& operator<<(std::ostream& strm, const Tle& t)
 }
 
 } // namespace libsgp4
-
-#endif

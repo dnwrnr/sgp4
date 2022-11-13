@@ -15,8 +15,7 @@
  */
 
 
-#ifndef SOLARPOSITION_H_
-#define SOLARPOSITION_H_
+#pragma once
 
 #include "DateTime.h"
 #include "Eci.h"
@@ -41,5 +40,3 @@ private:
 };
 
 } // namespace libsgp4
-
-#endif

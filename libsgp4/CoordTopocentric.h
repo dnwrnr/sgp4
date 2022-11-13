@@ -15,8 +15,7 @@
  */
 
 
-#ifndef COORDTOPOCENTRIC_H_
-#define COORDTOPOCENTRIC_H_
+#pragma once
 
 #include "Util.h"
 
@@ -127,5 +126,3 @@ inline std::ostream& operator<<(std::ostream& strm, const CoordTopocentric& t)
 }
 
 } // namespace libsgp4
-
-#endif
