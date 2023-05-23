@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.13.4)
-PROJECT(SGP4)
+PROJECT(HANDOVER)
 
 if (POLICY CMP0054)
     cmake_policy(SET CMP0054 NEW)
@@ -29,10 +29,13 @@ endif(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 include_directories(libsgp4)
+include_directories(UENode)
+include_directories(SatelliteNode)
+include_directories(TopologyGeneration)
 
 add_subdirectory(libsgp4)
-add_subdirectory(sattrack)
-add_subdirectory(runtest)
-add_subdirectory(passpredict)
+add_subdirectory(UENode)
+add_subdirectory(SatelliteNode)
+add_subdirectory(TopologyGeneration)
+add_subdirectory(example)
 
-file(COPY SGP4-VER.TLE DESTINATION ${PROJECT_BINARY_DIR})

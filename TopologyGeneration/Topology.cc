@@ -1,45 +1,47 @@
-/*
- * Copyright 2013 Daniel Warner <contact@danrw.com>
+#include "Topology.h"
+#include "assert.h"
+std::vector<std::string>
+split_string(const std::string line, const std::string delimiter) {
+    std::vector<std::string> result;
+    std::string remainder = line;
+    size_t idx = remainder.find(delimiter);
+    while (idx != std::string::npos) {
+        result.push_back(remainder.substr(0, idx));
+        remainder = remainder.substr(idx + delimiter.size(), remainder.size());
+        idx = remainder.find(delimiter);
+    }
+    result.push_back(remainder);
+    return result;
+}
+
+/**
+ * Split a string by the delimiter(s) and check that the split size is of expected size.
+ * If it is not of expected size, throw an exception.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * @param line          Line (e.g., "a->b->c")
+ * @param delimiter     Delimiter string (e.g., "->")
+ * @param expected      Expected number (e.g., 3)
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @return Split vector (e.g., [a, b, c])
  */
+std::vector<std::string> split_string_length(const std::string line, const std::string delimiter, size_t expected) {
 
+    std::vector<std::string> the_split = split_string(line, delimiter);
 
-#include <Observer.h>
-#include <SGP4.h>
-#include <Util.h>
-#include <CoordTopocentric.h>
-#include <CoordGeodetic.h>
+    // It must match the expected split length, else throw exception
+    if (the_split.size() != expected) {
+        throw std::invalid_argument("invalid string split");
+    }
 
-#include <cmath>
-#include <iostream>
-#include <list>
+    return the_split;
+}
 
-struct PassDetails
+double TopologyConstellation::FindMaxElevation(
+    libsgp4::Observer& obs,
+    libsgp4::SGP4& sgp4,
+    const libsgp4::DateTime& aos,
+    const libsgp4::DateTime& los)
 {
-    libsgp4::DateTime aos;
-    libsgp4::DateTime los;
-    double max_elevation;
-};
-
-double FindMaxElevation(
-        const libsgp4::CoordGeodetic& user_geo,
-        libsgp4::SGP4& sgp4,
-        const libsgp4::DateTime& aos,
-        const libsgp4::DateTime& los)
-{
-    libsgp4::Observer obs(user_geo);
-
     bool running;
 
     double time_step = (los - aos).TotalSeconds() / 9.0;
@@ -111,15 +113,14 @@ double FindMaxElevation(
     return max_elevation;
 }
 
-libsgp4::DateTime FindCrossingPoint(
-        const libsgp4::CoordGeodetic& user_geo,
-        libsgp4::SGP4& sgp4,
-        const libsgp4::DateTime& initial_time1,
-        const libsgp4::DateTime& initial_time2,
-        bool finding_aos)
+libsgp4::DateTime
+TopologyConstellation::FindCrossingPoint(
+    libsgp4::Observer& obs,
+    libsgp4::SGP4& sgp4,
+    const libsgp4::DateTime& initial_time1,
+    const libsgp4::DateTime& initial_time2,
+    bool finding_aos)
 {
-    libsgp4::Observer obs(user_geo);
-
     bool running;
     int cnt;
 
@@ -204,17 +205,15 @@ libsgp4::DateTime FindCrossingPoint(
     return middle_time;
 }
 
-std::list<struct PassDetails> GeneratePassList(
-        const libsgp4::CoordGeodetic& user_geo,
+std::list<struct PassDetails>
+TopologyConstellation::GeneratePassList(
+        libsgp4::Observer& obs,
         libsgp4::SGP4& sgp4,
         const libsgp4::DateTime& start_time,
         const libsgp4::DateTime& end_time,
         const int time_step)
 {
     std::list<struct PassDetails> pass_list;
-
-    libsgp4::Observer obs(user_geo);
-
     libsgp4::DateTime aos_time;
     libsgp4::DateTime los_time;
 
@@ -253,7 +252,7 @@ std::list<struct PassDetails> GeneratePassList(
                  * find the point at which the satellite crossed the horizon
                  */
                 aos_time = FindCrossingPoint(
-                        user_geo,
+                        obs,
                         sgp4,
                         previous_time,
                         current_time,
@@ -273,7 +272,7 @@ std::list<struct PassDetails> GeneratePassList(
              * so find the los
              */
             los_time = FindCrossingPoint(
-                    user_geo,
+                    obs,
                     sgp4,
                     previous_time,
                     current_time,
@@ -283,7 +282,7 @@ std::list<struct PassDetails> GeneratePassList(
             pd.aos = aos_time;
             pd.los = los_time;
             pd.max_elevation = FindMaxElevation(
-                    user_geo,
+                    obs,
                     sgp4,
                     aos_time,
                     los_time);
@@ -329,62 +328,185 @@ std::list<struct PassDetails> GeneratePassList(
         struct PassDetails pd;
         pd.aos = aos_time;
         pd.los = end_time;
-        pd.max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, end_time);
+        pd.max_elevation = FindMaxElevation(obs, sgp4, aos_time, end_time);
         pass_list.push_back(pd);
     }
 
     return pass_list;
 }
 
-int main()
+void
+TopologyConstellation::GeneratePassLists(
+    const libsgp4::DateTime& start_time,
+    const libsgp4::DateTime& end_time,
+    const int time_step)
 {
-    libsgp4::CoordGeodetic geo(51.507406923983446, -0.12773752212524414, 0.05);
-    libsgp4::Tle tle("GALILEO-PFM (GSAT0101)  ",
-        "1 37846U 11060A   12293.53312491  .00000049  00000-0  00000-0 0  1435",
-        "2 37846  54.7963 119.5777 0000994 319.0618  40.9779  1.70474628  6204");
-    libsgp4::SGP4 sgp4(tle);
 
-    std::cout << tle << std::endl;
-
-    /*
-     * generate 7 day schedule
-     */
-    libsgp4::DateTime start_date = libsgp4::DateTime::Now(true);
-    libsgp4::DateTime end_date(start_date.AddDays(7.0));
-
-    std::list<struct PassDetails> pass_list;
-
-    std::cout << "Start time: " << start_date << std::endl;
-    std::cout << "End time  : " << end_date << std::endl << std::endl;
-
-    /*
-     * generate passes
-     */
-    pass_list = GeneratePassList(geo, sgp4, start_date, end_date, 180);
-
-    if (pass_list.begin() == pass_list.end())
-    {
-        std::cout << "No passes found" << std::endl;
-    }
-    else
-    {
-        std::stringstream ss;
-
-        ss << std::right << std::setprecision(1) << std::fixed;
-
-        std::list<struct PassDetails>::const_iterator itr = pass_list.begin();
-        do
-        {
-            ss  << "AOS: " << itr->aos
-                << ", LOS: " << itr->los
-                << ", Max El: " << std::setw(4) << libsgp4::Util::RadiansToDegrees(itr->max_elevation)
-                << ", Duration: " << (itr->los - itr->aos)
-                << std::endl;
+    for (size_t i = 0; i < m_userEquipments.size(); ++i) {
+        libsgp4::Observer obs(m_userEquipments.at(i)->GetObserver());
+        std::list<struct PassDetails> pass_list_all;
+        m_userEquipments.at(i)->SetStartAndEndTime(start_time,end_time);
+        for (size_t j = 0; j < m_satellites.size(); ++j) {
+            libsgp4::SGP4 sgp4(m_satellites.at(j)->GetSGP4Model());
+            std::list<struct PassDetails> pass_list = GeneratePassList(obs,sgp4,start_time,end_time,time_step);
+            if (pass_list.begin() != pass_list.end())
+            {
+                std::list<struct PassDetails>::const_iterator itr = pass_list.begin();
+                do
+                {
+                    struct PassDetails new_detail;
+                    new_detail.los = itr->los;
+                    new_detail.aos = itr->aos;
+                    new_detail.max_elevation = itr->max_elevation;
+                    new_detail.satellite = m_satellites.at(j);
+                    pass_list_all.push_back(new_detail);
+                }while (++itr != pass_list.end());
+            }
         }
-        while (++itr != pass_list.end());
+        m_userEquipments.at(i)->SetPassList(pass_list_all);
+    }
+    for (size_t i = 0; i < m_userEquipments.size(); ++i) {
+        m_userEquipments.at(i)->GenerateAccessList();
+    }
+}
 
-        std::cout << ss.str();
+TopologyConstellation::TopologyConstellation(std::string constellation_network_dir)
+{
+    m_constellation_network_dir = constellation_network_dir;
+    ReadSatellites();
+    ReadUserTerminal();
+}
+
+TopologyConstellation::~TopologyConstellation()
+{
+    //nothing
+}
+
+void TopologyConstellation::ReadSatellites()
+{
+    std::cout << "  > Read TLE file of satellites" << std::endl;
+    // Open file
+    std::ifstream fs;
+    fs.open(m_constellation_network_dir + "/tles.txt");
+    assert(fs.is_open());
+
+    // First line:
+    // <orbits> <satellites per orbit>
+    std::string orbits_and_n_sats_per_orbit;
+    std::getline(fs, orbits_and_n_sats_per_orbit);
+    std::vector<std::string> res = split_string_length(orbits_and_n_sats_per_orbit, " ", 2);
+    m_num_orbits = std::stoi(res[0], 0, 10);
+    m_num_satellites_per_orbit = std::stoi(res[1], 0, 10);
+    int num_satellites = m_num_orbits * m_num_satellites_per_orbit;
+
+    // Associate satellite mobility model with each node
+    uint32_t counter = 0;
+    std::string name, tle1, tle2;
+    while (std::getline(fs, name)) {
+        std::getline(fs, tle1);
+        std::getline(fs, tle2);
+
+        // Format:
+        // <name>
+        // <TLE line 1>
+        // <TLE line 2>
+
+        // Create satellite
+        Satellite* satellite = new Satellite();
+        satellite->SetName(name);
+        satellite->SetTleInfo(tle1, tle2);
+        satellite->SetSatelliteNumber((int)counter);
+
+        // Add to all satellites present
+        m_satellites.push_back(satellite);
+
+        counter++;
     }
 
-    return 0;
+    // Check that exactly that number of satellites has been read in
+    if ((int)counter != num_satellites) {
+        throw std::runtime_error("Number of satellites defined in the TLEs does not match");
+    }
+
+
+    fs.close();
+    std::cout << "  > Number of satellites........ " << num_satellites << std::endl;
+    m_num_satellites = num_satellites;
+}
+
+void TopologyConstellation::ReadUserTerminal()
+{
+    std::cout << "  > Read user terminals" << std::endl;
+    // Create a new file stream to open the file
+    std::ifstream fs;
+    fs.open(m_constellation_network_dir + "/user_terminals.txt");
+    assert(fs.is_open());
+    int count_ue = 0;
+    // Read user terminals from each line
+    std::string line;
+    while (std::getline(fs, line)) {
+        std::vector<std::string> res = split_string_length(line, ",", 5);
+        // All eight values
+        int gid = std::stoi(res[0], 0, 10);
+        std::string name = res[1];
+        double latitude = std::stod(res[2]);
+        double longitude = std::stod(res[3]);
+        double elevation = std::stod(res[4]);
+        UserEquipment * ue = new UserEquipment((uint32_t)gid, name, latitude, longitude, elevation);
+        m_userEquipments.push_back(ue);
+        count_ue ++;
+    }
+
+    fs.close();
+    std::cout << "  > Number of user terminals... " << m_userEquipments.size() << std::endl;
+    assert(count_ue == (int)(m_userEquipments.size()));
+    m_num_user_terminals = count_ue;
+}
+
+int
+TopologyConstellation::GetNumOrbits() const
+{
+    return m_num_orbits;
+}
+int
+TopologyConstellation::GetNumSatellitesPerOrbit() const
+{
+    return m_num_satellites_per_orbit;
+}
+int
+TopologyConstellation::GetNumSatellites() const
+{
+    return m_num_satellites;
+}
+int
+TopologyConstellation::GetNumUserTerminals() const
+{
+    return m_num_user_terminals;
+}
+
+std::vector<Satellite *>
+TopologyConstellation::GetSatellites() const
+{
+    return m_satellites;
+}
+
+Satellite *
+TopologyConstellation::GetSatellite(size_t sat_id) const
+{
+    assert(sat_id<(size_t)m_num_satellites);
+    return m_satellites.at(sat_id);
+}
+
+
+std::vector<UserEquipment *>
+TopologyConstellation::GetUserEquipments() const
+{
+    return m_userEquipments;
+}
+
+UserEquipment*
+TopologyConstellation::GetUserEquipment(size_t ut_id) const
+{
+    assert(ut_id<(size_t)m_num_user_terminals);
+    return m_userEquipments.at(ut_id);
 }

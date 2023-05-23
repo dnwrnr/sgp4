@@ -1,7 +1,5 @@
-set(SRCS
-    passpredict.cc)
-
 add_executable(passpredict
-    ${SRCS})
+        passpredict.cc)
 target_link_libraries(passpredict
-    sgp4)
+        Topology)
+
