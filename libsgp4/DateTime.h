@@ -627,13 +627,23 @@ public:
     }
 
     /**
+     * Return the modified julian date since the j1900 epoch
+     * January 1, 1900, at 12:00 TT
+     * @returns the modified julian date
+     */
+    double ToJ1900() const
+    {
+        return ToJulian() - 2415020.0;
+    }
+
+    /**
      * Return the modified julian date since the j2000 epoch
      * January 1, 2000, at 12:00 TT
      * @returns the modified julian date
      */
     double ToJ2000() const
     {
-        return ToJulian() - 2415020.0;
+        return ToJulian() - 2451545.0;
     }
 
     /**
