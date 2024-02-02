@@ -721,7 +721,7 @@ void SGP4::DeepSpaceInitialise(
     /*
      * initialize lunar / solar terms
      */
-    const double jday = elements_.Epoch().ToJ2000();
+    const double jday = elements_.Epoch().ToJ1900();
 
     const double xnodce = Util::WrapTwoPI(4.5236020 - 9.2422029e-4 * jday);
     const double stem = sin(xnodce);
