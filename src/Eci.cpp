@@ -15,10 +15,10 @@
  */
 
 
-#include "Eci.h"
+#include <SGP4/Eci.h>
 
-#include "Globals.h"
-#include "Util.h"
+#include <SGP4/Globals.h>
+#include <SGP4/Util.h>
 
 namespace libsgp4
 {

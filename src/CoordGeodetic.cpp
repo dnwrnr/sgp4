@@ -15,4 +15,4 @@
  */
 
 
-#include "Globals.h"
+#include <SGP4/CoordGeodetic.h>

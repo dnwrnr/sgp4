@@ -15,9 +15,9 @@
  */
 
 
-#include "OrbitalElements.h"
+#include <SGP4/OrbitalElements.h>
 
-#include "Tle.h"
+#include <SGP4/Tle.h>
 
 namespace libsgp4
 {

@@ -15,12 +15,12 @@
  */
 
 
-#include "SGP4.h"
+#include <SGP4/SGP4.h>
 
-#include "Util.h"
-#include "Vector.h"
-#include "SatelliteException.h"
-#include "DecayedException.h"
+#include <SGP4/Util.h>
+#include <SGP4/Vector.h>
+#include <SGP4/SatelliteException.h>
+#include <SGP4/DecayedException.h>
 
 #include <cmath>
 #include <iomanip>

@@ -15,8 +15,8 @@
  */
 
 
-#include "Observer.h"
-#include "CoordTopocentric.h"
+#include <SGP4/Observer.h>
+#include <SGP4/CoordTopocentric.h>
 
 namespace libsgp4
 {

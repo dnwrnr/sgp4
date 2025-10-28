@@ -15,11 +15,11 @@
  */
 
 
-#include <Tle.h>
-#include <SGP4.h>
-#include <Observer.h>
-#include <CoordGeodetic.h>
-#include <CoordTopocentric.h>
+#include <SGP4/Tle.h>
+#include <SGP4/SGP4.h>
+#include <SGP4/Observer.h>
+#include <SGP4/CoordGeodetic.h>
+#include <SGP4/CoordTopocentric.h>
 
 #include <list>
 #include <string>
@@ -159,7 +159,7 @@ void tokenize(const std::string& str, std::vector<std::string>& tokens)
     }
 }
 
-void RunTest(const char* infile)
+int RunTest(const char* infile)
 {
     std::ifstream file;
 
@@ -168,13 +168,15 @@ void RunTest(const char* infile)
     if (!file.is_open())
     {
         std::cerr << "Error opening file" << std::endl;
-        return;
+        return 1;
     }
 
     bool got_first_line = false;
     std::string line1;
     std::string line2;
     std::string parameters;
+
+    auto error = 0;
 
     while (!file.eof())
     {
@@ -213,6 +215,7 @@ void RunTest(const char* infile)
             {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
+                error = 1;
             }
         }
         else
@@ -259,6 +262,7 @@ void RunTest(const char* infile)
             {
                 std::cerr << "Error: " << e.what() << std::endl;
                 std::cerr << line << std::endl;
+                error = 1;
             }
         }
     }
@@ -268,14 +272,12 @@ void RunTest(const char* infile)
      */
     file.close();
 
-    return;
+    return error;
 }
 
 int main()
 {
     const char* file_name = "SGP4-VER.TLE";
 
-    RunTest(file_name);
-
-    return 1;
+    return RunTest(file_name);
 }

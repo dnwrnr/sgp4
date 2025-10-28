@@ -15,4 +15,4 @@
  */
 
 
-#include "CoordGeodetic.h"
+#include <SGP4/TimeSpan.h>

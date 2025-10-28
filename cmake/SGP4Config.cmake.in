@@ -1,0 +1,8 @@
+# The following variables are defined:
+# - SGP4_IS_DEFAULT_TARGET_SHARED  - whether sgp4 target is SHARED or not
+# - SGP4_STATIC_LIBS_BUILT         - whether we have built sgp4-static target
+
+set(SGP4_IS_DEFAULT_TARGET_SHARED @SGP4_BUILD_SHARED_LIBS@)
+set(SGP4_STATIC_LIBS_BUILT @SGP4_BUILD_STATIC_LIBS@)
+
+include("${CMAKE_CURRENT_LIST_DIR}/SGP4Targets.cmake")
