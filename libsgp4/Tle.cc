@@ -18,6 +18,7 @@
 #include "Tle.h"
 
 #include <locale>
+#include <map>
 
 namespace libsgp4
 {
@@ -62,6 +63,32 @@ namespace
     static const unsigned int TLE2_LEN_MEANMOTION = 11;
     static const unsigned int TLE2_COL_REVATEPOCH = 63;
     static const unsigned int TLE2_LEN_REVATEPOCH = 5;
+
+    std::map<const char, std::string> alpha5_table = {
+        {'A', "10"},
+        {'B', "11"},
+        {'C', "12"},
+        {'D', "13"},
+        {'E', "14"},
+        {'F', "15"},
+        {'G', "16"},
+        {'H', "17"},
+        {'J', "18"},
+        {'K', "19"},
+        {'L', "20"},
+        {'M', "21"},
+        {'N', "22"},
+        {'P', "23"},
+        {'Q', "24"},
+        {'R', "25"},
+        {'S', "26"},
+        {'T', "27"},
+        {'U', "28"},
+        {'V', "29"},
+        {'W', "30"},
+        {'Y', "31"},
+        {'Z', "32"}
+    };
 }
 
 /**
@@ -90,20 +117,16 @@ void Tle::Initialize()
         throw TleException("Invalid line beginning for line two");
     }
 
-    unsigned int sat_number_1;
-    unsigned int sat_number_2;
-
-    ExtractInteger(line_one_.substr(TLE1_COL_NORADNUM,
-                TLE1_LEN_NORADNUM), sat_number_1);
-    ExtractInteger(line_two_.substr(TLE2_COL_NORADNUM,
-                TLE2_LEN_NORADNUM), sat_number_2);
+    const std::string sat_number_1 = line_one_.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+    const std::string sat_number_2 = line_two_.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM);
 
     if (sat_number_1 != sat_number_2)
     {
         throw TleException("Satellite numbers do not match");
     }
 
-    norad_number_ = sat_number_1;
+    // The satellite number might be Alpha-5 encoded
+    ExtractAlpha5(sat_number_1, norad_number_);
 
     if (name_.empty())
     {
@@ -370,6 +393,37 @@ void Tle::ExtractExponential(const std::string& str, double& val)
     if (!Util::FromString<double>(temp, val))
     {
         throw TleException("Failed to convert value to double");
+    }
+}
+
+/**
+ * Decode an Alpha-5 encoded string
+ * See here: https://www.space-track.org/documentation#tle-alpha5
+ * @param[in] str The string to convert
+ * @param[out] val The result
+ * @exception TleException on conversion error
+ */
+void Tle::ExtractAlpha5(const std::string& str, unsigned int& val)
+{
+    std::string decoded_str;
+    if (str[0] >= 'A' && str[0] <= 'Z')
+    {
+        auto it = alpha5_table.find(str[0]);
+        if (it != alpha5_table.end())
+            decoded_str = it->second;
+        else
+            throw TleException("Invalid Alpha-5 character");
+    }
+    else
+    {
+        decoded_str = str[0];
+    }
+
+    decoded_str += str.substr(1);
+
+    if (!Util::FromString<uint32_t>(decoded_str, val))
+    {
+        throw TleException("Failed to convert Alpha-5 value to unsigned int");
     }
 }
 

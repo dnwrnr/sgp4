@@ -308,6 +308,7 @@ private:
     void ExtractInteger(const std::string& str, unsigned int& val);
     void ExtractDouble(const std::string& str, int point_pos, double& val);
     void ExtractExponential(const std::string& str, double& val);
+    void ExtractAlpha5(const std::string& str, unsigned int& val);
 
 private:
     std::string name_;
