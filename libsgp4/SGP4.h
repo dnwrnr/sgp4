@@ -39,16 +39,17 @@ class SGP4
 {
 public:
     explicit SGP4(const Tle& tle)
-        : elements_(tle)
+        : elements_(tle), drift_rad_min_day(0.0), bstar_override(0.0), use_bstar_override(false)
     {
         Initialise();
     }
 
     void SetTle(const Tle& tle);
+    void SetAlongTrackBias(double bias_rad);
     Eci FindPosition(double tsince) const;
     Eci FindPosition(const DateTime& date) const;
 
-private:
+public:
     struct CommonConstants
     {
         double cosio;
@@ -249,12 +250,17 @@ private:
      * the orbit data
      */
     OrbitalElements elements_;
+    double drift_rad_min_day;
+    double bstar_override;
+    bool use_bstar_override;
 
     /*
      * flags
      */
     bool use_simple_model_;
     bool use_deep_space_;
+
+    friend class SGP4Batch;
 };
 
 } // namespace libsgp4

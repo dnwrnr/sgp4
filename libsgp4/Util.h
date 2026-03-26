@@ -54,7 +54,9 @@ namespace Util
 
     inline double WrapTwoPI(const double a)
     {
-        return Mod(a, kTWOPI);
+        double res = fmod(a, kTWOPI);
+        if (res < 0) res += kTWOPI;
+        return res;
     }
 
     inline double WrapNegPos180(const double a)
