@@ -36,6 +36,7 @@ set(SRCS
      )
 
 add_library(sgp4 STATIC ${SRCS} ${INCS})
+install( TARGETS sgp4 ARCHIVE DESTINATION lib )
 add_library(sgp4s SHARED ${SRCS} ${INCS})
 install( TARGETS sgp4s LIBRARY DESTINATION lib )
 install( FILES ${INCS} DESTINATION include/libsgp4 )
