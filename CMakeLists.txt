@@ -25,6 +25,7 @@ option(BUILD_EXAMPLES "Build example programs (sattrack, runtest, passpredict)" 
 option(BUILD_TESTS "Build unit tests" ON)
 
 include(FetchContent)
+set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest" FORCE)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
