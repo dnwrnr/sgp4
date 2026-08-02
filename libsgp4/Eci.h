@@ -38,9 +38,9 @@ public:
      * @param[in] altitude the altitude in kilometers
      */
     Eci(const DateTime& dt,
-            const double latitude,
-            const double longitude,
-            const double altitude)
+            double latitude,
+            double longitude,
+            double altitude)
     {
         ToEci(dt, CoordGeodetic(latitude, longitude, altitude));
     }

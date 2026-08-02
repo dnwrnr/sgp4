@@ -220,13 +220,13 @@ public:
                 valid = false;
             }
         }
-        else 
+        else
         {
             valid = false;
         }
         return valid;
     }
-    
+
     /**
      * Check whether the year/month/day is valid
      * @param[in] year the year to check
@@ -263,7 +263,7 @@ public:
         {
             assert(false && "Invalid year and month");
         }
-        
+
         const int* daysInMonthPtr;
 
         if (IsLeapYear(year))
@@ -388,12 +388,12 @@ public:
         return ret;
     }
 
-    DateTime AddYears(const int years) const
+    DateTime AddYears(int years) const
     {
         return AddMonths(years * 12);
     }
 
-    DateTime AddMonths(const int months) const
+    DateTime AddMonths(int months) const
     {
         int year;
         int month;
@@ -429,27 +429,27 @@ public:
         return AddTicks(t.Ticks());
     }
 
-    DateTime AddDays(const double days) const
+    DateTime AddDays(double days) const
     {
         return AddMicroseconds(days * 86400000000.0);
     }
 
-    DateTime AddHours(const double hours) const
+    DateTime AddHours(double hours) const
     {
         return AddMicroseconds(hours * 3600000000.0);
     }
 
-    DateTime AddMinutes(const double minutes) const
+    DateTime AddMinutes(double minutes) const
     {
         return AddMicroseconds(minutes * 60000000.0);
     }
 
-    DateTime AddSeconds(const double seconds) const
+    DateTime AddSeconds(double seconds) const
     {
         return AddMicroseconds(seconds * 1000000.0);
     }
 
-    DateTime AddMicroseconds(const double microseconds) const
+    DateTime AddMicroseconds(double microseconds) const
     {
         auto ticks = static_cast<int64_t>(microseconds * kTICKS_PER_MICROSECOND);
         return AddTicks(ticks);
@@ -472,7 +472,7 @@ public:
     void FromTicks(int& year, int& month, int& day) const
     {
         int totalDays = static_cast<int>(mEncoded / kTICKS_PER_DAY);
-        
+
         /*
          * number of 400 year cycles
          */
@@ -512,7 +512,7 @@ public:
          * find year
          */
         year = (num400 * 400) + (num100 * 100) + (num4 * 4) + num1 + 1;
-        
+
         /*
          * convert day of year to month/day
          */
@@ -652,7 +652,7 @@ public:
      * @param[in] lon observers longitude
      * @returns the local mean sidereal time
      */
-    double ToLocalMeanSiderealTime(const double lon) const
+    double ToLocalMeanSiderealTime(double lon) const
     {
         return Util::WrapTwoPI(ToGreenwichSiderealTime() + lon);
     }

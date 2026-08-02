@@ -35,7 +35,7 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
      */
     mDt = dt;
 
-    static const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
+    const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
@@ -86,7 +86,7 @@ CoordGeodetic Eci::ToGeodetic() const
     const double r = sqrt((mPosition.x * mPosition.x)
             + (mPosition.y * mPosition.y));
 
-    static const double e2 = kF * (2.0 - kF);
+    const double e2 = kF * (2.0 - kF);
 
     double lat = Util::AcTan(mPosition.z, r);
     double phi = 0.0;
@@ -101,7 +101,7 @@ CoordGeodetic Eci::ToGeodetic() const
         lat = Util::AcTan(mPosition.z + kXKMPER * c * e2 * sinphi, r);
         cnt++;
     }
-    while (fabs(lat - phi) >= 1e-10 && cnt < 10);
+    while (std::abs(lat - phi) >= 1e-10 && cnt < 10);
 
     const double alt = r / cos(lat) - kXKMPER * c;
 

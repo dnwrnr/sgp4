@@ -38,9 +38,9 @@ public:
      * @param[in] longitude observers longitude in degrees
      * @param[in] altitude observers altitude in kilometers
      */
-    Observer(const double latitude,
-            const double longitude,
-            const double altitude)
+    Observer(double latitude,
+            double longitude,
+            double altitude)
         : mGeo(latitude, longitude, altitude)
         , mEci(DateTime(), mGeo)
     {

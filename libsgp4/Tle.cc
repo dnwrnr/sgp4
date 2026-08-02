@@ -26,52 +26,52 @@ namespace libsgp4
 {
 namespace
 {
-    static const unsigned int TLE1_COL_NORADNUM = 2;
-    static const unsigned int TLE1_LEN_NORADNUM = 5;
-    static const unsigned int TLE1_COL_INTLDESC_A = 9;
-    static const unsigned int TLE1_LEN_INTLDESC_A = 2;
+    const unsigned int TLE1_COL_NORADNUM = 2;
+    const unsigned int TLE1_LEN_NORADNUM = 5;
+    const unsigned int TLE1_COL_INTLDESC_A = 9;
+    const unsigned int TLE1_LEN_INTLDESC_A = 2;
 //  static const unsigned int TLE1_COL_INTLDESC_B = 11;
-    static const unsigned int TLE1_LEN_INTLDESC_B = 3;
+    const unsigned int TLE1_LEN_INTLDESC_B = 3;
 //  static const unsigned int TLE1_COL_INTLDESC_C = 14;
-    static const unsigned int TLE1_LEN_INTLDESC_C = 3;
-    static const unsigned int TLE1_COL_EPOCH_A = 18;
-    static const unsigned int TLE1_LEN_EPOCH_A = 2;
-    static const unsigned int TLE1_COL_EPOCH_B = 20;
-    static const unsigned int TLE1_LEN_EPOCH_B = 12;
-    static const unsigned int TLE1_COL_MEANMOTIONDT2 = 33;
-    static const unsigned int TLE1_LEN_MEANMOTIONDT2 = 10;
-    static const unsigned int TLE1_COL_MEANMOTIONDDT6 = 44;
-    static const unsigned int TLE1_LEN_MEANMOTIONDDT6 = 8;
-    static const unsigned int TLE1_COL_BSTAR = 53;
-    static const unsigned int TLE1_LEN_BSTAR = 8;
+    const unsigned int TLE1_LEN_INTLDESC_C = 3;
+    const unsigned int TLE1_COL_EPOCH_A = 18;
+    const unsigned int TLE1_LEN_EPOCH_A = 2;
+    const unsigned int TLE1_COL_EPOCH_B = 20;
+    const unsigned int TLE1_LEN_EPOCH_B = 12;
+    const unsigned int TLE1_COL_MEANMOTIONDT2 = 33;
+    const unsigned int TLE1_LEN_MEANMOTIONDT2 = 10;
+    const unsigned int TLE1_COL_MEANMOTIONDDT6 = 44;
+    const unsigned int TLE1_LEN_MEANMOTIONDDT6 = 8;
+    const unsigned int TLE1_COL_BSTAR = 53;
+    const unsigned int TLE1_LEN_BSTAR = 8;
 //  static const unsigned int TLE1_COL_EPHEMTYPE = 62;
 //  static const unsigned int TLE1_LEN_EPHEMTYPE = 1;
 //  static const unsigned int TLE1_COL_ELNUM = 64;
 //  static const unsigned int TLE1_LEN_ELNUM = 4;
 
-    static const unsigned int TLE2_COL_NORADNUM = 2;
-    static const unsigned int TLE2_LEN_NORADNUM = 5;
-    static const unsigned int TLE2_COL_INCLINATION = 8;
-    static const unsigned int TLE2_LEN_INCLINATION = 8;
-    static const unsigned int TLE2_COL_RAASCENDNODE = 17;
-    static const unsigned int TLE2_LEN_RAASCENDNODE = 8;
-    static const unsigned int TLE2_COL_ECCENTRICITY = 26;
-    static const unsigned int TLE2_LEN_ECCENTRICITY = 7;
-    static const unsigned int TLE2_COL_ARGPERIGEE = 34;
-    static const unsigned int TLE2_LEN_ARGPERIGEE = 8;
-    static const unsigned int TLE2_COL_MEANANOMALY = 43;
-    static const unsigned int TLE2_LEN_MEANANOMALY = 8;
-    static const unsigned int TLE2_COL_MEANMOTION = 52;
-    static const unsigned int TLE2_LEN_MEANMOTION = 11;
-    static const unsigned int TLE2_COL_REVATEPOCH = 63;
-    static const unsigned int TLE2_LEN_REVATEPOCH = 5;
+    const unsigned int TLE2_COL_NORADNUM = 2;
+    const unsigned int TLE2_LEN_NORADNUM = 5;
+    const unsigned int TLE2_COL_INCLINATION = 8;
+    const unsigned int TLE2_LEN_INCLINATION = 8;
+    const unsigned int TLE2_COL_RAASCENDNODE = 17;
+    const unsigned int TLE2_LEN_RAASCENDNODE = 8;
+    const unsigned int TLE2_COL_ECCENTRICITY = 26;
+    const unsigned int TLE2_LEN_ECCENTRICITY = 7;
+    const unsigned int TLE2_COL_ARGPERIGEE = 34;
+    const unsigned int TLE2_LEN_ARGPERIGEE = 8;
+    const unsigned int TLE2_COL_MEANANOMALY = 43;
+    const unsigned int TLE2_LEN_MEANANOMALY = 8;
+    const unsigned int TLE2_COL_MEANMOTION = 52;
+    const unsigned int TLE2_LEN_MEANMOTION = 11;
+    const unsigned int TLE2_COL_REVATEPOCH = 63;
+    const unsigned int TLE2_LEN_REVATEPOCH = 5;
 }
 
 /**
  * Initialise the tle object.
  * @exception TleException
  */
-void Tle::Initialize()
+void Tle::Initialise()
 {
     if (!IsValidLineLength(mLineOne))
     {
@@ -87,7 +87,7 @@ void Tle::Initialize()
     {
         throw TleException("Invalid line beginning for line one");
     }
-        
+
     if (mLineTwo[0] != '2')
     {
         throw TleException("Invalid line beginning for line two");
@@ -147,7 +147,7 @@ void Tle::Initialize()
                 TLE2_LEN_MEANMOTION), 3, mMeanMotion);
     ExtractInteger(mLineTwo.substr(TLE2_COL_REVATEPOCH,
                 TLE2_LEN_REVATEPOCH), mOrbitNumber);
-    
+
     if (year < 57)
     {
         year += 2000;
@@ -161,7 +161,7 @@ void Tle::Initialize()
 }
 
 /**
- * Check 
+ * Check
  * @param str The string to check
  * @returns Whether true of the string has a valid length
  */
@@ -296,7 +296,7 @@ void Tle::ExtractDouble(const std::string& str, int pointPos, double& val)
                 temp += '0';
                 temp += '.';
             }
-            
+
             /*
              * should be a digit
              */

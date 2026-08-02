@@ -41,7 +41,7 @@ public:
         : mLineOne(std::move(lineOne))
         , mLineTwo(std::move(lineTwo))
     {
-        Initialize();
+        Initialise();
     }
 
     /**
@@ -55,7 +55,7 @@ public:
         , mLineOne(std::move(lineOne))
         , mLineTwo(std::move(lineTwo))
     {
-        Initialize();
+        Initialise();
     }
 
     /**
@@ -73,31 +73,6 @@ public:
      * @throws TleException if the line is malformed or has wrong field count
      */
     static Tle FromCsv(const std::string& csvLine);
-
-    /**
-     * Copy constructor
-     * @param[in] tle Tle object to copy from
-     */
-    Tle(const Tle& tle)
-    {
-        mName = tle.mName;
-        mLineOne = tle.mLineOne;
-        mLineTwo = tle.mLineTwo;
-
-        mNoradNumber = tle.mNoradNumber;
-        mIntDesignator = tle.mIntDesignator;
-        mEpoch = tle.mEpoch;
-        mMeanMotionDt2 = tle.mMeanMotionDt2;
-        mMeanMotionDdt6 = tle.mMeanMotionDdt6;
-        mBstar = tle.mBstar;
-        mInclination = tle.mInclination;
-        mRightAscendingNode = tle.mRightAscendingNode;
-        mEccentricity = tle.mEccentricity;
-        mArgumentPerigee = tle.mArgumentPerigee;
-        mMeanAnomaly = tle.mMeanAnomaly;
-        mMeanMotion = tle.mMeanMotion;
-        mOrbitNumber = tle.mOrbitNumber;
-    }
 
     /**
      * Get the satellite name
@@ -202,7 +177,7 @@ public:
      * @param inDegrees Whether to return the value in degrees or radians
      * @returns the right ascension of the ascending node
      */
-    double RightAscendingNode(const bool inDegrees) const
+    double RightAscendingNode(bool inDegrees) const
     {
         if (inDegrees)
         {
@@ -228,7 +203,7 @@ public:
      * @param inDegrees Whether to return the value in degrees or radians
      * @returns the argument of perigee
      */
-    double ArgumentPerigee(const bool inDegrees) const
+    double ArgumentPerigee(bool inDegrees) const
     {
         if (inDegrees)
         {
@@ -245,7 +220,7 @@ public:
      * @param inDegrees Whether to return the value in degrees or radians
      * @returns the mean anomaly
      */
-    double MeanAnomaly(const bool inDegrees) const
+    double MeanAnomaly(bool inDegrees) const
     {
         if (inDegrees)
         {
@@ -283,7 +258,7 @@ public:
     {
         return TLE_LEN_LINE_DATA;
     }
-    
+
     /**
      * Dump this object to a string
      * @returns string
@@ -334,7 +309,7 @@ private:
         double meanMotion,
         unsigned int orbitNumber);
 
-    void Initialize();
+    void Initialise();
     static bool IsValidLineLength(const std::string& str);
     void ExtractInteger(const std::string& str, unsigned int& val);
     void ExtractDouble(const std::string& str, int pointPos, double& val);

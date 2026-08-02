@@ -101,7 +101,7 @@ void SGP4::Initialise()
     if (mElements.Perigee() < 156.0)
     {
         s4 = mElements.Perigee() - 78.0;
-        if (mElements.Perigee() < 98.0) 
+        if (mElements.Perigee() < 98.0)
         {
             s4 = 20.0;
         }
@@ -121,7 +121,7 @@ void SGP4::Initialise()
         * mElements.Eccentricity() * tsi;
     const double etasq = mCommonConsts.eta * mCommonConsts.eta;
     const double eeta = mElements.Eccentricity() * mCommonConsts.eta;
-    const double psisq = fabs(1.0 - etasq);
+    const double psisq = std::abs(1.0 - etasq);
     const double coef = qoms24 * pow(tsi, 4.0);
     const double coef1 = coef / pow(psisq, 3.5);
     const double c2 = coef1 * mElements.RecoveredMeanMotion()
@@ -356,7 +356,7 @@ Eci SGP4::FindPositionSDP4(double tsince) const
                                           perturbedSinio);
 }
 
-void SGP4::RecomputeConstants(const double xinc,
+void SGP4::RecomputeConstants(double xinc,
                               double& sinio,
                               double& cosio,
                               double& x3thm1,
@@ -374,7 +374,7 @@ void SGP4::RecomputeConstants(const double xinc,
     x1mth2 = 1.0 - theta2;
     x7thm1 = 7.0 * theta2 - 1.0;
 
-    if (fabs(cosio + 1.0) > 1.5e-12)
+    if (std::abs(cosio + 1.0) > 1.5e-12)
     {
         xlcof = 0.125 * kA3OVK2 * sinio * (3.0 + 5.0 * cosio) / (1.0 + cosio);
     }
@@ -481,19 +481,19 @@ Eci SGP4::FindPositionSGP4(double tsince) const
 
 Eci SGP4::CalculateFinalPositionVelocity(
         const DateTime& dt,
-        const double e,
-        const double a,
-        const double omega,
-        const double xl,
-        const double xnode,
-        const double xinc,
-        const double xlcof,
-        const double aycof,
-        const double x3thm1,
-        const double x1mth2,
-        const double x7thm1,
-        const double cosio,
-        const double sinio)
+        double e,
+        double a,
+        double omega,
+        double xl,
+        double xnode,
+        double xinc,
+        double xlcof,
+        double aycof,
+        double x3thm1,
+        double x1mth2,
+        double x7thm1,
+        double cosio,
+        double sinio)
 {
     const double beta2 = 1.0 - e * e;
     const double xn = kXKE / pow(a, 1.5);
@@ -532,7 +532,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
     /*
      * sensibility check for N-R correction
      */
-    const double maxNewtonNaphson = 1.25 * fabs(sqrt(elsq));
+    const double maxNewtonNaphson = 1.25 * std::abs(sqrt(elsq));
 
     bool keplerRunning = true;
 
@@ -545,7 +545,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
 
         double f = capu - epw + esine;
 
-        if (fabs(f) < 1.0e-12)
+        if (std::abs(f) < 1.0e-12)
         {
             keplerRunning = false;
         }
@@ -673,15 +673,15 @@ static inline double EvaluateCubicPolynomial(
 }
 
 void SGP4::DeepSpaceInitialise(
-        const double eosq,
-        const double sinio,
-        const double cosio,
-        const double betao,
-        const double theta2,
-        const double betao2,
-        const double xmdot,
-        const double omgdot,
-        const double xnodot)
+        double eosq,
+        double sinio,
+        double cosio,
+        double betao,
+        double theta2,
+        double betao2,
+        double xmdot,
+        double omgdot,
+        double xnodot)
 {
     double se = 0.0;
     double si = 0.0;
@@ -691,24 +691,24 @@ void SGP4::DeepSpaceInitialise(
 
     double bfact = 0.0;
 
-    static const double ZNS = 1.19459E-5;
-    static const double C1SS = 2.9864797E-6;
-    static const double ZES = 0.01675;
-    static const double ZNL = 1.5835218E-4;
-    static const double C1L = 4.7968065E-7;
-    static const double ZEL = 0.05490;
-    static const double ZCOSIS = 0.91744867;
-    static const double ZSINI = 0.39785416;
-    static const double ZSINGS = -0.98088458;
-    static const double ZCOSGS = 0.1945905;
-    static const double Q22 = 1.7891679E-6;
-    static const double Q31 = 2.1460748E-6;
-    static const double Q33 = 2.2123015E-7;
-    static const double ROOT22 = 1.7891679E-6;
-    static const double ROOT32 = 3.7393792E-7;
-    static const double ROOT44 = 7.3636953E-9;
-    static const double ROOT52 = 1.1428639E-7;
-    static const double ROOT54 = 2.1765803E-9;
+    const double ZNS = 1.19459E-5;
+    const double C1SS = 2.9864797E-6;
+    const double ZES = 0.01675;
+    const double ZNL = 1.5835218E-4;
+    const double C1L = 4.7968065E-7;
+    const double ZEL = 0.05490;
+    const double ZCOSIS = 0.91744867;
+    const double ZSINI = 0.39785416;
+    const double ZSINGS = -0.98088458;
+    const double ZCOSGS = 0.1945905;
+    const double Q22 = 1.7891679E-6;
+    const double Q31 = 2.1460748E-6;
+    const double Q33 = 2.2123015E-7;
+    const double ROOT22 = 1.7891679E-6;
+    const double ROOT32 = 3.7393792E-7;
+    const double ROOT44 = 7.3636953E-9;
+    const double ROOT52 = 1.1428639E-7;
+    const double ROOT54 = 2.1765803E-9;
 
     const double aqnv = 1.0 / mElements.RecoveredSemiMajorAxis();
     const double xpidot = omgdot + xnodot;
@@ -787,7 +787,7 @@ void SGP4::DeepSpaceInitialise(
 
         const double z11 = -6.0 * a1 * a5
             + eosq * (-24. * x1 * x7 - 6. * x3 * x5);
-        const double z12 = -6.0 * (a1 * a6 + a3 * a5) 
+        const double z12 = -6.0 * (a1 * a6 + a3 * a5)
             + eosq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
         const double z13 = -6.0 * a3 * a6
             + eosq * (-24. * x2 * x8 - 6. * x4 * x6);
@@ -1085,7 +1085,7 @@ void SGP4::DeepSpaceInitialise(
  * zmol, ee2,  e3, xi2, xi3, xl2, xl3, xl4, xgh2, xgh3, xgh4, xh2, xh3
  */
 void SGP4::DeepSpacePeriodics(
-        const double tsince,
+        double tsince,
         const DeepSpaceConstants& dsConstants,
         double& em,
         double& xinc,
@@ -1093,10 +1093,10 @@ void SGP4::DeepSpacePeriodics(
         double& xnodes,
         double& xll)
 {
-    static const double ZES = 0.01675;
-    static const double ZNS = 1.19459E-5;
-    static const double ZNL = 1.5835218E-4;
-    static const double ZEL = 0.05490;
+    const double ZES = 0.01675;
+    const double ZNS = 1.19459E-5;
+    const double ZNL = 1.5835218E-4;
+    const double ZEL = 0.05490;
 
     // calculate solar terms for time tsince
     double zm = dsConstants.zmos + ZNS * tsince;
@@ -1189,7 +1189,7 @@ void SGP4::DeepSpacePeriodics(
          * RAAN is in the range of 0 to 360 degrees
          * atan2 is in the range of -180 to 180 degrees
          */
-        if (fabs(oldxnodes - xnodes) > kPI)
+        if (std::abs(oldxnodes - xnodes) > kPI)
         {
             if (xnodes < oldxnodes)
             {
@@ -1207,7 +1207,7 @@ void SGP4::DeepSpacePeriodics(
 }
 
 void SGP4::DeepSpaceSecular(
-        const double tsince,
+        double tsince,
         const OrbitalElements& elements,
         const CommonConstants& cConstants,
         const DeepSpaceConstants& dsConstants,
@@ -1219,17 +1219,17 @@ void SGP4::DeepSpaceSecular(
         double& xinc,
         double& xn)
 {
-    static const double G22 = 5.7686396;
-    static const double G32 = 0.95240898;
-    static const double G44 = 1.8014998;
-    static const double G52 = 1.0508330;
-    static const double G54 = 4.4108898;
-    static const double FASX2 = 0.13130908;
-    static const double FASX4 = 2.8843198;
-    static const double FASX6 = 0.37448087;
+    const double G22 = 5.7686396;
+    const double G32 = 0.95240898;
+    const double G44 = 1.8014998;
+    const double G52 = 1.0508330;
+    const double G54 = 4.4108898;
+    const double FASX2 = 0.13130908;
+    const double FASX4 = 2.8843198;
+    const double FASX6 = 0.37448087;
 
-    static const double STEP = 720.0;
-    static const double STEP2 = 259200.0;
+    const double STEP = 720.0;
+    const double STEP2 = 259200.0;
 
     xll += dsConstants.ssl * tsince;
     omgasm += dsConstants.ssg * tsince;
@@ -1246,12 +1246,12 @@ void SGP4::DeepSpaceSecular(
          * 1st condition (if tsince is less than one time step from epoch)
          * 2nd condition (if atime and
          *     tsince are of opposite signs, so zero crossing required)
-         * 3rd condition (if tsince is closer to zero than 
+         * 3rd condition (if tsince is closer to zero than
          *     atime, only integrate away from zero)
          */
-        if (fabs(tsince) < STEP ||
+        if (std::abs(tsince) < STEP ||
             tsince * integParams.atime <= 0.0 ||
-            fabs(tsince) < fabs(integParams.atime))
+            std::abs(tsince) < std::abs(integParams.atime))
         {
             // restart back at the epoch
             integParams.atime = 0.0;
@@ -1306,7 +1306,7 @@ void SGP4::DeepSpaceSecular(
             xnddt *= xldot;
 
             double ft = tsince - integParams.atime;
-            if (fabs(ft) >= STEP)
+            if (std::abs(ft) >= STEP)
             {
                 const double delt = (ft >= 0.0 ? STEP : -STEP);
                 // integrate by a full step ('delt'), updating the cached

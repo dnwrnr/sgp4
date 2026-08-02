@@ -77,7 +77,7 @@ public:
     {
         return TimeSpan(mTicks + ts.mTicks);
     }
-    
+
     TimeSpan Subtract(const TimeSpan& ts) const
     {
         return TimeSpan(mTicks - ts.mTicks);
@@ -127,7 +127,7 @@ public:
     {
         return static_cast<int>(mTicks % kTICKS_PER_SECOND / kTICKS_PER_MILLISECOND);
     }
-    
+
     int Microseconds() const
     {
         return static_cast<int>(mTicks % kTICKS_PER_SECOND / kTICKS_PER_MICROSECOND);
@@ -157,12 +157,12 @@ public:
     {
         return static_cast<double>(mTicks) / kTICKS_PER_SECOND;
     }
-    
+
     double TotalMilliseconds() const
     {
         return static_cast<double>(mTicks) / kTICKS_PER_MILLISECOND;
     }
-    
+
     double TotalMicroseconds() const
     {
         return static_cast<double>(mTicks) / kTICKS_PER_MICROSECOND;
@@ -173,7 +173,7 @@ public:
         std::stringstream ss;
 
         ss << std::right << std::setfill('0');
-        
+
         if (mTicks < 0)
         {
             ss << '-';

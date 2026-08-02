@@ -45,9 +45,9 @@ public:
      * @param argY y value
      * @param argZ z value
      */
-    Vector(const double argX,
-            const double argY,
-            const double argZ)
+    Vector(double argX,
+            double argY,
+            double argZ)
         : x(argX), y(argY), z(argZ)
     {
     }
@@ -59,10 +59,10 @@ public:
      * @param argZ z value
      * @param argW w value
      */
-    Vector(const double argX,
-            const double argY,
-            const double argZ,
-            const double argW)
+    Vector(double argX,
+            double argY,
+            double argZ,
+            double argW)
         : x(argX), y(argY), z(argZ), w(argW)
     {
     }

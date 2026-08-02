@@ -37,7 +37,7 @@ namespace Util
      * always positive result
      * Mod(-3,4)= 1   fmod(-3,4)= -3
      */
-    inline double Mod(const double x, const double y)
+    inline double Mod(double x, double y)
     {
         if (y == 0.0)
         {
@@ -47,37 +47,37 @@ namespace Util
         return x - y * floor(x / y);
     }
 
-    inline double WrapNegPosPI(const double a)
+    inline double WrapNegPosPI(double a)
     {
         return Mod(a + kPI, kTWOPI) - kPI;
     }
 
-    inline double WrapTwoPI(const double a)
+    inline double WrapTwoPI(double a)
     {
         return Mod(a, kTWOPI);
     }
 
-    inline double WrapNegPos180(const double a)
+    inline double WrapNegPos180(double a)
     {
         return Mod(a + 180.0, 360.0) - 180.0;
     }
 
-    inline double Wrap360(const double a)
+    inline double Wrap360(double a)
     {
         return Mod(a, 360.0);
     }
 
-    inline double DegreesToRadians(const double degrees)
+    inline double DegreesToRadians(double degrees)
     {
         return degrees * kPI / 180.0;
     }
 
-    inline double RadiansToDegrees(const double radians)
+    inline double RadiansToDegrees(double radians)
     {
         return radians * 180.0 / kPI;
     }
 
-    inline double AcTan(const double sinx, const double cosx)
+    inline double AcTan(double sinx, double cosx)
     {
         if (cosx == 0.0)
         {

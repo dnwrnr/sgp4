@@ -54,7 +54,7 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
         + sinLat * sinTheta * range.y - cosLat * range.z;
     double topE = -sinTheta * range.x
         + cosTheta * range.y;
-    double topZ = cosLat * cosTheta * range.x 
+    double topZ = cosLat * cosTheta * range.x
         + cosLat * sinTheta * range.y + sinLat * range.z;
     double az = atan(-topE / topS);
 
