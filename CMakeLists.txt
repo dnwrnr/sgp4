@@ -47,3 +47,28 @@ endif()
 if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format clang-format-21 clang-format-20 clang-format-19 clang-format-18)
+
+if(CLANG_FORMAT_EXECUTABLE)
+    file(GLOB_RECURSE SGP4_FORMAT_SOURCES
+        "${PROJECT_SOURCE_DIR}/libsgp4/*.h"
+        "${PROJECT_SOURCE_DIR}/libsgp4/*.cc"
+        "${PROJECT_SOURCE_DIR}/tests/*.cc"
+        "${PROJECT_SOURCE_DIR}/sattrack/*.cc"
+        "${PROJECT_SOURCE_DIR}/runtest/*.cc"
+        "${PROJECT_SOURCE_DIR}/passpredict/*.cc"
+        "${PROJECT_SOURCE_DIR}/csvprop/*.cc")
+
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT_EXECUTABLE} -i ${SGP4_FORMAT_SOURCES}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Applying clang-format to all source files"
+        USES_TERMINAL)
+
+    add_custom_target(format-check
+        COMMAND ${CLANG_FORMAT_EXECUTABLE} -i --dry-run --Werror ${SGP4_FORMAT_SOURCES}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Checking clang-format compliance"
+        USES_TERMINAL)
+endif()
