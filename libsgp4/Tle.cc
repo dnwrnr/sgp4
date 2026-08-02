@@ -73,22 +73,22 @@ namespace
  */
 void Tle::Initialize()
 {
-    if (!IsValidLineLength(line_one_))
+    if (!IsValidLineLength(m_line_one))
     {
         throw TleException("Invalid length for line one");
     }
 
-    if (!IsValidLineLength(line_two_))
+    if (!IsValidLineLength(m_line_two))
     {
         throw TleException("Invalid length for line two");
     }
 
-    if (line_one_[0] != '1')
+    if (m_line_one[0] != '1')
     {
         throw TleException("Invalid line beginning for line one");
     }
         
-    if (line_two_[0] != '2')
+    if (m_line_two[0] != '2')
     {
         throw TleException("Invalid line beginning for line two");
     }
@@ -96,9 +96,9 @@ void Tle::Initialize()
     unsigned int sat_number_1;
     unsigned int sat_number_2;
 
-    ExtractInteger(line_one_.substr(TLE1_COL_NORADNUM,
+    ExtractInteger(m_line_one.substr(TLE1_COL_NORADNUM,
                 TLE1_LEN_NORADNUM), sat_number_1);
-    ExtractInteger(line_two_.substr(TLE2_COL_NORADNUM,
+    ExtractInteger(m_line_two.substr(TLE2_COL_NORADNUM,
                 TLE2_LEN_NORADNUM), sat_number_2);
 
     if (sat_number_1 != sat_number_2)
@@ -106,47 +106,47 @@ void Tle::Initialize()
         throw TleException("Satellite numbers do not match");
     }
 
-    norad_number_ = sat_number_1;
+    m_norad_number = sat_number_1;
 
-    if (name_.empty())
+    if (m_name.empty())
     {
-        name_ = line_one_.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+        m_name = m_line_one.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
     }
 
-    int_designator_ = line_one_.substr(TLE1_COL_INTLDESC_A,
+    m_int_designator = m_line_one.substr(TLE1_COL_INTLDESC_A,
             TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
 
     unsigned int year = 0;
     double day = 0.0;
 
-    ExtractInteger(line_one_.substr(TLE1_COL_EPOCH_A,
+    ExtractInteger(m_line_one.substr(TLE1_COL_EPOCH_A,
                 TLE1_LEN_EPOCH_A), year);
-    ExtractDouble(line_one_.substr(TLE1_COL_EPOCH_B,
+    ExtractDouble(m_line_one.substr(TLE1_COL_EPOCH_B,
                 TLE1_LEN_EPOCH_B), 4, day);
-    ExtractDouble(line_one_.substr(TLE1_COL_MEANMOTIONDT2,
-                TLE1_LEN_MEANMOTIONDT2), 2, mean_motion_dt2_);
-    ExtractExponential(line_one_.substr(TLE1_COL_MEANMOTIONDDT6,
-                TLE1_LEN_MEANMOTIONDDT6), mean_motion_ddt6_);
-    ExtractExponential(line_one_.substr(TLE1_COL_BSTAR,
-                TLE1_LEN_BSTAR), bstar_);
+    ExtractDouble(m_line_one.substr(TLE1_COL_MEANMOTIONDT2,
+                TLE1_LEN_MEANMOTIONDT2), 2, m_mean_motion_dt2);
+    ExtractExponential(m_line_one.substr(TLE1_COL_MEANMOTIONDDT6,
+                TLE1_LEN_MEANMOTIONDDT6), m_mean_motion_ddt6);
+    ExtractExponential(m_line_one.substr(TLE1_COL_BSTAR,
+                TLE1_LEN_BSTAR), m_bstar);
 
     /*
      * line 2
      */
-    ExtractDouble(line_two_.substr(TLE2_COL_INCLINATION,
-                TLE2_LEN_INCLINATION), 4, inclination_);
-    ExtractDouble(line_two_.substr(TLE2_COL_RAASCENDNODE,
-                TLE2_LEN_RAASCENDNODE), 4, right_ascending_node_);
-    ExtractDouble(line_two_.substr(TLE2_COL_ECCENTRICITY,
-                TLE2_LEN_ECCENTRICITY), -1, eccentricity_);
-    ExtractDouble(line_two_.substr(TLE2_COL_ARGPERIGEE,
-                TLE2_LEN_ARGPERIGEE), 4, argument_perigee_);
-    ExtractDouble(line_two_.substr(TLE2_COL_MEANANOMALY,
-                TLE2_LEN_MEANANOMALY), 4, mean_anomaly_);
-    ExtractDouble(line_two_.substr(TLE2_COL_MEANMOTION,
-                TLE2_LEN_MEANMOTION), 3, mean_motion_);
-    ExtractInteger(line_two_.substr(TLE2_COL_REVATEPOCH,
-                TLE2_LEN_REVATEPOCH), orbit_number_);
+    ExtractDouble(m_line_two.substr(TLE2_COL_INCLINATION,
+                TLE2_LEN_INCLINATION), 4, m_inclination);
+    ExtractDouble(m_line_two.substr(TLE2_COL_RAASCENDNODE,
+                TLE2_LEN_RAASCENDNODE), 4, m_right_ascending_node);
+    ExtractDouble(m_line_two.substr(TLE2_COL_ECCENTRICITY,
+                TLE2_LEN_ECCENTRICITY), -1, m_eccentricity);
+    ExtractDouble(m_line_two.substr(TLE2_COL_ARGPERIGEE,
+                TLE2_LEN_ARGPERIGEE), 4, m_argument_perigee);
+    ExtractDouble(m_line_two.substr(TLE2_COL_MEANANOMALY,
+                TLE2_LEN_MEANANOMALY), 4, m_mean_anomaly);
+    ExtractDouble(m_line_two.substr(TLE2_COL_MEANMOTION,
+                TLE2_LEN_MEANMOTION), 3, m_mean_motion);
+    ExtractInteger(m_line_two.substr(TLE2_COL_REVATEPOCH,
+                TLE2_LEN_REVATEPOCH), m_orbit_number);
     
     if (year < 57)
     {
@@ -157,7 +157,7 @@ void Tle::Initialize()
         year += 1900;
     }
 
-    epoch_ = DateTime(year, day);
+    m_epoch = DateTime(year, day);
 }
 
 /**
@@ -393,20 +393,20 @@ Tle::Tle(const std::string& name,
          double mean_anomaly,
          double mean_motion,
          unsigned int orbit_number)
-    : name_(name)
-    , int_designator_(int_designator)
-    , epoch_(epoch)
-    , mean_motion_dt2_(mean_motion_dt2)
-    , mean_motion_ddt6_(mean_motion_ddt6)
-    , bstar_(bstar)
-    , inclination_(inclination)
-    , right_ascending_node_(right_ascending_node)
-    , eccentricity_(eccentricity)
-    , argument_perigee_(argument_perigee)
-    , mean_anomaly_(mean_anomaly)
-    , mean_motion_(mean_motion)
-    , norad_number_(norad_number)
-    , orbit_number_(orbit_number)
+    : m_name(name)
+    , m_int_designator(int_designator)
+    , m_epoch(epoch)
+    , m_mean_motion_dt2(mean_motion_dt2)
+    , m_mean_motion_ddt6(mean_motion_ddt6)
+    , m_bstar(bstar)
+    , m_inclination(inclination)
+    , m_right_ascending_node(right_ascending_node)
+    , m_eccentricity(eccentricity)
+    , m_argument_perigee(argument_perigee)
+    , m_mean_anomaly(mean_anomaly)
+    , m_mean_motion(mean_motion)
+    , m_norad_number(norad_number)
+    , m_orbit_number(orbit_number)
 {
 }
 

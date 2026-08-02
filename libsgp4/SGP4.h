@@ -39,7 +39,7 @@ class SGP4
 {
 public:
     explicit SGP4(const Tle& tle)
-        : elements_(tle)
+        : m_elements(tle)
     {
         Initialise();
     }
@@ -240,21 +240,21 @@ private:
     /*
      * the constants used
      */
-    struct CommonConstants common_consts_;
-    struct NearSpaceConstants nearspace_consts_;
-    struct DeepSpaceConstants deepspace_consts_;
-    mutable struct IntegratorParams integrator_params_;
+    struct CommonConstants m_common_consts;
+    struct NearSpaceConstants m_nearspace_consts;
+    struct DeepSpaceConstants m_deepspace_consts;
+    mutable struct IntegratorParams m_integrator_params;
 
     /*
      * the orbit data
      */
-    OrbitalElements elements_;
+    OrbitalElements m_elements;
 
     /*
      * flags
      */
-    bool use_simple_model_;
-    bool use_deep_space_;
+    bool m_use_simple_model;
+    bool m_use_deep_space;
 };
 
 } // namespace libsgp4

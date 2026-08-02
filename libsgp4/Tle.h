@@ -38,8 +38,8 @@ public:
      * @param[in] line_two Tle line two
      */
     Tle(std::string line_one, std::string line_two)
-        : line_one_(std::move(line_one))
-        , line_two_(std::move(line_two))
+        : m_line_one(std::move(line_one))
+        , m_line_two(std::move(line_two))
     {
         Initialize();
     }
@@ -51,9 +51,9 @@ public:
      * @param[in] line_two Tle line two
      */
     Tle(std::string name, std::string line_one, std::string line_two)
-        : name_(std::move(name))
-        , line_one_(std::move(line_one))
-        , line_two_(std::move(line_two))
+        : m_name(std::move(name))
+        , m_line_one(std::move(line_one))
+        , m_line_two(std::move(line_two))
     {
         Initialize();
     }
@@ -80,23 +80,23 @@ public:
      */
     Tle(const Tle& tle)
     {
-        name_ = tle.name_;
-        line_one_ = tle.line_one_;
-        line_two_ = tle.line_two_;
+        m_name = tle.m_name;
+        m_line_one = tle.m_line_one;
+        m_line_two = tle.m_line_two;
 
-        norad_number_ = tle.norad_number_;
-        int_designator_ = tle.int_designator_;
-        epoch_ = tle.epoch_;
-        mean_motion_dt2_ = tle.mean_motion_dt2_;
-        mean_motion_ddt6_ = tle.mean_motion_ddt6_;
-        bstar_ = tle.bstar_;
-        inclination_ = tle.inclination_;
-        right_ascending_node_ = tle.right_ascending_node_;
-        eccentricity_ = tle.eccentricity_;
-        argument_perigee_ = tle.argument_perigee_;
-        mean_anomaly_ = tle.mean_anomaly_;
-        mean_motion_ = tle.mean_motion_;
-        orbit_number_ = tle.orbit_number_;
+        m_norad_number = tle.m_norad_number;
+        m_int_designator = tle.m_int_designator;
+        m_epoch = tle.m_epoch;
+        m_mean_motion_dt2 = tle.m_mean_motion_dt2;
+        m_mean_motion_ddt6 = tle.m_mean_motion_ddt6;
+        m_bstar = tle.m_bstar;
+        m_inclination = tle.m_inclination;
+        m_right_ascending_node = tle.m_right_ascending_node;
+        m_eccentricity = tle.m_eccentricity;
+        m_argument_perigee = tle.m_argument_perigee;
+        m_mean_anomaly = tle.m_mean_anomaly;
+        m_mean_motion = tle.m_mean_motion;
+        m_orbit_number = tle.m_orbit_number;
     }
 
     /**
@@ -105,7 +105,7 @@ public:
      */
     std::string Name() const
     {
-        return name_;
+        return m_name;
     }
 
     /**
@@ -114,7 +114,7 @@ public:
      */
     std::string Line1() const
     {
-        return line_one_;
+        return m_line_one;
     }
 
     /**
@@ -123,7 +123,7 @@ public:
      */
     std::string Line2() const
     {
-        return line_two_;
+        return m_line_two;
     }
 
     /**
@@ -132,7 +132,7 @@ public:
      */
     unsigned int NoradNumber() const
     {
-        return norad_number_;
+        return m_norad_number;
     }
 
     /**
@@ -141,7 +141,7 @@ public:
      */
     std::string IntDesignator() const
     {
-        return int_designator_;
+        return m_int_designator;
     }
 
     /**
@@ -150,7 +150,7 @@ public:
      */
     DateTime Epoch() const
     {
-        return epoch_;
+        return m_epoch;
     }
 
     /**
@@ -159,7 +159,7 @@ public:
      */
     double MeanMotionDt2() const
     {
-        return mean_motion_dt2_;
+        return m_mean_motion_dt2;
     }
 
     /**
@@ -168,7 +168,7 @@ public:
      */
     double MeanMotionDdt6() const
     {
-        return mean_motion_ddt6_;
+        return m_mean_motion_ddt6;
     }
 
     /**
@@ -177,7 +177,7 @@ public:
      */
     double BStar() const
     {
-        return bstar_;
+        return m_bstar;
     }
 
     /**
@@ -189,11 +189,11 @@ public:
     {
         if (in_degrees)
         {
-            return inclination_;
+            return m_inclination;
         }
         else
         {
-            return Util::DegreesToRadians(inclination_);
+            return Util::DegreesToRadians(m_inclination);
         }
     }
 
@@ -206,11 +206,11 @@ public:
     {
         if (in_degrees)
         {
-            return right_ascending_node_;
+            return m_right_ascending_node;
         }
         else
         {
-            return Util::DegreesToRadians(right_ascending_node_);
+            return Util::DegreesToRadians(m_right_ascending_node);
         }
     }
 
@@ -220,7 +220,7 @@ public:
      */
     double Eccentricity() const
     {
-        return eccentricity_;
+        return m_eccentricity;
     }
 
     /**
@@ -232,11 +232,11 @@ public:
     {
         if (in_degrees)
         {
-            return argument_perigee_;
+            return m_argument_perigee;
         }
         else
         {
-            return Util::DegreesToRadians(argument_perigee_);
+            return Util::DegreesToRadians(m_argument_perigee);
         }
     }
 
@@ -249,11 +249,11 @@ public:
     {
         if (in_degrees)
         {
-            return mean_anomaly_;
+            return m_mean_anomaly;
         }
         else
         {
-            return Util::DegreesToRadians(mean_anomaly_);
+            return Util::DegreesToRadians(m_mean_anomaly);
         }
     }
 
@@ -263,7 +263,7 @@ public:
      */
     double MeanMotion() const
     {
-        return mean_motion_;
+        return m_mean_motion;
     }
 
     /**
@@ -272,7 +272,7 @@ public:
      */
     unsigned int OrbitNumber() const
     {
-        return orbit_number_;
+        return m_orbit_number;
     }
 
     /**
@@ -341,23 +341,23 @@ private:
     void ExtractExponential(const std::string& str, double& val);
 
 private:
-    std::string name_;
-    std::string line_one_;
-    std::string line_two_;
+    std::string m_name;
+    std::string m_line_one;
+    std::string m_line_two;
 
-    std::string int_designator_;
-    DateTime epoch_;
-    double mean_motion_dt2_{};
-    double mean_motion_ddt6_{};
-    double bstar_{};
-    double inclination_{};
-    double right_ascending_node_{};
-    double eccentricity_{};
-    double argument_perigee_{};
-    double mean_anomaly_{};
-    double mean_motion_{};
-    unsigned int norad_number_{};
-    unsigned int orbit_number_{};
+    std::string m_int_designator;
+    DateTime m_epoch;
+    double m_mean_motion_dt2{};
+    double m_mean_motion_ddt6{};
+    double m_bstar{};
+    double m_inclination{};
+    double m_right_ascending_node{};
+    double m_eccentricity{};
+    double m_argument_perigee{};
+    double m_mean_anomaly{};
+    double m_mean_motion{};
+    unsigned int m_norad_number{};
+    unsigned int m_orbit_number{};
 
     static const unsigned int TLE_LEN_LINE_DATA = 69;
     static const unsigned int TLE_LEN_LINE_NAME = 22;
