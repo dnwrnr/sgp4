@@ -17,6 +17,9 @@
 #include "Observer.h"
 
 #include "CoordTopocentric.h"
+#include "SatelliteException.h"
+
+#include <cmath>
 
 namespace libsgp4
 {
@@ -38,7 +41,17 @@ CoordTopocentric Observer::GetLookAngle(const Eci& eci)
     Vector rangeRate = eci.Velocity() - mEci.Velocity();
     Vector range = eci.Position() - mEci.Position();
 
+    if (!std::isfinite(range.x) || !std::isfinite(range.y) || !std::isfinite(range.z))
+    {
+        throw SatelliteException("Error: (range not finite)");
+    }
+
     range.w = range.Magnitude();
+
+    if (!(range.w > 0.0))
+    {
+        throw SatelliteException("Error: (range zero or not finite)");
+    }
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
@@ -65,7 +78,7 @@ CoordTopocentric Observer::GetLookAngle(const Eci& eci)
         az += 2.0 * kPI;
     }
 
-    double el = asin(topZ / range.w);
+    double el = asin(Util::Clamp(topZ / range.w, -1.0, 1.0));
     double rate = range.Dot(rangeRate) / range.w;
 
     /*

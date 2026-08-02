@@ -16,6 +16,7 @@
 
 #include "Tle.h"
 
+#include <cmath>
 #include <cstdio>
 #include <locale>
 #include <sstream>
@@ -437,6 +438,52 @@ namespace
         }
         return std::stoi(digits.substr(0, 6));
     }
+
+    double ParseCsvDouble(const std::string& field, const char* description)
+    {
+        std::string::size_type pos = 0;
+        double value = 0.0;
+        try
+        {
+            value = std::stod(field, &pos);
+        }
+        catch (const std::invalid_argument&)
+        {
+            throw TleException((std::string("Invalid CSV value for ") + description).c_str());
+        }
+        catch (const std::out_of_range&)
+        {
+            throw TleException((std::string("CSV value out of range for ") + description).c_str());
+        }
+        if (pos != field.size())
+        {
+            throw TleException((std::string("Invalid trailing characters in CSV ") + description).c_str());
+        }
+        return value;
+    }
+
+    unsigned int ParseCsvUnsigned(const std::string& field, const char* description)
+    {
+        std::string::size_type pos = 0;
+        unsigned long value = 0;
+        try
+        {
+            value = std::stoul(field, &pos);
+        }
+        catch (const std::invalid_argument&)
+        {
+            throw TleException((std::string("Invalid CSV value for ") + description).c_str());
+        }
+        catch (const std::out_of_range&)
+        {
+            throw TleException((std::string("CSV value out of range for ") + description).c_str());
+        }
+        if (pos != field.size())
+        {
+            throw TleException((std::string("Invalid trailing characters in CSV ") + description).c_str());
+        }
+        return static_cast<unsigned int>(value);
+    }
 } // namespace
 
 Tle Tle::FromCsv(const std::string& csvLine)
@@ -452,20 +499,41 @@ Tle Tle::FromCsv(const std::string& csvLine)
     const std::string& name = fields[0];
     const std::string& intDesignator = fields[1];
     const std::string& epochStr = fields[2];
-    double meanMotion = std::stod(fields[3]);
-    double eccentricity = std::stod(fields[4]);
-    double inclination = std::stod(fields[5]);
-    double raan = std::stod(fields[6]);
-    double argPerigee = std::stod(fields[7]);
-    double meanAnomaly = std::stod(fields[8]);
+    const double meanMotion = ParseCsvDouble(fields[3], "mean motion");
+    const double eccentricity = ParseCsvDouble(fields[4], "eccentricity");
+    const double inclination = ParseCsvDouble(fields[5], "inclination");
+    const double raan = ParseCsvDouble(fields[6], "right ascension");
+    const double argPerigee = ParseCsvDouble(fields[7], "argument of perigee");
+    const double meanAnomaly = ParseCsvDouble(fields[8], "mean anomaly");
     // fields[9] = ephemeris type (unused)
     // fields[10] = classification type (unused)
-    unsigned int noradNumber = static_cast<unsigned int>(std::stoul(fields[11]));
+    const unsigned int noradNumber = ParseCsvUnsigned(fields[11], "norad number");
     // fields[12] = element set number (unused)
-    unsigned int orbitNumber = static_cast<unsigned int>(std::stoul(fields[13]));
-    double bstar = std::stod(fields[14]);
-    double meanMotionDt2 = std::stod(fields[15]);
-    double meanMotionDdt6 = std::stod(fields[16]);
+    const unsigned int orbitNumber = ParseCsvUnsigned(fields[13], "orbit number");
+    const double bstar = ParseCsvDouble(fields[14], "bstar");
+    const double meanMotionDt2 = ParseCsvDouble(fields[15], "mean motion dt2");
+    const double meanMotionDdt6 = ParseCsvDouble(fields[16], "mean motion ddt6");
+
+    if (!std::isfinite(meanMotion) || meanMotion <= 0.0)
+    {
+        throw TleException("Invalid CSV mean motion");
+    }
+    if (!std::isfinite(eccentricity) || eccentricity < 0.0 || eccentricity >= 1.0)
+    {
+        throw TleException("Invalid CSV eccentricity");
+    }
+    if (!std::isfinite(inclination) || inclination < 0.0 || inclination > 180.0)
+    {
+        throw TleException("Invalid CSV inclination");
+    }
+    if (!std::isfinite(raan) || !std::isfinite(argPerigee) || !std::isfinite(meanAnomaly))
+    {
+        throw TleException("Invalid CSV angle");
+    }
+    if (!std::isfinite(bstar) || !std::isfinite(meanMotionDt2) || !std::isfinite(meanMotionDdt6))
+    {
+        throw TleException("Invalid CSV drag coefficient");
+    }
 
     int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
     if (std::sscanf(epochStr.c_str(), "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second) != 6)

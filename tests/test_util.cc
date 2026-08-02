@@ -1,8 +1,37 @@
 #include <gtest/gtest.h>
 #include <libsgp4/Globals.h>
 #include <libsgp4/Util.h>
+#include <limits>
 
 using namespace libsgp4;
+
+TEST(UtilClamp, WithinRange)
+{
+    EXPECT_DOUBLE_EQ(Util::Clamp(0.0, -1.0, 1.0), 0.0);
+    EXPECT_DOUBLE_EQ(Util::Clamp(0.5, -1.0, 1.0), 0.5);
+    EXPECT_DOUBLE_EQ(Util::Clamp(-0.5, -1.0, 1.0), -0.5);
+}
+
+TEST(UtilClamp, AtBounds)
+{
+    EXPECT_DOUBLE_EQ(Util::Clamp(-1.0, -1.0, 1.0), -1.0);
+    EXPECT_DOUBLE_EQ(Util::Clamp(1.0, -1.0, 1.0), 1.0);
+}
+
+TEST(UtilClamp, BelowMin)
+{
+    EXPECT_DOUBLE_EQ(Util::Clamp(-2.0, -1.0, 1.0), -1.0);
+}
+
+TEST(UtilClamp, AboveMax)
+{
+    EXPECT_DOUBLE_EQ(Util::Clamp(2.0, -1.0, 1.0), 1.0);
+}
+
+TEST(UtilClamp, NaN)
+{
+    EXPECT_DOUBLE_EQ(Util::Clamp(std::numeric_limits<double>::quiet_NaN(), -1.0, 1.0), -1.0);
+}
 
 TEST(UtilMod, PositiveDividend)
 {

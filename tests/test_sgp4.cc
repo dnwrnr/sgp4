@@ -1,8 +1,10 @@
+#include <cmath>
 #include <gtest/gtest.h>
 #include <libsgp4/DecayedException.h>
 #include <libsgp4/SGP4.h>
 #include <libsgp4/SatelliteException.h>
 #include <libsgp4/Tle.h>
+#include <limits>
 
 using namespace libsgp4;
 
@@ -217,4 +219,63 @@ TEST(SGP4VelocityMagnitude, Positive)
     double mag = vel.Magnitude();
     EXPECT_GT(mag, 0.0);
     EXPECT_LT(mag, 20.0);
+}
+
+TEST(SGP4Validation, FindPositionThrowsOnNanTsince)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    EXPECT_THROW(model.FindPosition(std::numeric_limits<double>::quiet_NaN()), SatelliteException);
+}
+
+TEST(SGP4Validation, FindPositionThrowsOnInfTsince)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    EXPECT_THROW(model.FindPosition(std::numeric_limits<double>::infinity()), SatelliteException);
+    EXPECT_THROW(model.FindPosition(-std::numeric_limits<double>::infinity()), SatelliteException);
+}
+
+TEST(SGP4Validation, FindPositionLargeTsinceFinite)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    Eci eci = model.FindPosition(1.0e9);
+    Vector pos = eci.Position();
+    Vector vel = eci.Velocity();
+
+    EXPECT_TRUE(std::isfinite(pos.x));
+    EXPECT_TRUE(std::isfinite(pos.y));
+    EXPECT_TRUE(std::isfinite(pos.z));
+    EXPECT_TRUE(std::isfinite(vel.x));
+    EXPECT_TRUE(std::isfinite(vel.y));
+    EXPECT_TRUE(std::isfinite(vel.z));
+}
+
+TEST(SGP4Validation, ZeroMeanMotionThrows)
+{
+    std::string line2 = TLE_LINE2_00005;
+    line2.replace(52, 11, "00.00000000");
+    Tle tle(TLE_LINE1_00005, line2);
+
+    EXPECT_THROW(SGP4 model(tle), SatelliteException);
+}
+
+TEST(SGP4Validation, DeepSpaceLargeTsinceFinite)
+{
+    std::string line1 = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
+    std::string line2 = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
+    Tle tle(line1, line2);
+    SGP4 model(tle);
+
+    Eci eci = model.FindPosition(1.0e6);
+    Vector pos = eci.Position();
+
+    EXPECT_TRUE(std::isfinite(pos.x));
+    EXPECT_TRUE(std::isfinite(pos.y));
+    EXPECT_TRUE(std::isfinite(pos.z));
+    EXPECT_GT(pos.Magnitude(), 1000.0);
 }

@@ -44,6 +44,23 @@ namespace Util
         return x - y * floor(x / y);
     }
 
+    /*
+     * clamp value to the inclusive range [min, max]
+     * returns min for NaN values
+     */
+    inline double Clamp(double value, double min, double max)
+    {
+        if (!(value > min))
+        {
+            return min;
+        }
+        if (value > max)
+        {
+            return max;
+        }
+        return value;
+    }
+
     inline double WrapNegPosPI(double a)
     {
         return Mod(a + kPI, kTWOPI) - kPI;

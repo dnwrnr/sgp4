@@ -206,6 +206,11 @@ Eci SGP4::FindPosition(const DateTime& dt) const
 
 Eci SGP4::FindPosition(double tsince) const
 {
+    if (!std::isfinite(tsince))
+    {
+        throw SatelliteException("Error: (tsince not finite)");
+    }
+
     if (mUseDeepSpace)
     {
         return FindPositionSDP4(tsince);
@@ -257,9 +262,9 @@ Eci SGP4::FindPositionSDP4(double tsince) const
                      xinc,
                      xn);
 
-    if (xn <= 0.0)
+    if (!(xn > 0.0))
     {
-        throw SatelliteException("Error: (xn <= 0.0)");
+        throw SatelliteException("Error: (xn <= 0.0 or not finite)");
     }
 
     const double v = kXKE / xn;
@@ -286,9 +291,9 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * fix tolerance for error recognition
      */
-    if (e <= -0.001)
+    if (!(e > -0.001))
     {
-        throw SatelliteException("Error: (e <= -0.001)");
+        throw SatelliteException("Error: (e <= -0.001 or not finite)");
     }
     else if (e < 1.0e-6)
     {
@@ -398,7 +403,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     if (!mUseSimpleModel)
     {
         const double delomg = mNearspaceConsts.omgcof * tsince;
-        const double x1p = 1.0 + mCommonConsts.eta * cos(xmdf);
+        const double x1p = 1.0 + mCommonConsts.eta * cos(Util::WrapTwoPI(xmdf));
         const double delm = mNearspaceConsts.xmcof * (x1p * x1p * x1p - mNearspaceConsts.delmo);
         const double temp = delomg + delm;
 
@@ -409,7 +414,7 @@ Eci SGP4::FindPositionSGP4(double tsince) const
         const double tfour = tsince * tcube;
 
         tempa = tempa - mNearspaceConsts.d2 * tsq - mNearspaceConsts.d3 * tcube - mNearspaceConsts.d4 * tfour;
-        tempe += mElements.BStar() * mNearspaceConsts.c5 * (sin(xmp) - mNearspaceConsts.sinmo);
+        tempe += mElements.BStar() * mNearspaceConsts.c5 * (sin(Util::WrapTwoPI(xmp)) - mNearspaceConsts.sinmo);
         templ += mNearspaceConsts.t3cof * tcube + tfour * (mNearspaceConsts.t4cof + tsince * mNearspaceConsts.t5cof);
     }
 
@@ -420,9 +425,9 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     /*
      * fix tolerance for error recognition
      */
-    if (e <= -0.001)
+    if (!(e > -0.001))
     {
-        throw SatelliteException("Error: (e <= -0.001)");
+        throw SatelliteException("Error: (e <= -0.001 or not finite)");
     }
     else if (e < 1.0e-6)
     {
@@ -468,6 +473,12 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
                                          double cosio,
                                          double sinio)
 {
+    if (!std::isfinite(e) || !std::isfinite(a) || !std::isfinite(omega) || !std::isfinite(xl) ||
+        !std::isfinite(xnode) || !std::isfinite(xinc))
+    {
+        throw SatelliteException("Error: (element not finite)");
+    }
+
     const double beta2 = 1.0 - e * e;
     const double sqrtA = sqrt(a);
     const double xn = kXKE / (a * sqrtA);
@@ -482,9 +493,9 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
     const double ayn = e * sin(omega) + aynl;
     const double elsq = axn * axn + ayn * ayn;
 
-    if (elsq >= 1.0)
+    if (!(elsq < 1.0))
     {
-        throw SatelliteException("Error: (elsq >= 1.0)");
+        throw SatelliteException("Error: (elsq >= 1.0 or not finite)");
     }
 
     /*
@@ -563,9 +574,9 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
     const double temp21 = 1.0 - elsq;
     const double pl = a * temp21;
 
-    if (pl < 0.0)
+    if (!(pl >= 0.0))
     {
-        throw SatelliteException("Error: (pl < 0.0)");
+        throw SatelliteException("Error: (pl < 0.0 or not finite)");
     }
 
     const double r = a * (1.0 - ecose);
@@ -625,8 +636,12 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
     const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
     Vector velocity(xdot, ydot, zdot);
 
-    if (rk < 1.0)
+    if (!(rk >= 1.0))
     {
+        if (!std::isfinite(rk))
+        {
+            throw SatelliteException("Error: (position radius not finite)");
+        }
         throw DecayedException(dt, position, velocity);
     }
 
@@ -1017,7 +1032,7 @@ void SGP4::DeepSpacePeriodics(double tsince,
     const double ZEL = 0.05490;
 
     // calculate solar terms for time tsince
-    double zm = dsConstants.zmos + ZNS * tsince;
+    double zm = Util::WrapTwoPI(dsConstants.zmos + ZNS * tsince);
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -1030,7 +1045,7 @@ void SGP4::DeepSpacePeriodics(double tsince,
     const double shs = dsConstants.sh2 * f2 + dsConstants.sh3 * f3;
 
     // calculate lunar terms for time tsince
-    zm = dsConstants.zmol + ZNL * tsince;
+    zm = Util::WrapTwoPI(dsConstants.zmol + ZNL * tsince);
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;

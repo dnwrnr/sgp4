@@ -138,6 +138,65 @@ TEST(CsvTleFromCsv, InvalidEpoch)
                  TleException);
 }
 
+TEST(CsvTleFromCsv, NonNumericMeanMotion)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,abc,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, TrailingCharactersMeanMotion)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,15.0abc,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, NanMeanMotion)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,nan,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, ZeroMeanMotion)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,0.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, NegativeMeanMotion)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,-2.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, EccentricityOutOfRange)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,2.0,1.2,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,2.0,-.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, InclinationOutOfRange)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,2.0,.01,200.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, InvalidNoradNumber)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,2.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26a07,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
 TEST(CsvTleLoader, LoadFile)
 {
     std::string csvContent = "OBJECT_NAME,OBJECT_ID,EPOCH,MEAN_MOTION,ECCENTRICITY,"
