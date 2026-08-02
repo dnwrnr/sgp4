@@ -24,35 +24,35 @@ TEST(TleConstruction, ValidWithName)
 
 TEST(TleConstruction, InvalidLineLengthLine1)
 {
-    std::string short_line = "1 00005";
-    EXPECT_THROW(Tle(short_line, VALID_LINE2), TleException);
+    std::string shortLine = "1 00005";
+    EXPECT_THROW(Tle(shortLine, VALID_LINE2), TleException);
 }
 
 TEST(TleConstruction, InvalidLineLengthLine2)
 {
-    std::string short_line = "2 00005";
-    EXPECT_THROW(Tle(VALID_LINE1, short_line), TleException);
+    std::string shortLine = "2 00005";
+    EXPECT_THROW(Tle(VALID_LINE1, shortLine), TleException);
 }
 
 TEST(TleConstruction, WrongLine1Prefix)
 {
-    std::string bad_line = VALID_LINE1;
-    bad_line[0] = '2';
-    EXPECT_THROW(Tle(bad_line, VALID_LINE2), TleException);
+    std::string badLine = VALID_LINE1;
+    badLine[0] = '2';
+    EXPECT_THROW(Tle(badLine, VALID_LINE2), TleException);
 }
 
 TEST(TleConstruction, WrongLine2Prefix)
 {
-    std::string bad_line = VALID_LINE2;
-    bad_line[0] = '1';
-    EXPECT_THROW(Tle(VALID_LINE1, bad_line), TleException);
+    std::string badLine = VALID_LINE2;
+    badLine[0] = '1';
+    EXPECT_THROW(Tle(VALID_LINE1, badLine), TleException);
 }
 
 TEST(TleConstruction, NORADNumberMismatch)
 {
-    std::string line2_different = VALID_LINE2;
-    line2_different[2] = '9';
-    EXPECT_THROW(Tle(VALID_LINE1, line2_different), TleException);
+    std::string line2Different = VALID_LINE2;
+    line2Different[2] = '9';
+    EXPECT_THROW(Tle(VALID_LINE1, line2Different), TleException);
 }
 
 TEST(TleEpoch, YearBefore57)
@@ -154,11 +154,11 @@ TEST(TleLineLength, Expected)
 
 TEST(TleMultipleTLEs, IndependentParsing)
 {
-    std::string line1_a = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
-    std::string line2_a = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
+    std::string line1A = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
+    std::string line2A = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
 
     Tle tle1(VALID_LINE1, VALID_LINE2);
-    Tle tle2(line1_a, line2_a);
+    Tle tle2(line1A, line2A);
 
     EXPECT_EQ(tle1.NoradNumber(), 5u);
     EXPECT_EQ(tle2.NoradNumber(), 4632u);

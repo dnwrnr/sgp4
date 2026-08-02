@@ -38,7 +38,7 @@ public:
      */
     double MeanAnomaly() const
     {
-        return m_mean_anomaly;
+        return mMeanAnomaly;
     }
 
     /*
@@ -46,7 +46,7 @@ public:
      */
     double AscendingNode() const
     {
-        return m_ascending_node;
+        return mAscendingNode;
     }
 
     /*
@@ -54,7 +54,7 @@ public:
      */
     double ArgumentPerigee() const
     {
-        return m_argument_perigee;
+        return mArgumentPerigee;
     }
 
     /*
@@ -62,7 +62,7 @@ public:
      */
     double Eccentricity() const
     {
-        return m_eccentricity;
+        return mEccentricity;
     }
 
     /*
@@ -70,7 +70,7 @@ public:
      */
     double Inclination() const
     {
-        return m_inclination;
+        return mInclination;
     }
 
     /*
@@ -78,7 +78,7 @@ public:
      */
     double MeanMotion() const
     {
-        return m_mean_motion;
+        return mMeanMotion;
     }
 
     /*
@@ -86,7 +86,7 @@ public:
      */
     double BStar() const
     {
-        return m_bstar;
+        return mBstar;
     }
 
     /*
@@ -94,7 +94,7 @@ public:
      */
     double RecoveredSemiMajorAxis() const
     {
-        return m_recovered_semi_major_axis;
+        return mRecoveredSemiMajorAxis;
     }
 
     /*
@@ -102,7 +102,7 @@ public:
      */
     double RecoveredMeanMotion() const
     {
-        return m_recovered_mean_motion;
+        return mRecoveredMeanMotion;
     }
 
     /*
@@ -110,7 +110,7 @@ public:
      */
     double Perigee() const
     {
-        return m_perigee;
+        return mPerigee;
     }
 
     /*
@@ -118,7 +118,7 @@ public:
      */
     double Period() const
     {
-        return m_period;
+        return mPeriod;
     }
 
     /*
@@ -126,22 +126,22 @@ public:
      */
     DateTime Epoch() const
     {
-        return m_epoch;
+        return mEpoch;
     }
 
 private:
-    double m_mean_anomaly;
-    double m_ascending_node;
-    double m_argument_perigee;
-    double m_eccentricity;
-    double m_inclination;
-    double m_mean_motion;
-    double m_bstar;
-    double m_recovered_semi_major_axis;
-    double m_recovered_mean_motion;
-    double m_perigee;
-    double m_period;
-    DateTime m_epoch;
+    double mMeanAnomaly;
+    double mAscendingNode;
+    double mArgumentPerigee;
+    double mEccentricity;
+    double mInclination;
+    double mMeanMotion;
+    double mBstar;
+    double mRecoveredSemiMajorAxis;
+    double mRecoveredMeanMotion;
+    double mPerigee;
+    double mPeriod;
+    DateTime mEpoch;
 };
 
 } // namespace libsgp4

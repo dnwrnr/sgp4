@@ -70,7 +70,7 @@ TEST(SGP4Basic, FindPositionAtMultipleTimes)
     SGP4 model(tle);
 
     double times[] = {0.0, 360.0, 720.0, 1080.0, 1440.0};
-    double expected_pos[][3] = {
+    double expectedPos[][3] = {
         {7022.46529267, -1400.08296756, 0.03995155},
         {-7154.03120202, -3783.17682504, -3536.19412294},
         {-7134.59340120, 6531.68641334, 3260.27186483},
@@ -82,9 +82,9 @@ TEST(SGP4Basic, FindPositionAtMultipleTimes)
     {
         Eci eci = model.FindPosition(times[i]);
         Vector pos = eci.Position();
-        EXPECT_NEAR(pos.x, expected_pos[i][0], 1e-3) << "at t=" << times[i];
-        EXPECT_NEAR(pos.y, expected_pos[i][1], 1e-3) << "at t=" << times[i];
-        EXPECT_NEAR(pos.z, expected_pos[i][2], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.x, expectedPos[i][0], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.y, expectedPos[i][1], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.z, expectedPos[i][2], 1e-3) << "at t=" << times[i];
     }
 }
 

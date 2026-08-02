@@ -41,29 +41,29 @@ public:
 
     /**
      * Constructor
-     * @param arg_x x value
-     * @param arg_y y value
-     * @param arg_z z value
+     * @param argX x value
+     * @param argY y value
+     * @param argZ z value
      */
-    Vector(const double arg_x,
-            const double arg_y,
-            const double arg_z)
-        : x(arg_x), y(arg_y), z(arg_z)
+    Vector(const double argX,
+            const double argY,
+            const double argZ)
+        : x(argX), y(argY), z(argZ)
     {
     }
 
     /**
      * Constructor
-     * @param arg_x x value
-     * @param arg_y y value
-     * @param arg_z z value
-     * @param arg_w w value
+     * @param argX x value
+     * @param argY y value
+     * @param argZ z value
+     * @param argW w value
      */
-    Vector(const double arg_x,
-            const double arg_y,
-            const double arg_z,
-            const double arg_w)
-        : x(arg_x), y(arg_y), z(arg_z), w(arg_w)
+    Vector(const double argX,
+            const double argY,
+            const double argZ,
+            const double argW)
+        : x(argX), y(argY), z(argZ), w(argW)
     {
     }
 

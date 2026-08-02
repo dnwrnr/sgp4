@@ -27,14 +27,14 @@ OrbitalElements::OrbitalElements(const Tle& tle)
     /*
      * extract and format tle data
      */
-    m_mean_anomaly = tle.MeanAnomaly(false);
-    m_ascending_node = tle.RightAscendingNode(false);
-    m_argument_perigee = tle.ArgumentPerigee(false);
-    m_eccentricity = tle.Eccentricity();
-    m_inclination = tle.Inclination(false);
-    m_mean_motion = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
-    m_bstar = tle.BStar();
-    m_epoch = tle.Epoch();
+    mMeanAnomaly = tle.MeanAnomaly(false);
+    mAscendingNode = tle.RightAscendingNode(false);
+    mArgumentPerigee = tle.ArgumentPerigee(false);
+    mEccentricity = tle.Eccentricity();
+    mInclination = tle.Inclination(false);
+    mMeanMotion = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
+    mBstar = tle.BStar();
+    mEpoch = tle.Epoch();
 
     /*
      * recover original mean motion (xnodp) and semimajor axis (aodp)
@@ -52,19 +52,19 @@ OrbitalElements::OrbitalElements(const Tle& tle)
     const double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
     const double del0 = temp / (a0 * a0);
 
-    m_recovered_mean_motion = MeanMotion() / (1.0 + del0);
+    mRecoveredMeanMotion = MeanMotion() / (1.0 + del0);
     /*
      * alternative way to calculate
      * doesnt affect final results
-     * m_recovered_semi_major_axis = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
+     * mRecoveredSemiMajorAxis = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
      */
-    m_recovered_semi_major_axis = a0 / (1.0 - del0);
+    mRecoveredSemiMajorAxis = a0 / (1.0 - del0);
 
     /*
      * find perigee and period
      */
-    m_perigee = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
-    m_period = kTWOPI / RecoveredMeanMotion();
+    mPerigee = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
+    mPeriod = kTWOPI / RecoveredMeanMotion();
 }
 
 } // namespace libsgp4

@@ -40,9 +40,9 @@ public:
      */
     DecayedException(const DateTime& dt, const Vector& pos, const Vector& vel)
         : runtime_error("Satellite decayed")
-        , m_dt(dt)
-        , m_pos(pos)
-        , m_vel(vel)
+        , mDt(dt)
+        , mPos(pos)
+        , mVel(vel)
     {
     }
 
@@ -51,7 +51,7 @@ public:
      */
     DateTime Decayed() const
     {
-        return m_dt;
+        return mDt;
     }
 
     /**
@@ -59,7 +59,7 @@ public:
      */
     Vector Position() const
     {
-        return m_pos;
+        return mPos;
     }
 
     /**
@@ -67,13 +67,13 @@ public:
      */
     Vector Velocity() const
     {
-        return m_vel;
+        return mVel;
     }
 
 private:
-    DateTime m_dt;
-    Vector m_pos;
-    Vector m_vel;
+    DateTime mDt;
+    Vector mPos;
+    Vector mVel;
 };
 
 } // namespace libsgp4

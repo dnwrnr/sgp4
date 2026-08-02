@@ -33,14 +33,14 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
     /*
      * set date
      */
-    m_dt = dt;
+    mDt = dt;
 
     static const double mfactor = kTWOPI * (kOMEGA_E / kSECONDS_PER_DAY);
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    const double theta = m_dt.ToLocalMeanSiderealTime(geo.longitude);
+    const double theta = mDt.ToLocalMeanSiderealTime(geo.longitude);
 
     /*
      * take into account earth flattening
@@ -56,10 +56,10 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
      * Z position in km
      * W magnitude in km
      */
-    m_position.x = achcp * cos(theta);
-    m_position.y = achcp * sin(theta);
-    m_position.z = (kXKMPER * s + geo.altitude) * sin(geo.latitude);
-    m_position.w = m_position.Magnitude();
+    mPosition.x = achcp * cos(theta);
+    mPosition.y = achcp * sin(theta);
+    mPosition.z = (kXKMPER * s + geo.altitude) * sin(geo.latitude);
+    mPosition.w = mPosition.Magnitude();
 
     /*
      * X velocity in km/s
@@ -67,10 +67,10 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
      * Z velocity in km/s
      * W magnitude in km/s
      */
-    m_velocity.x = -mfactor * m_position.y;
-    m_velocity.y = mfactor * m_position.x;
-    m_velocity.z = 0.0;
-    m_velocity.w = m_velocity.Magnitude();
+    mVelocity.x = -mfactor * mPosition.y;
+    mVelocity.y = mfactor * mPosition.x;
+    mVelocity.z = 0.0;
+    mVelocity.w = mVelocity.Magnitude();
 }
 
 /**
@@ -78,17 +78,17 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
  */
 CoordGeodetic Eci::ToGeodetic() const
 {
-    const double theta = Util::AcTan(m_position.y, m_position.x);
+    const double theta = Util::AcTan(mPosition.y, mPosition.x);
 
     const double lon = Util::WrapNegPosPI(theta
-            - m_dt.ToGreenwichSiderealTime());
+            - mDt.ToGreenwichSiderealTime());
 
-    const double r = sqrt((m_position.x * m_position.x)
-            + (m_position.y * m_position.y));
+    const double r = sqrt((mPosition.x * mPosition.x)
+            + (mPosition.y * mPosition.y));
 
     static const double e2 = kF * (2.0 - kF);
 
-    double lat = Util::AcTan(m_position.z, r);
+    double lat = Util::AcTan(mPosition.z, r);
     double phi = 0.0;
     double c = 0.0;
     int cnt = 0;
@@ -98,7 +98,7 @@ CoordGeodetic Eci::ToGeodetic() const
         phi = lat;
         const double sinphi = sin(phi);
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
-        lat = Util::AcTan(m_position.z + kXKMPER * c * e2 * sinphi, r);
+        lat = Util::AcTan(mPosition.z + kXKMPER * c * e2 * sinphi, r);
         cnt++;
     }
     while (fabs(lat - phi) >= 1e-10 && cnt < 10);

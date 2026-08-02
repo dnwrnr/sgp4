@@ -31,55 +31,55 @@ struct PassDetails
 {
     libsgp4::DateTime aos;
     libsgp4::DateTime los;
-    double max_elevation;
+    double maxElevation;
 };
 
 double FindMaxElevation(
-        const libsgp4::CoordGeodetic& user_geo,
+        const libsgp4::CoordGeodetic& userGeo,
         libsgp4::SGP4& sgp4,
         const libsgp4::DateTime& aos,
         const libsgp4::DateTime& los)
 {
-    libsgp4::Observer obs(user_geo);
+    libsgp4::Observer obs(userGeo);
 
     bool running;
 
-    double time_step = (los - aos).TotalSeconds() / 9.0;
-    libsgp4::DateTime current_time(aos); //! current time
+    double timeStep = (los - aos).TotalSeconds() / 9.0;
+    libsgp4::DateTime currentTime(aos); //! current time
     libsgp4::DateTime time1(aos); //! start time of search period
     libsgp4::DateTime time2(los); //! end time of search period
-    double max_elevation; //! max elevation
+    double maxElevation; //! max elevation
 
     running = true;
 
     do
     {
         running = true;
-        max_elevation = -99999999999999.0;
-        while (running && current_time < time2)
+        maxElevation = -99999999999999.0;
+        while (running && currentTime < time2)
         {
             /*
              * find position
              */
-            libsgp4::Eci eci = sgp4.FindPosition(current_time);
+            libsgp4::Eci eci = sgp4.FindPosition(currentTime);
             libsgp4::CoordTopocentric topo = obs.GetLookAngle(eci);
 
-            if (topo.elevation > max_elevation)
+            if (topo.elevation > maxElevation)
             {
                 /*
                  * still going up
                  */
-                max_elevation = topo.elevation;
+                maxElevation = topo.elevation;
                 /*
                  * move time along
                  */
-                current_time = current_time.AddSeconds(time_step);
-                if (current_time > time2)
+                currentTime = currentTime.AddSeconds(timeStep);
+                if (currentTime > time2)
                 {
                     /*
                      * dont go past end time
                      */
-                    current_time = time2;
+                    currentTime = time2;
                 }
             }
             else
@@ -94,50 +94,50 @@ double FindMaxElevation(
         /*
          * make start time to 2 time steps back
          */
-        time1 = current_time.AddSeconds(-2.0 * time_step);
+        time1 = currentTime.AddSeconds(-2.0 * timeStep);
         /*
          * make end time to current time
          */
-        time2 = current_time;
+        time2 = currentTime;
         /*
          * current time to start time
          */
-        current_time = time1;
+        currentTime = time1;
         /*
          * recalculate time step
          */
-        time_step = (time2 - time1).TotalSeconds() / 9.0;
+        timeStep = (time2 - time1).TotalSeconds() / 9.0;
     }
-    while (time_step > 1.0);
+    while (timeStep > 1.0);
 
-    return max_elevation;
+    return maxElevation;
 }
 
 libsgp4::DateTime FindCrossingPoint(
-        const libsgp4::CoordGeodetic& user_geo,
+        const libsgp4::CoordGeodetic& userGeo,
         libsgp4::SGP4& sgp4,
-        const libsgp4::DateTime& initial_time1,
-        const libsgp4::DateTime& initial_time2,
-        bool finding_aos)
+        const libsgp4::DateTime& initialTime1,
+        const libsgp4::DateTime& initialTime2,
+        bool findingAos)
 {
-    libsgp4::Observer obs(user_geo);
+    libsgp4::Observer obs(userGeo);
 
     bool running;
     int cnt;
 
-    libsgp4::DateTime time1(initial_time1);
-    libsgp4::DateTime time2(initial_time2);
-    libsgp4::DateTime middle_time;
+    libsgp4::DateTime time1(initialTime1);
+    libsgp4::DateTime time2(initialTime2);
+    libsgp4::DateTime middleTime;
 
     running = true;
     cnt = 0;
     while (running && cnt++ < 16)
     {
-        middle_time = time1.AddSeconds((time2 - time1).TotalSeconds() / 2.0);
+        middleTime = time1.AddSeconds((time2 - time1).TotalSeconds() / 2.0);
         /*
          * calculate satellite position
          */
-        libsgp4::Eci eci = sgp4.FindPosition(middle_time);
+        libsgp4::Eci eci = sgp4.FindPosition(middleTime);
         libsgp4::CoordTopocentric topo = obs.GetLookAngle(eci);
 
         if (topo.elevation > 0.0)
@@ -145,24 +145,24 @@ libsgp4::DateTime FindCrossingPoint(
             /*
              * satellite above horizon
              */
-            if (finding_aos)
+            if (findingAos)
             {
-                time2 = middle_time;
+                time2 = middleTime;
             }
             else
             {
-                time1 = middle_time;
+                time1 = middleTime;
             }
         }
         else
         {
-            if (finding_aos)
+            if (findingAos)
             {
-                time1 = middle_time;
+                time1 = middleTime;
             }
             else
             {
-                time2 = middle_time;
+                time2 = middleTime;
             }
         }
 
@@ -175,12 +175,12 @@ libsgp4::DateTime FindCrossingPoint(
             /*
              * remove microseconds
              */
-            int us = middle_time.Microsecond();
-            middle_time = middle_time.AddMicroseconds(-us);
+            int us = middleTime.Microsecond();
+            middleTime = middleTime.AddMicroseconds(-us);
             /*
              * step back into the pass by 1 second
              */
-            middle_time = middle_time.AddSeconds(finding_aos ? 1 : -1);
+            middleTime = middleTime.AddSeconds(findingAos ? 1 : -1);
         }
     }
 
@@ -191,11 +191,11 @@ libsgp4::DateTime FindCrossingPoint(
     cnt = 0;
     while (running && cnt++ < 6)
     {
-        libsgp4::Eci eci = sgp4.FindPosition(middle_time);
+        libsgp4::Eci eci = sgp4.FindPosition(middleTime);
         libsgp4::CoordTopocentric topo = obs.GetLookAngle(eci);
         if (topo.elevation > 0)
         {
-            middle_time = middle_time.AddSeconds(finding_aos ? -1 : 1);
+            middleTime = middleTime.AddSeconds(findingAos ? -1 : 1);
         }
         else
         {
@@ -203,139 +203,139 @@ libsgp4::DateTime FindCrossingPoint(
         }
     }
 
-    return middle_time;
+    return middleTime;
 }
 
 std::list<struct PassDetails> GeneratePassList(
-        const libsgp4::CoordGeodetic& user_geo,
+        const libsgp4::CoordGeodetic& userGeo,
         libsgp4::SGP4& sgp4,
-        const libsgp4::DateTime& start_time,
-        const libsgp4::DateTime& end_time,
-        const int time_step)
+        const libsgp4::DateTime& startTime,
+        const libsgp4::DateTime& endTime,
+        const int timeStep)
 {
-    std::list<struct PassDetails> pass_list;
+    std::list<struct PassDetails> passList;
 
-    libsgp4::Observer obs(user_geo);
+    libsgp4::Observer obs(userGeo);
 
-    libsgp4::DateTime aos_time;
-    libsgp4::DateTime los_time;
+    libsgp4::DateTime aosTime;
+    libsgp4::DateTime losTime;
 
-    bool found_aos = false;
+    bool foundAos = false;
 
-    libsgp4::DateTime previous_time(start_time);
-    libsgp4::DateTime current_time(start_time);
+    libsgp4::DateTime previousTime(startTime);
+    libsgp4::DateTime currentTime(startTime);
 
-    while (current_time < end_time)
+    while (currentTime < endTime)
     {
-        bool end_of_pass = false;
+        bool endOfPass = false;
 
         /*
          * calculate satellite position
          */
-        libsgp4::Eci eci = sgp4.FindPosition(current_time);
+        libsgp4::Eci eci = sgp4.FindPosition(currentTime);
         libsgp4::CoordTopocentric topo = obs.GetLookAngle(eci);
 
-        if (!found_aos && topo.elevation > 0.0)
+        if (!foundAos && topo.elevation > 0.0)
         {
             /*
              * aos hasnt occured yet, but the satellite is now above horizon
-             * this must have occured within the last time_step
+             * this must have occured within the last timeStep
              */
-            if (start_time == current_time)
+            if (startTime == currentTime)
             {
                 /*
                  * satellite was already above the horizon at the start,
                  * so use the start time
                  */
-                aos_time = start_time;
+                aosTime = startTime;
             }
             else
             {
                 /*
                  * find the point at which the satellite crossed the horizon
                  */
-                aos_time = FindCrossingPoint(
-                        user_geo,
+                aosTime = FindCrossingPoint(
+                        userGeo,
                         sgp4,
-                        previous_time,
-                        current_time,
+                        previousTime,
+                        currentTime,
                         true);
             }
-            found_aos = true;
+            foundAos = true;
         }
-        else if (found_aos && topo.elevation < 0.0)
+        else if (foundAos && topo.elevation < 0.0)
         {
-            found_aos = false;
+            foundAos = false;
             /*
-             * end of pass, so move along more than time_step
+             * end of pass, so move along more than timeStep
              */
-            end_of_pass = true;
+            endOfPass = true;
             /*
              * already have the aos, but now the satellite is below the horizon,
              * so find the los
              */
-            los_time = FindCrossingPoint(
-                    user_geo,
+            losTime = FindCrossingPoint(
+                    userGeo,
                     sgp4,
-                    previous_time,
-                    current_time,
+                    previousTime,
+                    currentTime,
                     false);
 
             struct PassDetails pd;
-            pd.aos = aos_time;
-            pd.los = los_time;
-            pd.max_elevation = FindMaxElevation(
-                    user_geo,
+            pd.aos = aosTime;
+            pd.los = losTime;
+            pd.maxElevation = FindMaxElevation(
+                    userGeo,
                     sgp4,
-                    aos_time,
-                    los_time);
+                    aosTime,
+                    losTime);
 
-            pass_list.push_back(pd);
+            passList.push_back(pd);
         }
 
         /*
          * save current time
          */
-        previous_time = current_time;
+        previousTime = currentTime;
 
-        if (end_of_pass)
+        if (endOfPass)
         {
             /*
              * at the end of the pass move the time along by 30mins
              */
-            current_time = current_time + libsgp4::TimeSpan(0, 30, 0);
+            currentTime = currentTime + libsgp4::TimeSpan(0, 30, 0);
         }
         else
         {
             /*
              * move the time along by the time step value
              */
-            current_time = current_time + libsgp4::TimeSpan(0, 0, time_step);
+            currentTime = currentTime + libsgp4::TimeSpan(0, 0, timeStep);
         }
 
-        if (current_time > end_time)
+        if (currentTime > endTime)
         {
             /*
              * dont go past end time
              */
-            current_time = end_time;
+            currentTime = endTime;
         }
     };
 
-    if (found_aos)
+    if (foundAos)
     {
         /*
          * satellite still above horizon at end of search period, so use end
          * time as los
          */
         struct PassDetails pd;
-        pd.aos = aos_time;
-        pd.los = end_time;
-        pd.max_elevation = FindMaxElevation(user_geo, sgp4, aos_time, end_time);
-        pass_list.push_back(pd);
+        pd.aos = aosTime;
+        pd.los = endTime;
+        pd.maxElevation = FindMaxElevation(userGeo, sgp4, aosTime, endTime);
+        passList.push_back(pd);
     }
 
-    return pass_list;
+    return passList;
 }
 
 int main()
@@ -348,17 +348,17 @@ int main()
 
     std::cout << tle << std::endl;
 
-    libsgp4::DateTime start_date = libsgp4::DateTime::Now(true);
-    libsgp4::DateTime end_date(start_date.AddDays(7.0));
+    libsgp4::DateTime startDate = libsgp4::DateTime::Now(true);
+    libsgp4::DateTime endDate(startDate.AddDays(7.0));
 
-    std::cout << "Start time: " << start_date << std::endl;
-    std::cout << "End time  : " << end_date << std::endl << std::endl;
+    std::cout << "Start time: " << startDate << std::endl;
+    std::cout << "End time  : " << endDate << std::endl << std::endl;
 
     try
     {
-        std::list<struct PassDetails> pass_list = GeneratePassList(geo, sgp4, start_date, end_date, 180);
+        std::list<struct PassDetails> passList = GeneratePassList(geo, sgp4, startDate, endDate, 180);
 
-        if (pass_list.begin() == pass_list.end())
+        if (passList.begin() == passList.end())
         {
             std::cout << "No passes found" << std::endl;
         }
@@ -368,16 +368,16 @@ int main()
 
             ss << std::right << std::setprecision(1) << std::fixed;
 
-            std::list<struct PassDetails>::const_iterator itr = pass_list.begin();
+            std::list<struct PassDetails>::const_iterator itr = passList.begin();
             do
             {
                 ss  << "AOS: " << itr->aos
                     << ", LOS: " << itr->los
-                    << ", Max El: " << std::setw(4) << libsgp4::Util::RadiansToDegrees(itr->max_elevation)
+                    << ", Max El: " << std::setw(4) << libsgp4::Util::RadiansToDegrees(itr->maxElevation)
                     << ", Duration: " << (itr->los - itr->aos)
                     << std::endl;
             }
-            while (++itr != pass_list.end());
+            while (++itr != passList.end());
 
             std::cout << ss.str();
         }

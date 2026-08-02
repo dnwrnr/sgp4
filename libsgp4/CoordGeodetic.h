@@ -44,15 +44,15 @@ public:
      * @param[in] lat the latitude (degrees by default)
      * @param[in] lon the longitude (degrees by default)
      * @param[in] alt the altitude in kilometers
-     * @param[in] is_radians whether the latitude/longitude is in radians
+     * @param[in] isRadians whether the latitude/longitude is in radians
      */
     CoordGeodetic(
             double lat,
             double lon,
             double alt,
-            bool is_radians = false)
+            bool isRadians = false)
     {
-        if (is_radians)
+        if (isRadians)
         {
             latitude = lat;
             longitude = lon;

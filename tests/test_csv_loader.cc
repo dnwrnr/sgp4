@@ -144,7 +144,7 @@ TEST(CsvTleFromCsv, InvalidEpoch)
 
 TEST(CsvTleLoader, LoadFile)
 {
-    std::string csv_content =
+    std::string csvContent =
         "OBJECT_NAME,OBJECT_ID,EPOCH,MEAN_MOTION,ECCENTRICITY,"
         "INCLINATION,RA_OF_ASC_NODE,ARG_OF_PERICENTER,MEAN_ANOMALY,"
         "EPHEMERIS_TYPE,CLASSIFICATION_TYPE,NORAD_CAT_ID,ELEMENT_SET_NO,"
@@ -156,7 +156,7 @@ TEST(CsvTleLoader, LoadFile)
         ".002,52.0,101.0,201.0,51.0,0,U,99998,999,200,"
         ".3E-5,.4E-6,0\n";
 
-    TempFile tmp(csv_content);
+    TempFile tmp(csvContent);
 
     std::vector<Tle> tles = LoadCsvTleFile(tmp.path().string());
     ASSERT_EQ(tles.size(), 2u);

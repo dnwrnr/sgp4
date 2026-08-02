@@ -73,80 +73,80 @@ namespace
  */
 void Tle::Initialize()
 {
-    if (!IsValidLineLength(m_line_one))
+    if (!IsValidLineLength(mLineOne))
     {
         throw TleException("Invalid length for line one");
     }
 
-    if (!IsValidLineLength(m_line_two))
+    if (!IsValidLineLength(mLineTwo))
     {
         throw TleException("Invalid length for line two");
     }
 
-    if (m_line_one[0] != '1')
+    if (mLineOne[0] != '1')
     {
         throw TleException("Invalid line beginning for line one");
     }
         
-    if (m_line_two[0] != '2')
+    if (mLineTwo[0] != '2')
     {
         throw TleException("Invalid line beginning for line two");
     }
 
-    unsigned int sat_number_1;
-    unsigned int sat_number_2;
+    unsigned int satNumber1;
+    unsigned int satNumber2;
 
-    ExtractInteger(m_line_one.substr(TLE1_COL_NORADNUM,
-                TLE1_LEN_NORADNUM), sat_number_1);
-    ExtractInteger(m_line_two.substr(TLE2_COL_NORADNUM,
-                TLE2_LEN_NORADNUM), sat_number_2);
+    ExtractInteger(mLineOne.substr(TLE1_COL_NORADNUM,
+                TLE1_LEN_NORADNUM), satNumber1);
+    ExtractInteger(mLineTwo.substr(TLE2_COL_NORADNUM,
+                TLE2_LEN_NORADNUM), satNumber2);
 
-    if (sat_number_1 != sat_number_2)
+    if (satNumber1 != satNumber2)
     {
         throw TleException("Satellite numbers do not match");
     }
 
-    m_norad_number = sat_number_1;
+    mNoradNumber = satNumber1;
 
-    if (m_name.empty())
+    if (mName.empty())
     {
-        m_name = m_line_one.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+        mName = mLineOne.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
     }
 
-    m_int_designator = m_line_one.substr(TLE1_COL_INTLDESC_A,
+    mIntDesignator = mLineOne.substr(TLE1_COL_INTLDESC_A,
             TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
 
     unsigned int year = 0;
     double day = 0.0;
 
-    ExtractInteger(m_line_one.substr(TLE1_COL_EPOCH_A,
+    ExtractInteger(mLineOne.substr(TLE1_COL_EPOCH_A,
                 TLE1_LEN_EPOCH_A), year);
-    ExtractDouble(m_line_one.substr(TLE1_COL_EPOCH_B,
+    ExtractDouble(mLineOne.substr(TLE1_COL_EPOCH_B,
                 TLE1_LEN_EPOCH_B), 4, day);
-    ExtractDouble(m_line_one.substr(TLE1_COL_MEANMOTIONDT2,
-                TLE1_LEN_MEANMOTIONDT2), 2, m_mean_motion_dt2);
-    ExtractExponential(m_line_one.substr(TLE1_COL_MEANMOTIONDDT6,
-                TLE1_LEN_MEANMOTIONDDT6), m_mean_motion_ddt6);
-    ExtractExponential(m_line_one.substr(TLE1_COL_BSTAR,
-                TLE1_LEN_BSTAR), m_bstar);
+    ExtractDouble(mLineOne.substr(TLE1_COL_MEANMOTIONDT2,
+                TLE1_LEN_MEANMOTIONDT2), 2, mMeanMotionDt2);
+    ExtractExponential(mLineOne.substr(TLE1_COL_MEANMOTIONDDT6,
+                TLE1_LEN_MEANMOTIONDDT6), mMeanMotionDdt6);
+    ExtractExponential(mLineOne.substr(TLE1_COL_BSTAR,
+                TLE1_LEN_BSTAR), mBstar);
 
     /*
      * line 2
      */
-    ExtractDouble(m_line_two.substr(TLE2_COL_INCLINATION,
-                TLE2_LEN_INCLINATION), 4, m_inclination);
-    ExtractDouble(m_line_two.substr(TLE2_COL_RAASCENDNODE,
-                TLE2_LEN_RAASCENDNODE), 4, m_right_ascending_node);
-    ExtractDouble(m_line_two.substr(TLE2_COL_ECCENTRICITY,
-                TLE2_LEN_ECCENTRICITY), -1, m_eccentricity);
-    ExtractDouble(m_line_two.substr(TLE2_COL_ARGPERIGEE,
-                TLE2_LEN_ARGPERIGEE), 4, m_argument_perigee);
-    ExtractDouble(m_line_two.substr(TLE2_COL_MEANANOMALY,
-                TLE2_LEN_MEANANOMALY), 4, m_mean_anomaly);
-    ExtractDouble(m_line_two.substr(TLE2_COL_MEANMOTION,
-                TLE2_LEN_MEANMOTION), 3, m_mean_motion);
-    ExtractInteger(m_line_two.substr(TLE2_COL_REVATEPOCH,
-                TLE2_LEN_REVATEPOCH), m_orbit_number);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_INCLINATION,
+                TLE2_LEN_INCLINATION), 4, mInclination);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_RAASCENDNODE,
+                TLE2_LEN_RAASCENDNODE), 4, mRightAscendingNode);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_ECCENTRICITY,
+                TLE2_LEN_ECCENTRICITY), -1, mEccentricity);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_ARGPERIGEE,
+                TLE2_LEN_ARGPERIGEE), 4, mArgumentPerigee);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANANOMALY,
+                TLE2_LEN_MEANANOMALY), 4, mMeanAnomaly);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANMOTION,
+                TLE2_LEN_MEANMOTION), 3, mMeanMotion);
+    ExtractInteger(mLineTwo.substr(TLE2_COL_REVATEPOCH,
+                TLE2_LEN_REVATEPOCH), mOrbitNumber);
     
     if (year < 57)
     {
@@ -157,7 +157,7 @@ void Tle::Initialize()
         year += 1900;
     }
 
-    m_epoch = DateTime(year, day);
+    mEpoch = DateTime(year, day);
 }
 
 /**
@@ -178,17 +178,17 @@ bool Tle::IsValidLineLength(const std::string& str)
  */
 void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 {
-    bool found_digit = false;
+    bool foundDigit = false;
     unsigned int temp = 0;
 
     for (auto& i : str)
     {
         if (isdigit(static_cast<unsigned char>(i)))
         {
-            found_digit = true;
+            foundDigit = true;
             temp = (temp * 10) + static_cast<unsigned int>(i - '0');
         }
-        else if (found_digit)
+        else if (foundDigit)
         {
             throw TleException("Unexpected non digit");
         }
@@ -198,7 +198,7 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
         }
     }
 
-    if (!found_digit)
+    if (!foundDigit)
     {
         val = 0;
     }
@@ -211,21 +211,21 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 /**
  * Convert a string containing an double
  * @param[in] str The string to convert
- * @param[in] point_pos The position of the decimal point. (-1 if none)
+ * @param[in] pointPos The position of the decimal point. (-1 if none)
  * @param[out] val The result
  * @exception TleException on conversion error
  */
-void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
+void Tle::ExtractDouble(const std::string& str, int pointPos, double& val)
 {
     std::string temp;
-    bool found_digit = false;
+    bool foundDigit = false;
 
     for (std::string::const_iterator i = str.begin(); i != str.end(); ++i)
     {
         /*
          * integer part
          */
-        if (point_pos >= 0 && i < str.begin() + point_pos - 1)
+        if (pointPos >= 0 && i < str.begin() + pointPos - 1)
         {
             bool done = false;
 
@@ -245,10 +245,10 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
             {
                 if (isdigit(static_cast<unsigned char>(*i)))
                 {
-                    found_digit = true;
+                    foundDigit = true;
                     temp += *i;
                 }
-                else if (found_digit)
+                else if (foundDigit)
                 {
                     throw TleException("Unexpected non digit");
                 }
@@ -261,7 +261,7 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
         /*
          * decimal point
          */
-        else if (point_pos >= 0 && i == str.begin() + point_pos - 1)
+        else if (pointPos >= 0 && i == str.begin() + pointPos - 1)
         {
             if (temp.length() == 0)
             {
@@ -288,7 +288,7 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
          */
         else
         {
-            if (i == str.begin() && point_pos == -1)
+            if (i == str.begin() && pointPos == -1)
             {
                 /*
                  * no decimal point expected, add 0. beginning
@@ -380,33 +380,33 @@ void Tle::ExtractExponential(const std::string& str, double& val)
  * Construct a Tle directly from parsed fields.
  */
 Tle::Tle(const std::string& name,
-         unsigned int norad_number,
-         const std::string& int_designator,
+         unsigned int noradNumber,
+         const std::string& intDesignator,
          const DateTime& epoch,
-         double mean_motion_dt2,
-         double mean_motion_ddt6,
+         double meanMotionDt2,
+         double meanMotionDdt6,
          double bstar,
          double inclination,
-         double right_ascending_node,
+         double rightAscendingNode,
          double eccentricity,
-         double argument_perigee,
-         double mean_anomaly,
-         double mean_motion,
-         unsigned int orbit_number)
-    : m_name(name)
-    , m_int_designator(int_designator)
-    , m_epoch(epoch)
-    , m_mean_motion_dt2(mean_motion_dt2)
-    , m_mean_motion_ddt6(mean_motion_ddt6)
-    , m_bstar(bstar)
-    , m_inclination(inclination)
-    , m_right_ascending_node(right_ascending_node)
-    , m_eccentricity(eccentricity)
-    , m_argument_perigee(argument_perigee)
-    , m_mean_anomaly(mean_anomaly)
-    , m_mean_motion(mean_motion)
-    , m_norad_number(norad_number)
-    , m_orbit_number(orbit_number)
+         double argumentPerigee,
+         double meanAnomaly,
+         double meanMotion,
+         unsigned int orbitNumber)
+    : mName(name)
+    , mIntDesignator(intDesignator)
+    , mEpoch(epoch)
+    , mMeanMotionDt2(meanMotionDt2)
+    , mMeanMotionDdt6(meanMotionDdt6)
+    , mBstar(bstar)
+    , mInclination(inclination)
+    , mRightAscendingNode(rightAscendingNode)
+    , mEccentricity(eccentricity)
+    , mArgumentPerigee(argumentPerigee)
+    , mMeanAnomaly(meanAnomaly)
+    , mMeanMotion(meanMotion)
+    , mNoradNumber(noradNumber)
+    , mOrbitNumber(orbitNumber)
 {
 }
 
@@ -454,10 +454,10 @@ namespace
     }
 }
 
-Tle Tle::FromCsv(const std::string& csv_line)
+Tle Tle::FromCsv(const std::string& csvLine)
 {
     const unsigned int EXPECTED_FIELDS = 17;
-    std::vector<std::string> fields = SplitCsv(csv_line);
+    std::vector<std::string> fields = SplitCsv(csvLine);
 
     if (fields.size() != EXPECTED_FIELDS)
     {
@@ -465,49 +465,49 @@ Tle Tle::FromCsv(const std::string& csv_line)
     }
 
     const std::string& name = fields[0];
-    const std::string& int_designator = fields[1];
-    const std::string& epoch_str = fields[2];
-    double mean_motion = std::stod(fields[3]);
+    const std::string& intDesignator = fields[1];
+    const std::string& epochStr = fields[2];
+    double meanMotion = std::stod(fields[3]);
     double eccentricity = std::stod(fields[4]);
     double inclination = std::stod(fields[5]);
     double raan = std::stod(fields[6]);
-    double arg_perigee = std::stod(fields[7]);
-    double mean_anomaly = std::stod(fields[8]);
+    double argPerigee = std::stod(fields[7]);
+    double meanAnomaly = std::stod(fields[8]);
     // fields[9] = ephemeris type (unused)
     // fields[10] = classification type (unused)
-    unsigned int norad_number = static_cast<unsigned int>(std::stoul(fields[11]));
+    unsigned int noradNumber = static_cast<unsigned int>(std::stoul(fields[11]));
     // fields[12] = element set number (unused)
-    unsigned int orbit_number = static_cast<unsigned int>(std::stoul(fields[13]));
+    unsigned int orbitNumber = static_cast<unsigned int>(std::stoul(fields[13]));
     double bstar = std::stod(fields[14]);
-    double mean_motion_dt2 = std::stod(fields[15]);
-    double mean_motion_ddt6 = std::stod(fields[16]);
+    double meanMotionDt2 = std::stod(fields[15]);
+    double meanMotionDdt6 = std::stod(fields[16]);
 
     int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-    if (std::sscanf(epoch_str.c_str(), "%d-%d-%dT%d:%d:%d",
+    if (std::sscanf(epochStr.c_str(), "%d-%d-%dT%d:%d:%d",
                      &year, &month, &day, &hour, &minute, &second) != 6)
     {
         throw TleException("Invalid epoch format");
     }
-    std::string::size_type dot_pos = epoch_str.rfind('.');
-    int microsecond = dot_pos == std::string::npos ? 0 :
-        ParseIsoMicrosecond(epoch_str.substr(dot_pos + 1));
+    std::string::size_type dotPos = epochStr.rfind('.');
+    int microsecond = dotPos == std::string::npos ? 0 :
+        ParseIsoMicrosecond(epochStr.substr(dotPos + 1));
 
     DateTime epoch(year, month, day, hour, minute, second, microsecond);
 
     return Tle(name,
-               norad_number,
-               int_designator,
+               noradNumber,
+               intDesignator,
                epoch,
-               mean_motion_dt2,
-               mean_motion_ddt6,
+               meanMotionDt2,
+               meanMotionDdt6,
                bstar,
                inclination,
                raan,
                eccentricity,
-               arg_perigee,
-               mean_anomaly,
-               mean_motion,
-               orbit_number);
+               argPerigee,
+               meanAnomaly,
+               meanMotion,
+               orbitNumber);
 }
 
 } // namespace libsgp4

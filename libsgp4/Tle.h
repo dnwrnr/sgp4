@@ -34,12 +34,12 @@ class Tle
 public:
     /**
      * @details Initialise given the two lines of a tle
-     * @param[in] line_one Tle line one
-     * @param[in] line_two Tle line two
+     * @param[in] lineOne Tle line one
+     * @param[in] lineTwo Tle line two
      */
-    Tle(std::string line_one, std::string line_two)
-        : m_line_one(std::move(line_one))
-        , m_line_two(std::move(line_two))
+    Tle(std::string lineOne, std::string lineTwo)
+        : mLineOne(std::move(lineOne))
+        , mLineTwo(std::move(lineTwo))
     {
         Initialize();
     }
@@ -47,13 +47,13 @@ public:
     /**
      * @details Initialise given the satellite name and the two lines of a tle
      * @param[in] name Satellite name
-     * @param[in] line_one Tle line one
-     * @param[in] line_two Tle line two
+     * @param[in] lineOne Tle line one
+     * @param[in] lineTwo Tle line two
      */
-    Tle(std::string name, std::string line_one, std::string line_two)
-        : m_name(std::move(name))
-        , m_line_one(std::move(line_one))
-        , m_line_two(std::move(line_two))
+    Tle(std::string name, std::string lineOne, std::string lineTwo)
+        : mName(std::move(name))
+        , mLineOne(std::move(lineOne))
+        , mLineTwo(std::move(lineTwo))
     {
         Initialize();
     }
@@ -67,12 +67,12 @@ public:
      *   EPHEMERIS_TYPE,CLASSIFICATION_TYPE,NORAD_CAT_ID,ELEMENT_SET_NO,
      *   REV_AT_EPOCH,BSTAR,MEAN_MOTION_DOT,MEAN_MOTION_DDOT
      *
-     * @param csv_line A single CSV data line (no header)
+     * @param csvLine A single CSV data line (no header)
      * @returns A Tle object with all orbital elements populated.
      *          Line1() and Line2() will return empty strings.
      * @throws TleException if the line is malformed or has wrong field count
      */
-    static Tle FromCsv(const std::string& csv_line);
+    static Tle FromCsv(const std::string& csvLine);
 
     /**
      * Copy constructor
@@ -80,23 +80,23 @@ public:
      */
     Tle(const Tle& tle)
     {
-        m_name = tle.m_name;
-        m_line_one = tle.m_line_one;
-        m_line_two = tle.m_line_two;
+        mName = tle.mName;
+        mLineOne = tle.mLineOne;
+        mLineTwo = tle.mLineTwo;
 
-        m_norad_number = tle.m_norad_number;
-        m_int_designator = tle.m_int_designator;
-        m_epoch = tle.m_epoch;
-        m_mean_motion_dt2 = tle.m_mean_motion_dt2;
-        m_mean_motion_ddt6 = tle.m_mean_motion_ddt6;
-        m_bstar = tle.m_bstar;
-        m_inclination = tle.m_inclination;
-        m_right_ascending_node = tle.m_right_ascending_node;
-        m_eccentricity = tle.m_eccentricity;
-        m_argument_perigee = tle.m_argument_perigee;
-        m_mean_anomaly = tle.m_mean_anomaly;
-        m_mean_motion = tle.m_mean_motion;
-        m_orbit_number = tle.m_orbit_number;
+        mNoradNumber = tle.mNoradNumber;
+        mIntDesignator = tle.mIntDesignator;
+        mEpoch = tle.mEpoch;
+        mMeanMotionDt2 = tle.mMeanMotionDt2;
+        mMeanMotionDdt6 = tle.mMeanMotionDdt6;
+        mBstar = tle.mBstar;
+        mInclination = tle.mInclination;
+        mRightAscendingNode = tle.mRightAscendingNode;
+        mEccentricity = tle.mEccentricity;
+        mArgumentPerigee = tle.mArgumentPerigee;
+        mMeanAnomaly = tle.mMeanAnomaly;
+        mMeanMotion = tle.mMeanMotion;
+        mOrbitNumber = tle.mOrbitNumber;
     }
 
     /**
@@ -105,7 +105,7 @@ public:
      */
     std::string Name() const
     {
-        return m_name;
+        return mName;
     }
 
     /**
@@ -114,7 +114,7 @@ public:
      */
     std::string Line1() const
     {
-        return m_line_one;
+        return mLineOne;
     }
 
     /**
@@ -123,7 +123,7 @@ public:
      */
     std::string Line2() const
     {
-        return m_line_two;
+        return mLineTwo;
     }
 
     /**
@@ -132,7 +132,7 @@ public:
      */
     unsigned int NoradNumber() const
     {
-        return m_norad_number;
+        return mNoradNumber;
     }
 
     /**
@@ -141,7 +141,7 @@ public:
      */
     std::string IntDesignator() const
     {
-        return m_int_designator;
+        return mIntDesignator;
     }
 
     /**
@@ -150,7 +150,7 @@ public:
      */
     DateTime Epoch() const
     {
-        return m_epoch;
+        return mEpoch;
     }
 
     /**
@@ -159,7 +159,7 @@ public:
      */
     double MeanMotionDt2() const
     {
-        return m_mean_motion_dt2;
+        return mMeanMotionDt2;
     }
 
     /**
@@ -168,7 +168,7 @@ public:
      */
     double MeanMotionDdt6() const
     {
-        return m_mean_motion_ddt6;
+        return mMeanMotionDdt6;
     }
 
     /**
@@ -177,40 +177,40 @@ public:
      */
     double BStar() const
     {
-        return m_bstar;
+        return mBstar;
     }
 
     /**
      * Get the inclination
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the inclination
      */
-    double Inclination(bool in_degrees) const
+    double Inclination(bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return m_inclination;
+            return mInclination;
         }
         else
         {
-            return Util::DegreesToRadians(m_inclination);
+            return Util::DegreesToRadians(mInclination);
         }
     }
 
     /**
      * Get the right ascension of the ascending node
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the right ascension of the ascending node
      */
-    double RightAscendingNode(const bool in_degrees) const
+    double RightAscendingNode(const bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return m_right_ascending_node;
+            return mRightAscendingNode;
         }
         else
         {
-            return Util::DegreesToRadians(m_right_ascending_node);
+            return Util::DegreesToRadians(mRightAscendingNode);
         }
     }
 
@@ -220,40 +220,40 @@ public:
      */
     double Eccentricity() const
     {
-        return m_eccentricity;
+        return mEccentricity;
     }
 
     /**
      * Get the argument of perigee
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the argument of perigee
      */
-    double ArgumentPerigee(const bool in_degrees) const
+    double ArgumentPerigee(const bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return m_argument_perigee;
+            return mArgumentPerigee;
         }
         else
         {
-            return Util::DegreesToRadians(m_argument_perigee);
+            return Util::DegreesToRadians(mArgumentPerigee);
         }
     }
 
     /**
      * Get the mean anomaly
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the mean anomaly
      */
-    double MeanAnomaly(const bool in_degrees) const
+    double MeanAnomaly(const bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return m_mean_anomaly;
+            return mMeanAnomaly;
         }
         else
         {
-            return Util::DegreesToRadians(m_mean_anomaly);
+            return Util::DegreesToRadians(mMeanAnomaly);
         }
     }
 
@@ -263,7 +263,7 @@ public:
      */
     double MeanMotion() const
     {
-        return m_mean_motion;
+        return mMeanMotion;
     }
 
     /**
@@ -272,7 +272,7 @@ public:
      */
     unsigned int OrbitNumber() const
     {
-        return m_orbit_number;
+        return mOrbitNumber;
     }
 
     /**
@@ -320,44 +320,44 @@ public:
 
 private:
     Tle(const std::string& name,
-        unsigned int norad_number,
-        const std::string& int_designator,
+        unsigned int noradNumber,
+        const std::string& intDesignator,
         const DateTime& epoch,
-        double mean_motion_dt2,
-        double mean_motion_ddt6,
+        double meanMotionDt2,
+        double meanMotionDdt6,
         double bstar,
         double inclination,
-        double right_ascending_node,
+        double rightAscendingNode,
         double eccentricity,
-        double argument_perigee,
-        double mean_anomaly,
-        double mean_motion,
-        unsigned int orbit_number);
+        double argumentPerigee,
+        double meanAnomaly,
+        double meanMotion,
+        unsigned int orbitNumber);
 
     void Initialize();
     static bool IsValidLineLength(const std::string& str);
     void ExtractInteger(const std::string& str, unsigned int& val);
-    void ExtractDouble(const std::string& str, int point_pos, double& val);
+    void ExtractDouble(const std::string& str, int pointPos, double& val);
     void ExtractExponential(const std::string& str, double& val);
 
 private:
-    std::string m_name;
-    std::string m_line_one;
-    std::string m_line_two;
+    std::string mName;
+    std::string mLineOne;
+    std::string mLineTwo;
 
-    std::string m_int_designator;
-    DateTime m_epoch;
-    double m_mean_motion_dt2{};
-    double m_mean_motion_ddt6{};
-    double m_bstar{};
-    double m_inclination{};
-    double m_right_ascending_node{};
-    double m_eccentricity{};
-    double m_argument_perigee{};
-    double m_mean_anomaly{};
-    double m_mean_motion{};
-    unsigned int m_norad_number{};
-    unsigned int m_orbit_number{};
+    std::string mIntDesignator;
+    DateTime mEpoch;
+    double mMeanMotionDt2{};
+    double mMeanMotionDdt6{};
+    double mBstar{};
+    double mInclination{};
+    double mRightAscendingNode{};
+    double mEccentricity{};
+    double mArgumentPerigee{};
+    double mMeanAnomaly{};
+    double mMeanMotion{};
+    unsigned int mNoradNumber{};
+    unsigned int mOrbitNumber{};
 
     static const unsigned int TLE_LEN_LINE_DATA = 69;
     static const unsigned int TLE_LEN_LINE_NAME = 22;

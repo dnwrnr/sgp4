@@ -33,7 +33,7 @@ void SGP4::SetTle(const Tle& tle)
     /*
      * extract and format tle data
      */
-    m_elements = OrbitalElements(tle);
+    mElements = OrbitalElements(tle);
 
     Initialise();
 }
@@ -48,47 +48,47 @@ void SGP4::Initialise()
     /*
      * error checks
      */
-    if (m_elements.Eccentricity() < 0.0 || m_elements.Eccentricity() > 0.999)
+    if (mElements.Eccentricity() < 0.0 || mElements.Eccentricity() > 0.999)
     {
         throw SatelliteException("Eccentricity out of range");
     }
 
-    if (m_elements.Inclination() < 0.0 || m_elements.Inclination() > kPI)
+    if (mElements.Inclination() < 0.0 || mElements.Inclination() > kPI)
     {
         throw SatelliteException("Inclination out of range");
     }
 
-    RecomputeConstants(m_elements.Inclination(),
-                       m_common_consts.sinio,
-                       m_common_consts.cosio,
-                       m_common_consts.x3thm1,
-                       m_common_consts.x1mth2,
-                       m_common_consts.x7thm1,
-                       m_common_consts.xlcof,
-                       m_common_consts.aycof);
+    RecomputeConstants(mElements.Inclination(),
+                       mCommonConsts.sinio,
+                       mCommonConsts.cosio,
+                       mCommonConsts.x3thm1,
+                       mCommonConsts.x1mth2,
+                       mCommonConsts.x7thm1,
+                       mCommonConsts.xlcof,
+                       mCommonConsts.aycof);
 
-    const double theta2 = m_common_consts.cosio * m_common_consts.cosio;
-    const double eosq = m_elements.Eccentricity() * m_elements.Eccentricity();
+    const double theta2 = mCommonConsts.cosio * mCommonConsts.cosio;
+    const double eosq = mElements.Eccentricity() * mElements.Eccentricity();
     const double betao2 = 1.0 - eosq;
     const double betao = sqrt(betao2);
 
-    if (m_elements.Period() >= 225.0)
+    if (mElements.Period() >= 225.0)
     {
-        m_use_deep_space = true;
+        mUseDeepSpace = true;
     }
     else
     {
-        m_use_deep_space = false;
-        m_use_simple_model = false;
+        mUseDeepSpace = false;
+        mUseSimpleModel = false;
         /*
-         * for perigee less than 220 kilometers, the simple_model flag is set
+         * for perigee less than 220 kilometers, the simpleModel flag is set
          * and the equations are truncated to linear variation in sqrt a and
          * quadratic variation in mean anomly. also, the c3 term, the
          * delta omega term and the delta m term are dropped
          */
-        if (m_elements.Perigee() < 220.0)
+        if (mElements.Perigee() < 220.0)
         {
-            m_use_simple_model = true;
+            mUseSimpleModel = true;
         }
     }
 
@@ -98,10 +98,10 @@ void SGP4::Initialise()
      */
     double s4 = kS;
     double qoms24 = kQOMS2T;
-    if (m_elements.Perigee() < 156.0)
+    if (mElements.Perigee() < 156.0)
     {
-        s4 = m_elements.Perigee() - 78.0;
-        if (m_elements.Perigee() < 98.0) 
+        s4 = mElements.Perigee() - 78.0;
+        if (mElements.Perigee() < 98.0) 
         {
             s4 = 20.0;
         }
@@ -113,111 +113,111 @@ void SGP4::Initialise()
      * generate constants
      */
     const double pinvsq = 1.0
-        / (m_elements.RecoveredSemiMajorAxis()
-                * m_elements.RecoveredSemiMajorAxis()
+        / (mElements.RecoveredSemiMajorAxis()
+                * mElements.RecoveredSemiMajorAxis()
                 * betao2 * betao2);
-    const double tsi = 1.0 / (m_elements.RecoveredSemiMajorAxis() - s4);
-    m_common_consts.eta = m_elements.RecoveredSemiMajorAxis()
-        * m_elements.Eccentricity() * tsi;
-    const double etasq = m_common_consts.eta * m_common_consts.eta;
-    const double eeta = m_elements.Eccentricity() * m_common_consts.eta;
+    const double tsi = 1.0 / (mElements.RecoveredSemiMajorAxis() - s4);
+    mCommonConsts.eta = mElements.RecoveredSemiMajorAxis()
+        * mElements.Eccentricity() * tsi;
+    const double etasq = mCommonConsts.eta * mCommonConsts.eta;
+    const double eeta = mElements.Eccentricity() * mCommonConsts.eta;
     const double psisq = fabs(1.0 - etasq);
     const double coef = qoms24 * pow(tsi, 4.0);
     const double coef1 = coef / pow(psisq, 3.5);
-    const double c2 = coef1 * m_elements.RecoveredMeanMotion()
-        * (m_elements.RecoveredSemiMajorAxis()
+    const double c2 = coef1 * mElements.RecoveredMeanMotion()
+        * (mElements.RecoveredSemiMajorAxis()
         * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq))
-        + 0.75 * kCK2 * tsi / psisq * m_common_consts.x3thm1
+        + 0.75 * kCK2 * tsi / psisq * mCommonConsts.x3thm1
         * (8.0 + 3.0 * etasq * (8.0 + etasq)));
-    m_common_consts.c1 = m_elements.BStar() * c2;
-    m_common_consts.c4 = 2.0 * m_elements.RecoveredMeanMotion()
-        * coef1 * m_elements.RecoveredSemiMajorAxis() * betao2
-        * (m_common_consts.eta * (2.0 + 0.5 * etasq) + m_elements.Eccentricity()
+    mCommonConsts.c1 = mElements.BStar() * c2;
+    mCommonConsts.c4 = 2.0 * mElements.RecoveredMeanMotion()
+        * coef1 * mElements.RecoveredSemiMajorAxis() * betao2
+        * (mCommonConsts.eta * (2.0 + 0.5 * etasq) + mElements.Eccentricity()
         * (0.5 + 2.0 * etasq)
-        - 2.0 * kCK2 * tsi / (m_elements.RecoveredSemiMajorAxis() * psisq)
-        * (-3.0 * m_common_consts.x3thm1 * (1.0 - 2.0 * eeta + etasq
+        - 2.0 * kCK2 * tsi / (mElements.RecoveredSemiMajorAxis() * psisq)
+        * (-3.0 * mCommonConsts.x3thm1 * (1.0 - 2.0 * eeta + etasq
         * (1.5 - 0.5 * eeta))
-        + 0.75 * m_common_consts.x1mth2 * (2.0 * etasq - eeta *
-            (1.0 + etasq)) * cos(2.0 * m_elements.ArgumentPerigee())));
+        + 0.75 * mCommonConsts.x1mth2 * (2.0 * etasq - eeta *
+            (1.0 + etasq)) * cos(2.0 * mElements.ArgumentPerigee())));
     const double theta4 = theta2 * theta2;
-    const double temp1 = 3.0 * kCK2 * pinvsq * m_elements.RecoveredMeanMotion();
+    const double temp1 = 3.0 * kCK2 * pinvsq * mElements.RecoveredMeanMotion();
     const double temp2 = temp1 * kCK2 * pinvsq;
-    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * m_elements.RecoveredMeanMotion();
-    m_common_consts.xmdot = m_elements.RecoveredMeanMotion() + 0.5 * temp1 * betao *
-            m_common_consts.x3thm1 + 0.0625 * temp2 * betao *
+    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * mElements.RecoveredMeanMotion();
+    mCommonConsts.xmdot = mElements.RecoveredMeanMotion() + 0.5 * temp1 * betao *
+            mCommonConsts.x3thm1 + 0.0625 * temp2 * betao *
             (13.0 - 78.0 * theta2 + 137.0 * theta4);
     const double x1m5th = 1.0 - 5.0 * theta2;
-    m_common_consts.omgdot = -0.5 * temp1 * x1m5th +
+    mCommonConsts.omgdot = -0.5 * temp1 * x1m5th +
             0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
             temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
-    const double xhdot1 = -temp1 * m_common_consts.cosio;
-    m_common_consts.xnodot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 *
-            (3.0 - 7.0 * theta2)) * m_common_consts.cosio;
-    m_common_consts.xnodcf = 3.5 * betao2 * xhdot1 * m_common_consts.c1;
-    m_common_consts.t2cof = 1.5 * m_common_consts.c1;
+    const double xhdot1 = -temp1 * mCommonConsts.cosio;
+    mCommonConsts.xnodot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 *
+            (3.0 - 7.0 * theta2)) * mCommonConsts.cosio;
+    mCommonConsts.xnodcf = 3.5 * betao2 * xhdot1 * mCommonConsts.c1;
+    mCommonConsts.t2cof = 1.5 * mCommonConsts.c1;
 
-    if (m_use_deep_space)
+    if (mUseDeepSpace)
     {
-        m_deepspace_consts.gsto = m_elements.Epoch().ToGreenwichSiderealTime();
+        mDeepspaceConsts.gsto = mElements.Epoch().ToGreenwichSiderealTime();
 
         DeepSpaceInitialise(eosq,
-                            m_common_consts.sinio,
-                            m_common_consts.cosio,
+                            mCommonConsts.sinio,
+                            mCommonConsts.cosio,
                             betao,
                             theta2,
                             betao2,
-                            m_common_consts.xmdot,
-                            m_common_consts.omgdot,
-                            m_common_consts.xnodot);
+                            mCommonConsts.xmdot,
+                            mCommonConsts.omgdot,
+                            mCommonConsts.xnodot);
     }
     else
     {
         double c3 = 0.0;
-        if (m_elements.Eccentricity() > 1.0e-4)
+        if (mElements.Eccentricity() > 1.0e-4)
         {
-            c3 = coef * tsi * kA3OVK2 * m_elements.RecoveredMeanMotion() * kAE *
-                    m_common_consts.sinio / m_elements.Eccentricity();
+            c3 = coef * tsi * kA3OVK2 * mElements.RecoveredMeanMotion() * kAE *
+                    mCommonConsts.sinio / mElements.Eccentricity();
         }
 
-        m_nearspace_consts.c5 = 2.0 * coef1 * m_elements.RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
+        mNearspaceConsts.c5 = 2.0 * coef1 * mElements.RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 *
                 (etasq + eeta) + eeta * etasq);
-        m_nearspace_consts.omgcof = m_elements.BStar() * c3 * cos(m_elements.ArgumentPerigee());
+        mNearspaceConsts.omgcof = mElements.BStar() * c3 * cos(mElements.ArgumentPerigee());
 
-        m_nearspace_consts.xmcof = 0.0;
-        if (m_elements.Eccentricity() > 1.0e-4)
+        mNearspaceConsts.xmcof = 0.0;
+        if (mElements.Eccentricity() > 1.0e-4)
         {
-            m_nearspace_consts.xmcof = -kTWOTHIRD * coef * m_elements.BStar() * kAE / eeta;
+            mNearspaceConsts.xmcof = -kTWOTHIRD * coef * mElements.BStar() * kAE / eeta;
         }
 
-        m_nearspace_consts.delmo = pow(1.0 + m_common_consts.eta * (cos(m_elements.MeanAnomaly())), 3.0);
-        m_nearspace_consts.sinmo = sin(m_elements.MeanAnomaly());
+        mNearspaceConsts.delmo = pow(1.0 + mCommonConsts.eta * (cos(mElements.MeanAnomaly())), 3.0);
+        mNearspaceConsts.sinmo = sin(mElements.MeanAnomaly());
 
-        if (!m_use_simple_model)
+        if (!mUseSimpleModel)
         {
-            const double c1sq = m_common_consts.c1 * m_common_consts.c1;
-            m_nearspace_consts.d2 = 4.0 * m_elements.RecoveredSemiMajorAxis() * tsi * c1sq;
-            const double temp = m_nearspace_consts.d2 * tsi * m_common_consts.c1 / 3.0;
-            m_nearspace_consts.d3 = (17.0 * m_elements.RecoveredSemiMajorAxis() + s4) * temp;
-            m_nearspace_consts.d4 = 0.5 * temp * m_elements.RecoveredSemiMajorAxis() *
-                    tsi * (221.0 * m_elements.RecoveredSemiMajorAxis() + 31.0 * s4) * m_common_consts.c1;
-            m_nearspace_consts.t3cof = m_nearspace_consts.d2 + 2.0 * c1sq;
-            m_nearspace_consts.t4cof = 0.25 * (3.0 * m_nearspace_consts.d3 + m_common_consts.c1 *
-                    (12.0 * m_nearspace_consts.d2 + 10.0 * c1sq));
-            m_nearspace_consts.t5cof = 0.2 * (3.0 * m_nearspace_consts.d4 + 12.0 * m_common_consts.c1 *
-                    m_nearspace_consts.d3 + 6.0 * m_nearspace_consts.d2 * m_nearspace_consts.d2 + 15.0 *
-                    c1sq * (2.0 * m_nearspace_consts.d2 + c1sq));
+            const double c1sq = mCommonConsts.c1 * mCommonConsts.c1;
+            mNearspaceConsts.d2 = 4.0 * mElements.RecoveredSemiMajorAxis() * tsi * c1sq;
+            const double temp = mNearspaceConsts.d2 * tsi * mCommonConsts.c1 / 3.0;
+            mNearspaceConsts.d3 = (17.0 * mElements.RecoveredSemiMajorAxis() + s4) * temp;
+            mNearspaceConsts.d4 = 0.5 * temp * mElements.RecoveredSemiMajorAxis() *
+                    tsi * (221.0 * mElements.RecoveredSemiMajorAxis() + 31.0 * s4) * mCommonConsts.c1;
+            mNearspaceConsts.t3cof = mNearspaceConsts.d2 + 2.0 * c1sq;
+            mNearspaceConsts.t4cof = 0.25 * (3.0 * mNearspaceConsts.d3 + mCommonConsts.c1 *
+                    (12.0 * mNearspaceConsts.d2 + 10.0 * c1sq));
+            mNearspaceConsts.t5cof = 0.2 * (3.0 * mNearspaceConsts.d4 + 12.0 * mCommonConsts.c1 *
+                    mNearspaceConsts.d3 + 6.0 * mNearspaceConsts.d2 * mNearspaceConsts.d2 + 15.0 *
+                    c1sq * (2.0 * mNearspaceConsts.d2 + c1sq));
         }
     }
 }
 
 Eci SGP4::FindPosition(const DateTime& dt) const
 {
-    return FindPosition((dt - m_elements.Epoch()).TotalMinutes());
+    return FindPosition((dt - mElements.Epoch()).TotalMinutes());
 }
 
 Eci SGP4::FindPosition(double tsince) const
 {
-    if (m_use_deep_space)
+    if (mUseDeepSpace)
     {
         return FindPositionSDP4(tsince);
     }
@@ -242,28 +242,28 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * update for secular gravity and atmospheric drag
      */
-    double xmdf = m_elements.MeanAnomaly()
-        + m_common_consts.xmdot * tsince;
-    double omgadf = m_elements.ArgumentPerigee()
-        + m_common_consts.omgdot * tsince;
-    const double xnoddf = m_elements.AscendingNode()
-        + m_common_consts.xnodot * tsince;
+    double xmdf = mElements.MeanAnomaly()
+        + mCommonConsts.xmdot * tsince;
+    double omgadf = mElements.ArgumentPerigee()
+        + mCommonConsts.omgdot * tsince;
+    const double xnoddf = mElements.AscendingNode()
+        + mCommonConsts.xnodot * tsince;
 
     const double tsq = tsince * tsince;
-    xnode = xnoddf + m_common_consts.xnodcf * tsq;
-    double tempa = 1.0 - m_common_consts.c1 * tsince;
-    double tempe = m_elements.BStar() * m_common_consts.c4 * tsince;
-    double templ = m_common_consts.t2cof * tsq;
+    xnode = xnoddf + mCommonConsts.xnodcf * tsq;
+    double tempa = 1.0 - mCommonConsts.c1 * tsince;
+    double tempe = mElements.BStar() * mCommonConsts.c4 * tsince;
+    double templ = mCommonConsts.t2cof * tsq;
 
-    double xn = m_elements.RecoveredMeanMotion();
-    double em = m_elements.Eccentricity();
-    xinc = m_elements.Inclination();
+    double xn = mElements.RecoveredMeanMotion();
+    double em = mElements.Eccentricity();
+    xinc = mElements.Inclination();
 
     DeepSpaceSecular(tsince,
-                     m_elements,
-                     m_common_consts,
-                     m_deepspace_consts,
-                     m_integrator_params,
+                     mElements,
+                     mCommonConsts,
+                     mDeepspaceConsts,
+                     mIntegratorParams,
                      xmdf,
                      omgadf,
                      xnode,
@@ -278,10 +278,10 @@ Eci SGP4::FindPositionSDP4(double tsince) const
 
     a = pow(kXKE / xn, kTWOTHIRD) * tempa * tempa;
     e = em - tempe;
-    double xmam = xmdf + m_elements.RecoveredMeanMotion() * templ;
+    double xmam = xmdf + mElements.RecoveredMeanMotion() * templ;
 
     DeepSpacePeriodics(tsince,
-                       m_deepspace_consts,
+                       mDeepspaceConsts,
                        e,
                        xinc,
                        omgadf,
@@ -321,39 +321,39 @@ Eci SGP4::FindPositionSDP4(double tsince) const
     /*
      * re-compute the perturbed values
      */
-    double perturbed_sinio;
-    double perturbed_cosio;
-    double perturbed_x3thm1;
-    double perturbed_x1mth2;
-    double perturbed_x7thm1;
-    double perturbed_xlcof;
-    double perturbed_aycof;
+    double perturbedSinio;
+    double perturbedCosio;
+    double perturbedX3thm1;
+    double perturbedX1mth2;
+    double perturbedX7thm1;
+    double perturbedXlcof;
+    double perturbedAycof;
     RecomputeConstants(xinc,
-                       perturbed_sinio,
-                       perturbed_cosio,
-                       perturbed_x3thm1,
-                       perturbed_x1mth2,
-                       perturbed_x7thm1,
-                       perturbed_xlcof,
-                       perturbed_aycof);
+                       perturbedSinio,
+                       perturbedCosio,
+                       perturbedX3thm1,
+                       perturbedX1mth2,
+                       perturbedX7thm1,
+                       perturbedXlcof,
+                       perturbedAycof);
 
     /*
      * using calculated values, find position and velocity
      */
-    return CalculateFinalPositionVelocity(m_elements.Epoch().AddMinutes(tsince),
+    return CalculateFinalPositionVelocity(mElements.Epoch().AddMinutes(tsince),
                                           e,
                                           a,
                                           omega,
                                           xl,
                                           xnode,
                                           xinc,
-                                          perturbed_xlcof,
-                                          perturbed_aycof,
-                                          perturbed_x3thm1,
-                                          perturbed_x1mth2,
-                                          perturbed_x7thm1,
-                                          perturbed_cosio,
-                                          perturbed_sinio);
+                                          perturbedXlcof,
+                                          perturbedAycof,
+                                          perturbedX3thm1,
+                                          perturbedX1mth2,
+                                          perturbedX7thm1,
+                                          perturbedCosio,
+                                          perturbedSinio);
 }
 
 void SGP4::RecomputeConstants(const double xinc,
@@ -396,33 +396,33 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     double omega;
     double xl;
     double xnode;
-    const double xinc = m_elements.Inclination();
+    const double xinc = mElements.Inclination();
 
     /*
      * update for secular gravity and atmospheric drag
      */
-    const double xmdf = m_elements.MeanAnomaly()
-        + m_common_consts.xmdot * tsince;
-    const double omgadf = m_elements.ArgumentPerigee()
-        + m_common_consts.omgdot * tsince;
-    const double xnoddf = m_elements.AscendingNode()
-        + m_common_consts.xnodot * tsince;
+    const double xmdf = mElements.MeanAnomaly()
+        + mCommonConsts.xmdot * tsince;
+    const double omgadf = mElements.ArgumentPerigee()
+        + mCommonConsts.omgdot * tsince;
+    const double xnoddf = mElements.AscendingNode()
+        + mCommonConsts.xnodot * tsince;
 
     omega = omgadf;
     double xmp = xmdf;
 
     const double tsq = tsince * tsince;
-    xnode = xnoddf + m_common_consts.xnodcf * tsq;
-    double tempa = 1.0 - m_common_consts.c1 * tsince;
-    double tempe = m_elements.BStar() * m_common_consts.c4 * tsince;
-    double templ = m_common_consts.t2cof * tsq;
+    xnode = xnoddf + mCommonConsts.xnodcf * tsq;
+    double tempa = 1.0 - mCommonConsts.c1 * tsince;
+    double tempe = mElements.BStar() * mCommonConsts.c4 * tsince;
+    double templ = mCommonConsts.t2cof * tsq;
 
-    if (!m_use_simple_model)
+    if (!mUseSimpleModel)
     {
-        const double delomg = m_nearspace_consts.omgcof * tsince;
-        const double delm = m_nearspace_consts.xmcof
-            * (pow(1.0 + m_common_consts.eta * cos(xmdf), 3.0)
-                    - m_nearspace_consts.delmo);
+        const double delomg = mNearspaceConsts.omgcof * tsince;
+        const double delm = mNearspaceConsts.xmcof
+            * (pow(1.0 + mCommonConsts.eta * cos(xmdf), 3.0)
+                    - mNearspaceConsts.delmo);
         const double temp = delomg + delm;
 
         xmp += temp;
@@ -431,17 +431,17 @@ Eci SGP4::FindPositionSGP4(double tsince) const
         const double tcube = tsq * tsince;
         const double tfour = tsince * tcube;
 
-        tempa = tempa - m_nearspace_consts.d2 * tsq - m_nearspace_consts.d3
-            * tcube - m_nearspace_consts.d4 * tfour;
-        tempe += m_elements.BStar() * m_nearspace_consts.c5
-            * (sin(xmp) - m_nearspace_consts.sinmo);
-        templ += m_nearspace_consts.t3cof * tcube + tfour
-            * (m_nearspace_consts.t4cof + tsince * m_nearspace_consts.t5cof);
+        tempa = tempa - mNearspaceConsts.d2 * tsq - mNearspaceConsts.d3
+            * tcube - mNearspaceConsts.d4 * tfour;
+        tempe += mElements.BStar() * mNearspaceConsts.c5
+            * (sin(xmp) - mNearspaceConsts.sinmo);
+        templ += mNearspaceConsts.t3cof * tcube + tfour
+            * (mNearspaceConsts.t4cof + tsince * mNearspaceConsts.t5cof);
     }
 
-    a = m_elements.RecoveredSemiMajorAxis() * tempa * tempa;
-    e = m_elements.Eccentricity() - tempe;
-    xl = xmp + omega + xnode + m_elements.RecoveredMeanMotion() * templ;
+    a = mElements.RecoveredSemiMajorAxis() * tempa * tempa;
+    e = mElements.Eccentricity() - tempe;
+    xl = xmp + omega + xnode + mElements.RecoveredMeanMotion() * templ;
 
     /*
      * fix tolerance for error recognition
@@ -463,20 +463,20 @@ Eci SGP4::FindPositionSGP4(double tsince) const
      * using calculated values, find position and velocity
      * we can pass in constants from Initialise() as these dont change
      */
-    return CalculateFinalPositionVelocity(m_elements.Epoch().AddMinutes(tsince),
+    return CalculateFinalPositionVelocity(mElements.Epoch().AddMinutes(tsince),
                                           e,
                                           a,
                                           omega,
                                           xl,
                                           xnode,
                                           xinc,
-                                          m_common_consts.xlcof,
-                                          m_common_consts.aycof,
-                                          m_common_consts.x3thm1,
-                                          m_common_consts.x1mth2,
-                                          m_common_consts.x7thm1,
-                                          m_common_consts.cosio,
-                                          m_common_consts.sinio);
+                                          mCommonConsts.xlcof,
+                                          mCommonConsts.aycof,
+                                          mCommonConsts.x3thm1,
+                                          mCommonConsts.x1mth2,
+                                          mCommonConsts.x7thm1,
+                                          mCommonConsts.cosio,
+                                          mCommonConsts.sinio);
 }
 
 Eci SGP4::CalculateFinalPositionVelocity(
@@ -532,11 +532,11 @@ Eci SGP4::CalculateFinalPositionVelocity(
     /*
      * sensibility check for N-R correction
      */
-    const double max_newton_naphson = 1.25 * fabs(sqrt(elsq));
+    const double maxNewtonNaphson = 1.25 * fabs(sqrt(elsq));
 
-    bool kepler_running = true;
+    bool keplerRunning = true;
 
-    for (int i = 0; i < 10 && kepler_running; i++)
+    for (int i = 0; i < 10 && keplerRunning; i++)
     {
         sinepw = sin(epw);
         cosepw = cos(epw);
@@ -547,7 +547,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
 
         if (fabs(f) < 1.0e-12)
         {
-            kepler_running = false;
+            keplerRunning = false;
         }
         else
         {
@@ -555,7 +555,7 @@ Eci SGP4::CalculateFinalPositionVelocity(
              * 1st order Newton-Raphson correction
              */
             const double fdot = 1.0 - ecose;
-            double delta_epw = f / fdot;
+            double deltaEpw = f / fdot;
 
             /*
              * 2nd order Newton-Raphson correction.
@@ -563,24 +563,24 @@ Eci SGP4::CalculateFinalPositionVelocity(
              */
             if (i == 0)
             {
-                if (delta_epw > max_newton_naphson)
+                if (deltaEpw > maxNewtonNaphson)
                 {
-                    delta_epw = max_newton_naphson;
+                    deltaEpw = maxNewtonNaphson;
                 }
-                else if (delta_epw < -max_newton_naphson)
+                else if (deltaEpw < -maxNewtonNaphson)
                 {
-                    delta_epw = -max_newton_naphson;
+                    deltaEpw = -maxNewtonNaphson;
                 }
             }
             else
             {
-                delta_epw = f / (fdot + 0.5 * esine * delta_epw);
+                deltaEpw = f / (fdot + 0.5 * esine * deltaEpw);
             }
 
             /*
              * Newton-Raphson correction of -F/DF
              */
-            epw += delta_epw;
+            epw += deltaEpw;
         }
     }
     /*
@@ -710,17 +710,17 @@ void SGP4::DeepSpaceInitialise(
     static const double ROOT52 = 1.1428639E-7;
     static const double ROOT54 = 2.1765803E-9;
 
-    const double aqnv = 1.0 / m_elements.RecoveredSemiMajorAxis();
+    const double aqnv = 1.0 / mElements.RecoveredSemiMajorAxis();
     const double xpidot = omgdot + xnodot;
-    const double sinq = sin(m_elements.AscendingNode());
-    const double cosq = cos(m_elements.AscendingNode());
-    const double sing = sin(m_elements.ArgumentPerigee());
-    const double cosg = cos(m_elements.ArgumentPerigee());
+    const double sinq = sin(mElements.AscendingNode());
+    const double cosq = cos(mElements.AscendingNode());
+    const double sing = sin(mElements.ArgumentPerigee());
+    const double cosg = cos(mElements.ArgumentPerigee());
 
     /*
      * initialize lunar / solar terms
      */
-    const double jday = m_elements.Epoch().ToJ1900();
+    const double jday = mElements.Epoch().ToJ1900();
 
     const double xnodce = Util::WrapTwoPI(4.5236020 - 9.2422029e-4 * jday);
     const double stem = sin(xnodce);
@@ -731,7 +731,7 @@ void SGP4::DeepSpaceInitialise(
     const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
     const double c = 4.7199672 + 0.22997150 * jday;
     const double gam = 5.8351514 + 0.0019443680 * jday;
-    m_deepspace_consts.zmol = Util::WrapTwoPI(c - gam);
+    mDeepspaceConsts.zmol = Util::WrapTwoPI(c - gam);
     double zx = 0.39785416 * stem / zsinil;
     double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
     zx = atan2(zx, zy);
@@ -739,7 +739,7 @@ void SGP4::DeepSpaceInitialise(
 
     const double zcosgl = cos(zx);
     const double zsingl = sin(zx);
-    m_deepspace_consts.zmos = Util::WrapTwoPI(6.2565837 + 0.017201977 * jday);
+    mDeepspaceConsts.zmos = Util::WrapTwoPI(6.2565837 + 0.017201977 * jday);
 
     /*
      * do solar terms
@@ -753,7 +753,7 @@ void SGP4::DeepSpaceInitialise(
     double cc = C1SS;
     double zn = ZNS;
     double ze = ZES;
-    const double xnoi = 1.0 / m_elements.RecoveredMeanMotion();
+    const double xnoi = 1.0 / mElements.RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++)
     {
@@ -805,7 +805,7 @@ void SGP4::DeepSpaceInitialise(
         const double s3 = cc * xnoi;
         const double s2 = -0.5 * s3 / betao;
         const double s4 = s3 * betao;
-        const double s1 = -15.0 * m_elements.Eccentricity() * s4;
+        const double s1 = -15.0 * mElements.Eccentricity() * s4;
         const double s5 = x1 * x3 + x2 * x4;
         const double s6 = x2 * x3 + x1 * x4;
         const double s7 = x2 * x4 - x1 * x3;
@@ -821,8 +821,8 @@ void SGP4::DeepSpaceInitialise(
          * with
          * shdq = (-zn * s2 * (z21 + z23)) / sinio
          */
-        if (m_elements.Inclination() < 5.2359877e-2
-                || m_elements.Inclination() > kPI - 5.2359877e-2)
+        if (mElements.Inclination() < 5.2359877e-2
+                || mElements.Inclination() > kPI - 5.2359877e-2)
         {
             shdq = 0.0;
         }
@@ -831,18 +831,18 @@ void SGP4::DeepSpaceInitialise(
             shdq = (-zn * s2 * (z21 + z23)) / sinio;
         }
 
-        m_deepspace_consts.ee2 = 2.0 * s1 * s6;
-        m_deepspace_consts.e3 = 2.0 * s1 * s7;
-        m_deepspace_consts.xi2 = 2.0 * s2 * z12;
-        m_deepspace_consts.xi3 = 2.0 * s2 * (z13 - z11);
-        m_deepspace_consts.xl2 = -2.0 * s3 * z2;
-        m_deepspace_consts.xl3 = -2.0 * s3 * (z3 - z1);
-        m_deepspace_consts.xl4 = -2.0 * s3 * (-21.0 - 9.0 * eosq) * ze;
-        m_deepspace_consts.xgh2 = 2.0 * s4 * z32;
-        m_deepspace_consts.xgh3 = 2.0 * s4 * (z33 - z31);
-        m_deepspace_consts.xgh4 = -18.0 * s4 * ze;
-        m_deepspace_consts.xh2 = -2.0 * s2 * z22;
-        m_deepspace_consts.xh3 = -2.0 * s2 * (z23 - z21);
+        mDeepspaceConsts.ee2 = 2.0 * s1 * s6;
+        mDeepspaceConsts.e3 = 2.0 * s1 * s7;
+        mDeepspaceConsts.xi2 = 2.0 * s2 * z12;
+        mDeepspaceConsts.xi3 = 2.0 * s2 * (z13 - z11);
+        mDeepspaceConsts.xl2 = -2.0 * s3 * z2;
+        mDeepspaceConsts.xl3 = -2.0 * s3 * (z3 - z1);
+        mDeepspaceConsts.xl4 = -2.0 * s3 * (-21.0 - 9.0 * eosq) * ze;
+        mDeepspaceConsts.xgh2 = 2.0 * s4 * z32;
+        mDeepspaceConsts.xgh3 = 2.0 * s4 * (z33 - z31);
+        mDeepspaceConsts.xgh4 = -18.0 * s4 * ze;
+        mDeepspaceConsts.xh2 = -2.0 * s2 * z22;
+        mDeepspaceConsts.xh3 = -2.0 * s2 * (z23 - z21);
 
         if (cnt == 1)
         {
@@ -851,23 +851,23 @@ void SGP4::DeepSpaceInitialise(
         /*
          * do lunar terms
          */
-        m_deepspace_consts.sse = se;
-        m_deepspace_consts.ssi = si;
-        m_deepspace_consts.ssl = sl;
-        m_deepspace_consts.ssh = shdq;
-        m_deepspace_consts.ssg = sgh - cosio * m_deepspace_consts.ssh;
-        m_deepspace_consts.se2 = m_deepspace_consts.ee2;
-        m_deepspace_consts.si2 = m_deepspace_consts.xi2;
-        m_deepspace_consts.sl2 = m_deepspace_consts.xl2;
-        m_deepspace_consts.sgh2 = m_deepspace_consts.xgh2;
-        m_deepspace_consts.sh2 = m_deepspace_consts.xh2;
-        m_deepspace_consts.se3 = m_deepspace_consts.e3;
-        m_deepspace_consts.si3 = m_deepspace_consts.xi3;
-        m_deepspace_consts.sl3 = m_deepspace_consts.xl3;
-        m_deepspace_consts.sgh3 = m_deepspace_consts.xgh3;
-        m_deepspace_consts.sh3 = m_deepspace_consts.xh3;
-        m_deepspace_consts.sl4 = m_deepspace_consts.xl4;
-        m_deepspace_consts.sgh4 = m_deepspace_consts.xgh4;
+        mDeepspaceConsts.sse = se;
+        mDeepspaceConsts.ssi = si;
+        mDeepspaceConsts.ssl = sl;
+        mDeepspaceConsts.ssh = shdq;
+        mDeepspaceConsts.ssg = sgh - cosio * mDeepspaceConsts.ssh;
+        mDeepspaceConsts.se2 = mDeepspaceConsts.ee2;
+        mDeepspaceConsts.si2 = mDeepspaceConsts.xi2;
+        mDeepspaceConsts.sl2 = mDeepspaceConsts.xl2;
+        mDeepspaceConsts.sgh2 = mDeepspaceConsts.xgh2;
+        mDeepspaceConsts.sh2 = mDeepspaceConsts.xh2;
+        mDeepspaceConsts.se3 = mDeepspaceConsts.e3;
+        mDeepspaceConsts.si3 = mDeepspaceConsts.xi3;
+        mDeepspaceConsts.sl3 = mDeepspaceConsts.xl3;
+        mDeepspaceConsts.sgh3 = mDeepspaceConsts.xgh3;
+        mDeepspaceConsts.sh3 = mDeepspaceConsts.xh3;
+        mDeepspaceConsts.sl4 = mDeepspaceConsts.xl4;
+        mDeepspaceConsts.sgh4 = mDeepspaceConsts.xgh4;
         zcosg = zcosgl;
         zsing = zsingl;
         zcosi = zcosil;
@@ -879,21 +879,21 @@ void SGP4::DeepSpaceInitialise(
         ze = ZEL;
     }
 
-    m_deepspace_consts.sse += se;
-    m_deepspace_consts.ssi += si;
-    m_deepspace_consts.ssl += sl;
-    m_deepspace_consts.ssg += sgh - cosio * shdq;
-    m_deepspace_consts.ssh += shdq;
+    mDeepspaceConsts.sse += se;
+    mDeepspaceConsts.ssi += si;
+    mDeepspaceConsts.ssl += sl;
+    mDeepspaceConsts.ssg += sgh - cosio * shdq;
+    mDeepspaceConsts.ssh += shdq;
 
-    m_deepspace_consts.shape = DeepSpaceConstants::NONE;
+    mDeepspaceConsts.shape = DeepSpaceConstants::NONE;
 
-    if (m_elements.RecoveredMeanMotion() < 0.0052359877
-            && m_elements.RecoveredMeanMotion() > 0.0034906585)
+    if (mElements.RecoveredMeanMotion() < 0.0052359877
+            && mElements.RecoveredMeanMotion() > 0.0034906585)
     {
         /*
          * 24h synchronous resonance terms initialisation
          */
-        m_deepspace_consts.shape = DeepSpaceConstants::SYNCHRONOUS;
+        mDeepspaceConsts.shape = DeepSpaceConstants::SYNCHRONOUS;
 
         const double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
         const double g310 = 1.0 + 2.0 * eosq;
@@ -903,28 +903,28 @@ void SGP4::DeepSpaceInitialise(
             - 0.75 * (1.0 + cosio);
         double f330 = 1.0 + cosio;
         f330 = 1.875 * f330 * f330 * f330;
-        m_deepspace_consts.del1 = 3.0 * m_elements.RecoveredMeanMotion()
-            * m_elements.RecoveredMeanMotion()
+        mDeepspaceConsts.del1 = 3.0 * mElements.RecoveredMeanMotion()
+            * mElements.RecoveredMeanMotion()
             * aqnv * aqnv;
-        m_deepspace_consts.del2 = 2.0 * m_deepspace_consts.del1
+        mDeepspaceConsts.del2 = 2.0 * mDeepspaceConsts.del1
             * f220 * g200 * Q22;
-        m_deepspace_consts.del3 = 3.0 * m_deepspace_consts.del1
+        mDeepspaceConsts.del3 = 3.0 * mDeepspaceConsts.del1
             * f330 * g300 * Q33 * aqnv;
-        m_deepspace_consts.del1 = m_deepspace_consts.del1
+        mDeepspaceConsts.del1 = mDeepspaceConsts.del1
             * f311 * g310 * Q31 * aqnv;
 
-        m_deepspace_consts.xlamo = Util::WrapTwoPI(m_elements.MeanAnomaly()
-                + m_elements.AscendingNode()
-                + m_elements.ArgumentPerigee()
-                - m_deepspace_consts.gsto);
+        mDeepspaceConsts.xlamo = Util::WrapTwoPI(mElements.MeanAnomaly()
+                + mElements.AscendingNode()
+                + mElements.ArgumentPerigee()
+                - mDeepspaceConsts.gsto);
         bfact = xmdot + xpidot - kTHDT
-            + m_deepspace_consts.ssl
-            + m_deepspace_consts.ssg
-            + m_deepspace_consts.ssh;
+            + mDeepspaceConsts.ssl
+            + mDeepspaceConsts.ssg
+            + mDeepspaceConsts.ssh;
     }
-    else if (m_elements.RecoveredMeanMotion() < 8.26e-3
-            || m_elements.RecoveredMeanMotion() > 9.24e-3
-            || m_elements.Eccentricity() < 0.5)
+    else if (mElements.RecoveredMeanMotion() < 8.26e-3
+            || mElements.RecoveredMeanMotion() > 9.24e-3
+            || mElements.Eccentricity() < 0.5)
     {
         // do nothing
     }
@@ -933,7 +933,7 @@ void SGP4::DeepSpaceInitialise(
         /*
          * geopotential resonance initialisation for 12 hour orbits
          */
-        m_deepspace_consts.shape = DeepSpaceConstants::RESONANCE;
+        mDeepspaceConsts.shape = DeepSpaceConstants::RESONANCE;
 
         double g211;
         double g310;
@@ -942,44 +942,44 @@ void SGP4::DeepSpaceInitialise(
         double g422;
         double g520;
 
-        double g201 = -0.306 - (m_elements.Eccentricity() - 0.64) * 0.440;
+        double g201 = -0.306 - (mElements.Eccentricity() - 0.64) * 0.440;
 
-        if (m_elements.Eccentricity() <= 0.65)
+        if (mElements.Eccentricity() <= 0.65)
         {
-            g211 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g211 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     3.616, -13.247, 16.290, 0.0);
-            g310 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g310 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -19.302, 117.390, -228.419, 156.591);
-            g322 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g322 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -18.9068, 109.7927, -214.6334, 146.5816);
-            g410 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g410 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -41.122, 242.694, -471.094, 313.953);
-            g422 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g422 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -146.407, 841.880, -1629.014, 1083.435);
-            g520 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g520 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -532.114, 3017.977, -5740.032, 3708.276);
         }
         else
         {
-            g211 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g211 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -72.099, 331.819, -508.738, 266.724);
-            g310 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g310 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -346.844, 1582.851, -2415.925, 1246.113);
-            g322 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g322 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -342.585, 1554.908, -2366.899, 1215.972);
-            g410 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g410 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -1052.797, 4758.686, -7193.992, 3651.957);
-            g422 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g422 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -3581.69, 16178.11, -24462.77, 12422.52);
 
-            if (m_elements.Eccentricity() <= 0.715)
+            if (mElements.Eccentricity() <= 0.715)
             {
-                g520 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+                g520 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                         1464.74, -4664.75, 3763.64, 0.0);
             }
             else
             {
-                g520 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+                g520 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                         -5149.66, 29936.92, -54087.36, 31324.56);
             }
         }
@@ -988,22 +988,22 @@ void SGP4::DeepSpaceInitialise(
         double g521;
         double g532;
 
-        if (m_elements.Eccentricity() < 0.7)
+        if (mElements.Eccentricity() < 0.7)
         {
-            g533 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g533 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -919.2277, 4988.61, -9064.77, 5542.21);
-            g521 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g521 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -822.71072, 4568.6173, -8491.4146, 5337.524);
-            g532 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g532 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -853.666, 4690.25, -8624.77, 5341.4);
         }
         else
         {
-            g533 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g533 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -37995.78, 161616.52, -229838.2, 109377.94);
-            g521 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g521 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -51752.104, 218913.95, -309468.16, 146349.42);
-            g532 = EvaluateCubicPolynomial(m_elements.Eccentricity(),
+            g532 = EvaluateCubicPolynomial(mElements.Eccentricity(),
                     -40023.88, 170470.89, -242699.48, 115605.82);
         }
 
@@ -1025,57 +1025,57 @@ void SGP4::DeepSpaceInitialise(
         const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 *
                 (12.0 + 8.0 * cosio - 10.0 * theta2));
 
-        const double xno2 = m_elements.RecoveredMeanMotion()
-            * m_elements.RecoveredMeanMotion();
+        const double xno2 = mElements.RecoveredMeanMotion()
+            * mElements.RecoveredMeanMotion();
         const double ainv2 = aqnv * aqnv;
 
         double temp1 = 3.0 * xno2 * ainv2;
         double temp = temp1 * ROOT22;
-        m_deepspace_consts.d2201 = temp * f220 * g201;
-        m_deepspace_consts.d2211 = temp * f221 * g211;
+        mDeepspaceConsts.d2201 = temp * f220 * g201;
+        mDeepspaceConsts.d2211 = temp * f221 * g211;
 
         temp1 *= aqnv;
         temp = temp1 * ROOT32;
-        m_deepspace_consts.d3210 = temp * f321 * g310;
-        m_deepspace_consts.d3222 = temp * f322 * g322;
+        mDeepspaceConsts.d3210 = temp * f321 * g310;
+        mDeepspaceConsts.d3222 = temp * f322 * g322;
 
         temp1 *= aqnv;
         temp = 2.0 * temp1 * ROOT44;
-        m_deepspace_consts.d4410 = temp * f441 * g410;
-        m_deepspace_consts.d4422 = temp * f442 * g422;
+        mDeepspaceConsts.d4410 = temp * f441 * g410;
+        mDeepspaceConsts.d4422 = temp * f442 * g422;
 
         temp1 *= aqnv;
         temp = temp1 * ROOT52;
-        m_deepspace_consts.d5220 = temp * f522 * g520;
-        m_deepspace_consts.d5232 = temp * f523 * g532;
+        mDeepspaceConsts.d5220 = temp * f522 * g520;
+        mDeepspaceConsts.d5232 = temp * f523 * g532;
 
         temp = 2.0 * temp1 * ROOT54;
-        m_deepspace_consts.d5421 = temp * f542 * g521;
-        m_deepspace_consts.d5433 = temp * f543 * g533;
+        mDeepspaceConsts.d5421 = temp * f542 * g521;
+        mDeepspaceConsts.d5433 = temp * f543 * g533;
 
-        m_deepspace_consts.xlamo = Util::WrapTwoPI(
-                m_elements.MeanAnomaly()
-                + m_elements.AscendingNode()
-                + m_elements.AscendingNode()
-                - m_deepspace_consts.gsto
-                - m_deepspace_consts.gsto);
+        mDeepspaceConsts.xlamo = Util::WrapTwoPI(
+                mElements.MeanAnomaly()
+                + mElements.AscendingNode()
+                + mElements.AscendingNode()
+                - mDeepspaceConsts.gsto
+                - mDeepspaceConsts.gsto);
         bfact = xmdot
             + xnodot + xnodot
             - kTHDT - kTHDT
-            + m_deepspace_consts.ssl
-            + m_deepspace_consts.ssh
-            + m_deepspace_consts.ssh;
+            + mDeepspaceConsts.ssl
+            + mDeepspaceConsts.ssh
+            + mDeepspaceConsts.ssh;
     }
 
-    if (m_deepspace_consts.shape != DeepSpaceConstants::NONE)
+    if (mDeepspaceConsts.shape != DeepSpaceConstants::NONE)
     {
         /*
          * initialise integrator
          */
-        m_deepspace_consts.xfact = bfact - m_elements.RecoveredMeanMotion();
-        m_integrator_params.atime = 0.0;
-        m_integrator_params.xni = m_elements.RecoveredMeanMotion();
-        m_integrator_params.xli = m_deepspace_consts.xlamo;
+        mDeepspaceConsts.xfact = bfact - mElements.RecoveredMeanMotion();
+        mIntegratorParams.atime = 0.0;
+        mIntegratorParams.xni = mElements.RecoveredMeanMotion();
+        mIntegratorParams.xli = mDeepspaceConsts.xlamo;
     }
 }
 
@@ -1086,7 +1086,7 @@ void SGP4::DeepSpaceInitialise(
  */
 void SGP4::DeepSpacePeriodics(
         const double tsince,
-        const DeepSpaceConstants& ds_constants,
+        const DeepSpaceConstants& dsConstants,
         double& em,
         double& xinc,
         double& omgasm,
@@ -1099,44 +1099,44 @@ void SGP4::DeepSpacePeriodics(
     static const double ZEL = 0.05490;
 
     // calculate solar terms for time tsince
-    double zm = ds_constants.zmos + ZNS * tsince;
+    double zm = dsConstants.zmos + ZNS * tsince;
     double zf = zm + 2.0 * ZES * sin(zm);
     double sinzf = sin(zf);
     double f2 = 0.5 * sinzf * sinzf - 0.25;
     double f3 = -0.5 * sinzf * cos(zf);
 
-    const double ses = ds_constants.se2 * f2
-        + ds_constants.se3 * f3;
-    const double sis = ds_constants.si2 * f2
-        + ds_constants.si3 * f3;
-    const double sls = ds_constants.sl2 * f2
-        + ds_constants.sl3 * f3
-        + ds_constants.sl4 * sinzf;
-    const double sghs = ds_constants.sgh2 * f2
-        + ds_constants.sgh3 * f3
-        + ds_constants.sgh4 * sinzf;
-    const double shs = ds_constants.sh2 * f2
-        + ds_constants.sh3 * f3;
+    const double ses = dsConstants.se2 * f2
+        + dsConstants.se3 * f3;
+    const double sis = dsConstants.si2 * f2
+        + dsConstants.si3 * f3;
+    const double sls = dsConstants.sl2 * f2
+        + dsConstants.sl3 * f3
+        + dsConstants.sl4 * sinzf;
+    const double sghs = dsConstants.sgh2 * f2
+        + dsConstants.sgh3 * f3
+        + dsConstants.sgh4 * sinzf;
+    const double shs = dsConstants.sh2 * f2
+        + dsConstants.sh3 * f3;
 
     // calculate lunar terms for time tsince
-    zm = ds_constants.zmol + ZNL * tsince;
+    zm = dsConstants.zmol + ZNL * tsince;
     zf = zm + 2.0 * ZEL * sin(zm);
     sinzf = sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * cos(zf);
 
-    const double sel = ds_constants.ee2 * f2
-        + ds_constants.e3 * f3;
-    const double sil = ds_constants.xi2 * f2
-        + ds_constants.xi3 * f3;
-    const double sll = ds_constants.xl2 * f2
-        + ds_constants.xl3 * f3
-        + ds_constants.xl4 * sinzf;
-    const double sghl = ds_constants.xgh2 * f2
-        + ds_constants.xgh3 * f3
-        + ds_constants.xgh4 * sinzf;
-    const double shl = ds_constants.xh2 * f2
-        + ds_constants.xh3 * f3;
+    const double sel = dsConstants.ee2 * f2
+        + dsConstants.e3 * f3;
+    const double sil = dsConstants.xi2 * f2
+        + dsConstants.xi3 * f3;
+    const double sll = dsConstants.xl2 * f2
+        + dsConstants.xl3 * f3
+        + dsConstants.xl4 * sinzf;
+    const double sghl = dsConstants.xgh2 * f2
+        + dsConstants.xgh3 * f3
+        + dsConstants.xgh4 * sinzf;
+    const double shl = dsConstants.xh2 * f2
+        + dsConstants.xh3 * f3;
 
     // merge calculated values
     const double pe = ses + sel;
@@ -1152,7 +1152,7 @@ void SGP4::DeepSpacePeriodics(
      * added to xinc (oldxinc), but apparently report # 6 has then
      * from after they are added.
      * use for strn3
-     * if (m_elements.Inclination() >= 0.2)
+     * if (mElements.Inclination() >= 0.2)
      * use for gsfc
      * if (xinc >= 0.2)
      * (moved from start of function)
@@ -1209,9 +1209,9 @@ void SGP4::DeepSpacePeriodics(
 void SGP4::DeepSpaceSecular(
         const double tsince,
         const OrbitalElements& elements,
-        const CommonConstants& c_constants,
-        const DeepSpaceConstants& ds_constants,
-        IntegratorParams& integ_params,
+        const CommonConstants& cConstants,
+        const DeepSpaceConstants& dsConstants,
+        IntegratorParams& integParams,
         double& xll,
         double& omgasm,
         double& xnodes,
@@ -1231,13 +1231,13 @@ void SGP4::DeepSpaceSecular(
     static const double STEP = 720.0;
     static const double STEP2 = 259200.0;
 
-    xll += ds_constants.ssl * tsince;
-    omgasm += ds_constants.ssg * tsince;
-    xnodes += ds_constants.ssh * tsince;
-    em += ds_constants.sse * tsince;
-    xinc += ds_constants.ssi * tsince;
+    xll += dsConstants.ssl * tsince;
+    omgasm += dsConstants.ssg * tsince;
+    xnodes += dsConstants.ssh * tsince;
+    em += dsConstants.sse * tsince;
+    xinc += dsConstants.ssi * tsince;
 
-    if (ds_constants.shape != DeepSpaceConstants::NONE)
+    if (dsConstants.shape != DeepSpaceConstants::NONE)
     {
         double xndot = 0.0;
         double xnddt = 0.0;
@@ -1250,15 +1250,15 @@ void SGP4::DeepSpaceSecular(
          *     atime, only integrate away from zero)
          */
         if (fabs(tsince) < STEP ||
-            tsince * integ_params.atime <= 0.0 ||
-            fabs(tsince) < fabs(integ_params.atime))
+            tsince * integParams.atime <= 0.0 ||
+            fabs(tsince) < fabs(integParams.atime))
         {
             // restart back at the epoch
-            integ_params.atime = 0.0;
+            integParams.atime = 0.0;
             // TODO: check
-            integ_params.xni = elements.RecoveredMeanMotion();
+            integParams.xni = elements.RecoveredMeanMotion();
             // TODO: check
-            integ_params.xli = ds_constants.xlamo;
+            integParams.xli = dsConstants.xlamo;
         }
 
         bool running = true;
@@ -1266,71 +1266,71 @@ void SGP4::DeepSpaceSecular(
         {
             // always calculate dot terms ready for integration beginning
             // from the start of the range which is 'atime'
-            if (ds_constants.shape == DeepSpaceConstants::SYNCHRONOUS)
+            if (dsConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
             {
-                xndot = ds_constants.del1 * sin(integ_params.xli - FASX2)
-                    + ds_constants.del2 * sin(2.0 * (integ_params.xli - FASX4))
-                    + ds_constants.del3 * sin(3.0 * (integ_params.xli - FASX6));
-                xnddt = ds_constants.del1 * cos(integ_params.xli - FASX2)
-                    + 2.0 * ds_constants.del2 * cos(2.0 * (integ_params.xli - FASX4))
-                    + 3.0 * ds_constants.del3 * cos(3.0 * (integ_params.xli - FASX6));
+                xndot = dsConstants.del1 * sin(integParams.xli - FASX2)
+                    + dsConstants.del2 * sin(2.0 * (integParams.xli - FASX4))
+                    + dsConstants.del3 * sin(3.0 * (integParams.xli - FASX6));
+                xnddt = dsConstants.del1 * cos(integParams.xli - FASX2)
+                    + 2.0 * dsConstants.del2 * cos(2.0 * (integParams.xli - FASX4))
+                    + 3.0 * dsConstants.del3 * cos(3.0 * (integParams.xli - FASX6));
             }
             else
             {
                 // TODO: check
-                const double xomi = elements.ArgumentPerigee() + c_constants.omgdot * integ_params.atime;
+                const double xomi = elements.ArgumentPerigee() + cConstants.omgdot * integParams.atime;
                 const double x2omi = xomi + xomi;
-                const double x2li = integ_params.xli + integ_params.xli;
-                xndot = ds_constants.d2201 * sin(x2omi + integ_params.xli - G22)
-                    + ds_constants.d2211 * sin(integ_params.xli - G22)
-                    + ds_constants.d3210 * sin(xomi + integ_params.xli - G32)
-                    + ds_constants.d3222 * sin(-xomi + integ_params.xli - G32)
-                    + ds_constants.d4410 * sin(x2omi + x2li - G44)
-                    + ds_constants.d4422 * sin(x2li - G44)
-                    + ds_constants.d5220 * sin(xomi + integ_params.xli - G52)
-                    + ds_constants.d5232 * sin(-xomi + integ_params.xli - G52)
-                    + ds_constants.d5421 * sin(xomi + x2li - G54)
-                    + ds_constants.d5433 * sin(-xomi + x2li - G54);
-                xnddt = ds_constants.d2201 * cos(x2omi + integ_params.xli - G22)
-                    + ds_constants.d2211 * cos(integ_params.xli - G22)
-                    + ds_constants.d3210 * cos(xomi + integ_params.xli - G32)
-                    + ds_constants.d3222 * cos(-xomi + integ_params.xli - G32)
-                    + ds_constants.d5220 * cos(xomi + integ_params.xli - G52)
-                    + ds_constants.d5232 * cos(-xomi + integ_params.xli - G52)
-                    + 2.0 * (ds_constants.d4410 * cos(x2omi + x2li - G44)
-                    + ds_constants.d4422 * cos(x2li - G44)
-                    + ds_constants.d5421 * cos(xomi + x2li - G54)
-                    + ds_constants.d5433 * cos(-xomi + x2li - G54));
+                const double x2li = integParams.xli + integParams.xli;
+                xndot = dsConstants.d2201 * sin(x2omi + integParams.xli - G22)
+                    + dsConstants.d2211 * sin(integParams.xli - G22)
+                    + dsConstants.d3210 * sin(xomi + integParams.xli - G32)
+                    + dsConstants.d3222 * sin(-xomi + integParams.xli - G32)
+                    + dsConstants.d4410 * sin(x2omi + x2li - G44)
+                    + dsConstants.d4422 * sin(x2li - G44)
+                    + dsConstants.d5220 * sin(xomi + integParams.xli - G52)
+                    + dsConstants.d5232 * sin(-xomi + integParams.xli - G52)
+                    + dsConstants.d5421 * sin(xomi + x2li - G54)
+                    + dsConstants.d5433 * sin(-xomi + x2li - G54);
+                xnddt = dsConstants.d2201 * cos(x2omi + integParams.xli - G22)
+                    + dsConstants.d2211 * cos(integParams.xli - G22)
+                    + dsConstants.d3210 * cos(xomi + integParams.xli - G32)
+                    + dsConstants.d3222 * cos(-xomi + integParams.xli - G32)
+                    + dsConstants.d5220 * cos(xomi + integParams.xli - G52)
+                    + dsConstants.d5232 * cos(-xomi + integParams.xli - G52)
+                    + 2.0 * (dsConstants.d4410 * cos(x2omi + x2li - G44)
+                    + dsConstants.d4422 * cos(x2li - G44)
+                    + dsConstants.d5421 * cos(xomi + x2li - G54)
+                    + dsConstants.d5433 * cos(-xomi + x2li - G54));
             }
-            xldot = integ_params.xni + ds_constants.xfact;
+            xldot = integParams.xni + dsConstants.xfact;
             xnddt *= xldot;
 
-            double ft = tsince - integ_params.atime;
+            double ft = tsince - integParams.atime;
             if (fabs(ft) >= STEP)
             {
                 const double delt = (ft >= 0.0 ? STEP : -STEP);
                 // integrate by a full step ('delt'), updating the cached
                 // values for the new 'atime'
-                integ_params.xli = integ_params.xli + xldot * delt + xndot * STEP2;
-                integ_params.xni = integ_params.xni + xndot * delt + xnddt * STEP2;
-                integ_params.atime += delt;
+                integParams.xli = integParams.xli + xldot * delt + xndot * STEP2;
+                integParams.xni = integParams.xni + xndot * delt + xnddt * STEP2;
+                integParams.atime += delt;
             }
             else
             {
                 // integrate by the difference 'ft' remaining
-                xn = integ_params.xni + xndot * ft
+                xn = integParams.xni + xndot * ft
                     + xnddt * ft * ft * 0.5;
-                const double xl_temp = integ_params.xli + xldot * ft
+                const double xlTemp = integParams.xli + xldot * ft
                     + xndot * ft * ft * 0.5;
 
-                const double theta = Util::WrapTwoPI(ds_constants.gsto + tsince * kTHDT);
-                if (ds_constants.shape == DeepSpaceConstants::SYNCHRONOUS)
+                const double theta = Util::WrapTwoPI(dsConstants.gsto + tsince * kTHDT);
+                if (dsConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
                 {
-                    xll = xl_temp + theta - xnodes - omgasm;
+                    xll = xlTemp + theta - xnodes - omgasm;
                 }
                 else
                 {
-                    xll = xl_temp + 2.0 * (theta - xnodes);
+                    xll = xlTemp + 2.0 * (theta - xnodes);
                 }
                 running = false;
             }
@@ -1340,13 +1340,13 @@ void SGP4::DeepSpaceSecular(
 
 void SGP4::Reset()
 {
-    m_use_simple_model = false;
-    m_use_deep_space = false;
+    mUseSimpleModel = false;
+    mUseDeepSpace = false;
 
-    m_common_consts = {};
-    m_nearspace_consts = {};
-    m_deepspace_consts = {};
-    m_integrator_params = {};
+    mCommonConsts = {};
+    mNearspaceConsts = {};
+    mDeepspaceConsts = {};
+    mIntegratorParams = {};
 }
 
 } // namespace libsgp4

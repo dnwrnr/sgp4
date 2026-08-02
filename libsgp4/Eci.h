@@ -59,8 +59,8 @@ public:
      * @param[in] position the position
      */
     Eci(const DateTime &dt, const Vector &position)
-        : m_dt(dt)
-        , m_position(position)
+        : mDt(dt)
+        , mPosition(position)
     {
     }
 
@@ -70,9 +70,9 @@ public:
      * @param[in] velocity the velocity
      */
     Eci(const DateTime &dt, const Vector &position, const Vector &velocity)
-        : m_dt(dt)
-        , m_position(position)
-        , m_velocity(velocity)
+        : mDt(dt)
+        , mPosition(position)
+        , mVelocity(velocity)
     {
     }
 
@@ -83,7 +83,7 @@ public:
      */
     bool operator==(const DateTime& dt) const
     {
-        return m_dt == dt;
+        return mDt == dt;
     }
 
     /**
@@ -93,7 +93,7 @@ public:
      */
     bool operator!=(const DateTime& dt) const
     {
-        return m_dt != dt;
+        return mDt != dt;
     }
 
     /**
@@ -111,7 +111,7 @@ public:
      */
     Vector Position() const
     {
-        return m_position;
+        return mPosition;
     }
 
     /**
@@ -119,7 +119,7 @@ public:
      */
     Vector Velocity() const
     {
-        return m_velocity;
+        return mVelocity;
     }
 
     /**
@@ -127,7 +127,7 @@ public:
      */
     DateTime GetDateTime() const
     {
-        return m_dt;
+        return mDt;
     }
 
     /**
@@ -138,9 +138,9 @@ public:
 private:
     void ToEci(const DateTime& dt, const CoordGeodetic& geo);
 
-    DateTime m_dt;
-    Vector m_position;
-    Vector m_velocity;
+    DateTime mDt;
+    Vector mPosition;
+    Vector mVelocity;
 };
 
 } // namespace libsgp4

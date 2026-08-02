@@ -62,7 +62,7 @@ public:
      * @param[in] ticks raw tick value
      */
     explicit DateTime(int64_t ticks)
-        : m_encoded(ticks)
+        : mEncoded(ticks)
     {
     }
 
@@ -73,7 +73,7 @@ public:
      */
     DateTime(unsigned int year, double doy)
     {
-        m_encoded = TimeSpan(
+        mEncoded = TimeSpan(
                 static_cast<int64_t>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
     }
 
@@ -143,7 +143,7 @@ public:
         {
             assert(false && "Invalid date");
         }
-        m_encoded = TimeSpan(
+        mEncoded = TimeSpan(
                 AbsoluteDays(year, month, day),
                 hour,
                 minute,
@@ -363,23 +363,23 @@ public:
          * 5 Friday
          * 6 Saturday
          */
-        return static_cast<int>(((m_encoded / TicksPerDay) + 1LL) % 7LL);
+        return static_cast<int>(((mEncoded / TicksPerDay) + 1LL) % 7LL);
     }
 
     bool Equals(const DateTime& dt) const
     {
-        return (m_encoded == dt.m_encoded);
+        return (mEncoded == dt.mEncoded);
     }
 
     int Compare(const DateTime& dt) const
     {
         int ret = 0;
 
-        if (m_encoded < dt.m_encoded)
+        if (mEncoded < dt.mEncoded)
         {
             return -1;
         }
-        else if (m_encoded > dt.m_encoded)
+        else if (mEncoded > dt.mEncoded)
         {
             return 1;
         }
@@ -456,7 +456,7 @@ public:
 
     DateTime AddTicks(int64_t ticks) const
     {
-        return DateTime(m_encoded + ticks);
+        return DateTime(mEncoded + ticks);
     }
 
     /**
@@ -465,12 +465,12 @@ public:
      */
     int64_t Ticks() const
     {
-        return m_encoded;
+        return mEncoded;
     }
 
     void FromTicks(int& year, int& month, int& day) const
     {
-        int totalDays = static_cast<int>(m_encoded / TicksPerDay);
+        int totalDays = static_cast<int>(mEncoded / TicksPerDay);
         
         /*
          * number of 400 year cycles
@@ -567,7 +567,7 @@ public:
      */
     int Hour() const
     {
-        return static_cast<int>(m_encoded % TicksPerDay / TicksPerHour);
+        return static_cast<int>(mEncoded % TicksPerDay / TicksPerHour);
     }
 
     /**
@@ -576,7 +576,7 @@ public:
      */
     int Minute() const
     {
-        return static_cast<int>(m_encoded % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(mEncoded % TicksPerHour / TicksPerMinute);
     }
 
     /**
@@ -585,7 +585,7 @@ public:
      */
     int Second() const
     {
-        return static_cast<int>(m_encoded % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(mEncoded % TicksPerMinute / TicksPerSecond);
     }
 
     /**
@@ -594,7 +594,7 @@ public:
      */
     int Microsecond() const
     {
-        return static_cast<int>(m_encoded % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(mEncoded % TicksPerSecond / TicksPerMicrosecond);
     }
 
     /**
@@ -675,7 +675,7 @@ public:
     }
 
 private:
-    int64_t m_encoded{};
+    int64_t mEncoded{};
 };
 
 inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)

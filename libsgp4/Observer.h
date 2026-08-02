@@ -41,8 +41,8 @@ public:
     Observer(const double latitude,
             const double longitude,
             const double altitude)
-        : m_geo(latitude, longitude, altitude)
-        , m_eci(DateTime(), m_geo)
+        : mGeo(latitude, longitude, altitude)
+        , mEci(DateTime(), mGeo)
     {
     }
 
@@ -51,8 +51,8 @@ public:
      * @param[in] geo the observers position
      */
     explicit Observer(const CoordGeodetic &geo)
-        : m_geo(geo)
-        , m_eci(DateTime(), geo)
+        : mGeo(geo)
+        , mEci(DateTime(), geo)
     {
     }
 
@@ -62,8 +62,8 @@ public:
      */
     void SetLocation(const CoordGeodetic& geo)
     {
-        m_geo = geo;
-        m_eci.Update(m_eci.GetDateTime(), m_geo);
+        mGeo = geo;
+        mEci.Update(mEci.GetDateTime(), mGeo);
     }
 
     /**
@@ -72,7 +72,7 @@ public:
      */
     CoordGeodetic GetLocation() const
     {
-        return m_geo;
+        return mGeo;
     }
 
     /**
@@ -88,16 +88,16 @@ private:
      */
     void Update(const DateTime &dt)
     {
-        if (m_eci != dt)
+        if (mEci != dt)
         {
-            m_eci.Update(dt, m_geo);
+            mEci.Update(dt, mGeo);
         }
     }
 
     /** the observers position */
-    CoordGeodetic m_geo;
+    CoordGeodetic mGeo;
     /** the observers Eci for a particular time */
-    Eci m_eci;
+    Eci mEci;
 };
 
 } // namespace libsgp4

@@ -54,7 +54,7 @@ class TimeSpan
 {
 public:
     explicit TimeSpan(int64_t ticks)
-        : m_ticks(ticks)
+        : mTicks(ticks)
     {
     }
 
@@ -75,23 +75,23 @@ public:
 
     TimeSpan Add(const TimeSpan& ts) const
     {
-        return TimeSpan(m_ticks + ts.m_ticks);
+        return TimeSpan(mTicks + ts.mTicks);
     }
     
     TimeSpan Subtract(const TimeSpan& ts) const
     {
-        return TimeSpan(m_ticks - ts.m_ticks);
+        return TimeSpan(mTicks - ts.mTicks);
     }
 
     int Compare(const TimeSpan& ts) const
     {
         int ret = 0;
 
-        if (m_ticks < ts.m_ticks)
+        if (mTicks < ts.mTicks)
         {
             ret = -1;
         }
-        if (m_ticks > ts.m_ticks)
+        if (mTicks > ts.mTicks)
         {
             ret = 1;
         }
@@ -100,72 +100,72 @@ public:
 
     bool Equals(const TimeSpan& ts) const
     {
-        return m_ticks == ts.m_ticks;
+        return mTicks == ts.mTicks;
     }
 
     int Days() const
     {
-        return static_cast<int>(m_ticks / TicksPerDay);
+        return static_cast<int>(mTicks / TicksPerDay);
     }
 
     int Hours() const
     {
-        return static_cast<int>(m_ticks % TicksPerDay / TicksPerHour);
+        return static_cast<int>(mTicks % TicksPerDay / TicksPerHour);
     }
 
     int Minutes() const
     {
-        return static_cast<int>(m_ticks % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(mTicks % TicksPerHour / TicksPerMinute);
     }
 
     int Seconds() const
     {
-        return static_cast<int>(m_ticks % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(mTicks % TicksPerMinute / TicksPerSecond);
     }
 
     int Milliseconds() const
     {
-        return static_cast<int>(m_ticks % TicksPerSecond / TicksPerMillisecond);
+        return static_cast<int>(mTicks % TicksPerSecond / TicksPerMillisecond);
     }
     
     int Microseconds() const
     {
-        return static_cast<int>(m_ticks % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(mTicks % TicksPerSecond / TicksPerMicrosecond);
     }
 
     int64_t Ticks() const
     {
-        return m_ticks;
+        return mTicks;
     }
 
     double TotalDays() const
     {
-        return static_cast<double>(m_ticks) / TicksPerDay;
+        return static_cast<double>(mTicks) / TicksPerDay;
     }
 
     double TotalHours() const
     {
-        return static_cast<double>(m_ticks) / TicksPerHour;
+        return static_cast<double>(mTicks) / TicksPerHour;
     }
 
     double TotalMinutes() const
     {
-        return static_cast<double>(m_ticks) / TicksPerMinute;
+        return static_cast<double>(mTicks) / TicksPerMinute;
     }
 
     double TotalSeconds() const
     {
-        return static_cast<double>(m_ticks) / TicksPerSecond;
+        return static_cast<double>(mTicks) / TicksPerSecond;
     }
     
     double TotalMilliseconds() const
     {
-        return static_cast<double>(m_ticks) / TicksPerMillisecond;
+        return static_cast<double>(mTicks) / TicksPerMillisecond;
     }
     
     double TotalMicroseconds() const
     {
-        return static_cast<double>(m_ticks) / TicksPerMicrosecond;
+        return static_cast<double>(mTicks) / TicksPerMicrosecond;
     }
 
     std::string ToString() const
@@ -174,7 +174,7 @@ public:
 
         ss << std::right << std::setfill('0');
         
-        if (m_ticks < 0)
+        if (mTicks < 0)
         {
             ss << '-';
         }
@@ -197,7 +197,7 @@ public:
     }
 
 private:
-    int64_t m_ticks{};
+    int64_t mTicks{};
 
     void CalculateTicks(int days,
             int hours,
@@ -205,7 +205,7 @@ private:
             int seconds,
             int microseconds)
     {
-        m_ticks = days * TicksPerDay +
+        mTicks = days * TicksPerDay +
             (hours * 3600LL + minutes * 60LL + seconds) * TicksPerSecond +
             microseconds * TicksPerMicrosecond;
     }

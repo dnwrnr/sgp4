@@ -19,7 +19,7 @@
 
 #if 0
 
-bool jd_dmy(int JD, int c_year, int c_month, int c_day)
+bool jdDmy(int JD, int cYear, int cMonth, int cDay)
 {
     // For the Gregorian calendar:
     int a = JD + 32044;
@@ -35,7 +35,7 @@ bool jd_dmy(int JD, int c_year, int c_month, int c_day)
     int month = m + 3 - 12 * (m / 10);
     int year  = b * 100 + d - 4800 + m / 10;
 
-    if (c_year != year || c_month != month || c_day != day)
+    if (cYear != year || cMonth != month || cDay != day)
     {
         std::cout << year << " " << month << " " << day << std::endl;
         return false;
@@ -81,7 +81,7 @@ int main()
                     return 0;
                 }
 
-                if (!jd_dmy(dt.Julian() + 0.5, year, month, day))
+                if (!jdDmy(dt.Julian() + 0.5, year, month, day))
                 {
                     std::cout << "julian" << std::endl;
                     return 0;
@@ -128,7 +128,7 @@ int main()
         }
     }
 
-    jd_dmy(1721425.5, 0, 0, 0);
+    jdDmy(1721425.5, 0, 0, 0);
 
     DateTime d1(1000, 1, 1);
     DateTime d2(2000, 1, 1);

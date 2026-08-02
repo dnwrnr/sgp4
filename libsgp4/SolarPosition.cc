@@ -51,12 +51,12 @@ Eci SolarPosition::FindPosition(const DateTime& dt)
                 + (0.00000164 - 0.000000503 * T) * T) * T + 0.00256 * cos(O));
     R = R * kAU;
 
-    Vector solar_position(R * cos(Lsa),
+    Vector solarPosition(R * cos(Lsa),
             R * sin(Lsa) * cos(eps),
             R * sin(Lsa) * sin(eps),
             R);
 
-    return Eci(dt, solar_position);
+    return Eci(dt, solarPosition);
 }
 
 double SolarPosition::Delta_ET(double year) const

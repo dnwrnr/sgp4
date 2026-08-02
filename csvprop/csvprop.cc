@@ -7,13 +7,13 @@
 
 int main()
 {
-    std::filesystem::path csv_path =
+    std::filesystem::path csvPath =
         std::filesystem::path(CSV_DATA_DIR) / "geodetic.csv";
 
-    std::vector<libsgp4::Tle> tles = libsgp4::LoadCsvTleFile(csv_path.string());
+    std::vector<libsgp4::Tle> tles = libsgp4::LoadCsvTleFile(csvPath.string());
     if (tles.empty())
     {
-        std::cerr << "No TLEs loaded from " << csv_path << std::endl;
+        std::cerr << "No TLEs loaded from " << csvPath << std::endl;
         return 1;
     }
 

@@ -34,13 +34,13 @@ std::vector<Tle> LoadCsvTleFile(const std::string& filename)
     }
 
     std::string line;
-    bool header_skipped = false;
+    bool headerSkipped = false;
 
     while (std::getline(file, line))
     {
-        if (!header_skipped)
+        if (!headerSkipped)
         {
-            header_skipped = true;
+            headerSkipped = true;
             continue;
         }
 

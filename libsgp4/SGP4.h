@@ -39,7 +39,7 @@ class SGP4
 {
 public:
     explicit SGP4(const Tle& tle)
-        : m_elements(tle)
+        : mElements(tle)
     {
         Initialise();
     }
@@ -210,7 +210,7 @@ private:
      */
     static void DeepSpacePeriodics(
             const double tsince,
-            const DeepSpaceConstants& ds_constants,
+            const DeepSpaceConstants& dsConstants,
             double& em,
             double& xinc,
             double& omgasm,
@@ -222,9 +222,9 @@ private:
     static void DeepSpaceSecular(
             const double tsince,
             const OrbitalElements& elements,
-            const CommonConstants& c_constants,
-            const DeepSpaceConstants& ds_constants,
-            IntegratorParams& integ_params,
+            const CommonConstants& cConstants,
+            const DeepSpaceConstants& dsConstants,
+            IntegratorParams& integParams,
             double& xll,
             double& omgasm,
             double& xnodes,
@@ -240,21 +240,21 @@ private:
     /*
      * the constants used
      */
-    struct CommonConstants m_common_consts;
-    struct NearSpaceConstants m_nearspace_consts;
-    struct DeepSpaceConstants m_deepspace_consts;
-    mutable struct IntegratorParams m_integrator_params;
+    struct CommonConstants mCommonConsts;
+    struct NearSpaceConstants mNearspaceConsts;
+    struct DeepSpaceConstants mDeepspaceConsts;
+    mutable struct IntegratorParams mIntegratorParams;
 
     /*
      * the orbit data
      */
-    OrbitalElements m_elements;
+    OrbitalElements mElements;
 
     /*
      * flags
      */
-    bool m_use_simple_model;
-    bool m_use_deep_space;
+    bool mUseSimpleModel;
+    bool mUseDeepSpace;
 };
 
 } // namespace libsgp4
