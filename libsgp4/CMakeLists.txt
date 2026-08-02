@@ -65,7 +65,8 @@ foreach(target sgp4 sgp4s)
     else()
         target_compile_options(${target} PRIVATE
             -Wall -Wextra -Wshadow -Wnon-virtual-dtor
-            -pedantic -Wno-long-long -Wcast-align -Wsign-conversion)
+            -pedantic -Wno-long-long -Wcast-align -Wsign-conversion
+            -fno-math-errno)
     endif()
 endforeach()
 
