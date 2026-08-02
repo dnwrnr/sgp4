@@ -1,9 +1,10 @@
 #include <libsgp4/CsvTleLoader.h>
-#include <libsgp4/SGP4.h>
 #include <libsgp4/Eci.h>
+#include <libsgp4/SGP4.h>
+
 #include <filesystem>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 int main()
 {

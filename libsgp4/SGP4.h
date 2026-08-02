@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include "Tle.h"
-#include "OrbitalElements.h"
-#include "Eci.h"
-#include "SatelliteException.h"
 #include "DecayedException.h"
+#include "Eci.h"
+#include "OrbitalElements.h"
+#include "SatelliteException.h"
+#include "Tle.h"
 
 namespace libsgp4
 {

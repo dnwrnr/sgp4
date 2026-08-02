@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include "Util.h"
 #include "DateTime.h"
 #include "TleException.h"
+#include "Util.h"
 
 namespace libsgp4
 {

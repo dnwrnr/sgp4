@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
-#include <libsgp4/Tle.h>
 #include <libsgp4/CsvTleLoader.h>
-#include <libsgp4/SGP4.h>
 #include <libsgp4/Eci.h>
+#include <libsgp4/SGP4.h>
+#include <libsgp4/Tle.h>
+
 #include <filesystem>
 #include <fstream>
 #include <random>

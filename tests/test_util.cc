@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <libsgp4/Util.h>
 #include <libsgp4/Globals.h>
+#include <libsgp4/Util.h>
 
 using namespace libsgp4;
 

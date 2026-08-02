@@ -17,25 +17,26 @@
 
 #pragma once
 
+#include "TimeSpan.h"
+#include "Util.h"
+
+#include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <chrono>
-#include <algorithm>
-#include <cassert>
-#include "TimeSpan.h"
-#include "Util.h"
 
 namespace libsgp4
 {
 namespace
 {
-    static int daysInMonth[2][13] = {
+    static int kDAYS_IN_MONTH[2][13] = {
         //  1   2   3   4   5   6   7   8   9   10  11  12
         {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
         {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
     };
-    static int cumulDaysInMonth[2][13] = {
+    static int kCUMUL_DAYS_IN_MONTH[2][13] = {
         //  1  2   3   4   5    6    7    8    9    10   11   12
         {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
         {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
@@ -74,7 +75,7 @@ public:
     DateTime(unsigned int year, double doy)
     {
         mEncoded = TimeSpan(
-                static_cast<int64_t>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
+                static_cast<int64_t>(AbsoluteDays(year, doy) * kTICKS_PER_DAY)).Ticks();
     }
 
     /**
@@ -161,15 +162,15 @@ public:
         using namespace std::chrono;
         if (useMicroseconds)
         {
-            return DateTime(UnixEpoch +
+            return DateTime(kUNIX_EPOCH +
                     duration_cast<microseconds>(system_clock::now()
-                    .time_since_epoch()).count() * TicksPerMicrosecond);
+                    .time_since_epoch()).count() * kTICKS_PER_MICROSECOND);
         }
         else
         {
-            return DateTime(UnixEpoch +
+            return DateTime(kUNIX_EPOCH +
                 duration_cast<seconds>(system_clock::now()
-                    .time_since_epoch()).count() * TicksPerSecond);
+                    .time_since_epoch()).count() * kTICKS_PER_SECOND);
         }
     }
 
@@ -267,11 +268,11 @@ public:
 
         if (IsLeapYear(year))
         {
-            daysInMonthPtr = daysInMonth[1];
+            daysInMonthPtr = kDAYS_IN_MONTH[1];
         }
         else
         {
-            daysInMonthPtr = daysInMonth[0];
+            daysInMonthPtr = kDAYS_IN_MONTH[0];
         }
 
         return daysInMonthPtr[month];
@@ -295,11 +296,11 @@ public:
 
         if (IsLeapYear(year))
         {
-            daysThisYear += cumulDaysInMonth[1][month];
+            daysThisYear += kCUMUL_DAYS_IN_MONTH[1][month];
         }
         else
         {
-            daysThisYear += cumulDaysInMonth[0][month];
+            daysThisYear += kCUMUL_DAYS_IN_MONTH[0][month];
         }
 
         return daysThisYear;
@@ -348,7 +349,7 @@ public:
 
     TimeSpan TimeOfDay() const
     {
-        return TimeSpan(Ticks() % TicksPerDay);
+        return TimeSpan(Ticks() % kTICKS_PER_DAY);
     }
 
     int DayOfWeek() const
@@ -363,7 +364,7 @@ public:
          * 5 Friday
          * 6 Saturday
          */
-        return static_cast<int>(((mEncoded / TicksPerDay) + 1LL) % 7LL);
+        return static_cast<int>(((mEncoded / kTICKS_PER_DAY) + 1LL) % 7LL);
     }
 
     bool Equals(const DateTime& dt) const
@@ -450,7 +451,7 @@ public:
 
     DateTime AddMicroseconds(const double microseconds) const
     {
-        auto ticks = static_cast<int64_t>(microseconds * TicksPerMicrosecond);
+        auto ticks = static_cast<int64_t>(microseconds * kTICKS_PER_MICROSECOND);
         return AddTicks(ticks);
     }
 
@@ -470,7 +471,7 @@ public:
 
     void FromTicks(int& year, int& month, int& day) const
     {
-        int totalDays = static_cast<int>(mEncoded / TicksPerDay);
+        int totalDays = static_cast<int>(mEncoded / kTICKS_PER_DAY);
         
         /*
          * number of 400 year cycles
@@ -518,11 +519,11 @@ public:
         const int* daysInMonthPtr;
         if (IsLeapYear(year))
         {
-            daysInMonthPtr = daysInMonth[1];
+            daysInMonthPtr = kDAYS_IN_MONTH[1];
         }
         else
         {
-            daysInMonthPtr = daysInMonth[0];
+            daysInMonthPtr = kDAYS_IN_MONTH[0];
         }
 
         month = 1;
@@ -567,7 +568,7 @@ public:
      */
     int Hour() const
     {
-        return static_cast<int>(mEncoded % TicksPerDay / TicksPerHour);
+        return static_cast<int>(mEncoded % kTICKS_PER_DAY / kTICKS_PER_HOUR);
     }
 
     /**
@@ -576,7 +577,7 @@ public:
      */
     int Minute() const
     {
-        return static_cast<int>(mEncoded % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(mEncoded % kTICKS_PER_HOUR / kTICKS_PER_MINUTE);
     }
 
     /**
@@ -585,7 +586,7 @@ public:
      */
     int Second() const
     {
-        return static_cast<int>(mEncoded % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(mEncoded % kTICKS_PER_MINUTE / kTICKS_PER_SECOND);
     }
 
     /**
@@ -594,7 +595,7 @@ public:
      */
     int Microsecond() const
     {
-        return static_cast<int>(mEncoded % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(mEncoded % kTICKS_PER_SECOND / kTICKS_PER_MICROSECOND);
     }
 
     /**
@@ -683,7 +684,7 @@ inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)
     return strm << dt.ToString();
 }
 
-inline DateTime operator+(const DateTime& dt, TimeSpan ts)
+inline DateTime operator+(const DateTime& dt, const TimeSpan& ts)
 {
     return DateTime(dt.Ticks() + ts.Ticks());
 }

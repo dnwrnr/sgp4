@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include <libsgp4/Tle.h>
-#include <libsgp4/SGP4.h>
 #include <libsgp4/DecayedException.h>
+#include <libsgp4/SGP4.h>
 #include <libsgp4/SatelliteException.h>
+#include <libsgp4/Tle.h>
 
 using namespace libsgp4;
 

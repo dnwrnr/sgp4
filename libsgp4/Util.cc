@@ -18,8 +18,8 @@
 #include "Util.h"
 
 #include <algorithm>
-#include <locale>
 #include <functional>
+#include <locale>
 
 namespace libsgp4::Util
 {

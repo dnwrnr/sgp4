@@ -19,9 +19,9 @@
 
 #include "Util.h"
 
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -58,34 +58,6 @@ public:
         , range(rnge)
         , rangeRate(rngeRate)
     {
-    }
-
-    /**
-     * Copy constructor
-     * @param[in] topo object to copy from
-     */
-    CoordTopocentric(const CoordTopocentric& topo)
-    {
-        azimuth = topo.azimuth;
-        elevation = topo.elevation;
-        range = topo.range;
-        rangeRate = topo.rangeRate;
-    }
-
-    /**
-     * Assignment operator
-     * @param[in] topo object to copy from
-     */
-    CoordTopocentric& operator=(const CoordTopocentric& topo)
-    {
-        if (this != &topo)
-        {
-            azimuth = topo.azimuth;
-            elevation = topo.elevation;
-            range = topo.range;
-            rangeRate = topo.rangeRate;
-        }
-        return *this;
     }
 
     /**

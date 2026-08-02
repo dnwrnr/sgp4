@@ -18,9 +18,9 @@
 #pragma once
 
 #include <cmath>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -65,34 +65,6 @@ public:
             const double argW)
         : x(argX), y(argY), z(argZ), w(argW)
     {
-    }
-
-    /**
-     * Copy constructor
-     * @param v value to copy from
-     */
-    Vector(const Vector& v)
-    {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-        w = v.w;
-    }
-
-    /**
-     * Assignment operator
-     * @param v value to copy from
-     */
-    Vector& operator=(const Vector& v)
-    {
-        if (this != &v)
-        {
-            x = v.x;
-            y = v.y;
-            z = v.z;
-            w = v.w;
-        }
-        return *this;
     }
 
     /**

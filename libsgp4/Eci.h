@@ -18,8 +18,8 @@
 #pragma once
 
 #include "CoordGeodetic.h"
-#include "Vector.h"
 #include "DateTime.h"
+#include "Vector.h"
 
 namespace libsgp4
 {

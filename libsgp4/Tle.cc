@@ -18,9 +18,9 @@
 #include "Tle.h"
 
 #include <cstdio>
+#include <locale>
 #include <sstream>
 #include <vector>
-#include <locale>
 
 namespace libsgp4
 {

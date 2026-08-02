@@ -29,7 +29,7 @@ Eci SolarPosition::FindPosition(const DateTime& dt)
 {
     const double mjd = dt.ToJ1900();
     const double year = 1900 + mjd / 365.25;
-    const double T = (mjd + Delta_ET(year) / kSECONDS_PER_DAY) / 36525.0;
+    const double T = (mjd + DeltaEt(year) / kSECONDS_PER_DAY) / 36525.0;
     const double M = Util::DegreesToRadians(Util::Wrap360(358.47583
                 + Util::Wrap360(35999.04975 * T)
                 - (0.000150 + 0.0000033 * T) * T * T));
@@ -59,7 +59,7 @@ Eci SolarPosition::FindPosition(const DateTime& dt)
     return Eci(dt, solarPosition);
 }
 
-double SolarPosition::Delta_ET(double year) const
+double SolarPosition::DeltaEt(double year) const
 {
     return 26.465 + 0.747622 * (year - 1950) + 1.886913
         * sin(kTWOPI * (year - 1975) / 33);

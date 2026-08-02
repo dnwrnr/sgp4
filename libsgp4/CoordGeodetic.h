@@ -19,9 +19,9 @@
 
 #include "Util.h"
 
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -63,32 +63,6 @@ public:
             longitude = Util::DegreesToRadians(lon);
         }
         altitude = alt;
-    }
-
-    /**
-     * Copy constructor
-     * @param[in] geo object to copy from
-     */
-    CoordGeodetic(const CoordGeodetic& geo)
-    {
-        latitude = geo.latitude;
-        longitude = geo.longitude;
-        altitude = geo.altitude;
-    }
-
-    /**
-     * Assignment operator
-     * @param[in] geo object to copy from
-     */
-    CoordGeodetic& operator=(const CoordGeodetic& geo)
-    {
-        if (this != &geo)
-        {
-            latitude = geo.latitude;
-            longitude = geo.longitude;
-            altitude = geo.altitude;
-        }
-        return *this;
     }
 
     /**

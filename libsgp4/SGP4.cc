@@ -17,10 +17,10 @@
 
 #include "SGP4.h"
 
+#include "DecayedException.h"
+#include "SatelliteException.h"
 #include "Util.h"
 #include "Vector.h"
-#include "SatelliteException.h"
-#include "DecayedException.h"
 
 #include <cmath>
 #include <iomanip>

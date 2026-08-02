@@ -17,30 +17,30 @@
 
 #pragma once
 
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 #include <cmath>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 namespace libsgp4
 {
 
 namespace
 {
-    static const int64_t TicksPerDay =  86400000000LL;
-    static const int64_t TicksPerHour =  3600000000LL;
-    static const int64_t TicksPerMinute =  60000000LL;
-    static const int64_t TicksPerSecond =   1000000LL;
-    static const int64_t TicksPerMillisecond = 1000LL;
-    static const int64_t TicksPerMicrosecond =    1LL;
+    static const int64_t kTICKS_PER_DAY =  86400000000LL;
+    static const int64_t kTICKS_PER_HOUR =  3600000000LL;
+    static const int64_t kTICKS_PER_MINUTE =  60000000LL;
+    static const int64_t kTICKS_PER_SECOND =   1000000LL;
+    static const int64_t kTICKS_PER_MILLISECOND = 1000LL;
+    static const int64_t kTICKS_PER_MICROSECOND =    1LL;
 
-    static const int64_t UnixEpoch = 62135596800000000LL;
+    static const int64_t kUNIX_EPOCH = 62135596800000000LL;
 
-    static const int64_t MaxValueTicks = 315537897599999999LL;
+    static const int64_t kMAX_VALUE_TICKS = 315537897599999999LL;
 
     // 1582-Oct-15
-    static const int64_t GregorianStart = 49916304000000000LL;
+    static const int64_t kGREGORIAN_START = 49916304000000000LL;
 }
 
 /**
@@ -105,32 +105,32 @@ public:
 
     int Days() const
     {
-        return static_cast<int>(mTicks / TicksPerDay);
+        return static_cast<int>(mTicks / kTICKS_PER_DAY);
     }
 
     int Hours() const
     {
-        return static_cast<int>(mTicks % TicksPerDay / TicksPerHour);
+        return static_cast<int>(mTicks % kTICKS_PER_DAY / kTICKS_PER_HOUR);
     }
 
     int Minutes() const
     {
-        return static_cast<int>(mTicks % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(mTicks % kTICKS_PER_HOUR / kTICKS_PER_MINUTE);
     }
 
     int Seconds() const
     {
-        return static_cast<int>(mTicks % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(mTicks % kTICKS_PER_MINUTE / kTICKS_PER_SECOND);
     }
 
     int Milliseconds() const
     {
-        return static_cast<int>(mTicks % TicksPerSecond / TicksPerMillisecond);
+        return static_cast<int>(mTicks % kTICKS_PER_SECOND / kTICKS_PER_MILLISECOND);
     }
     
     int Microseconds() const
     {
-        return static_cast<int>(mTicks % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(mTicks % kTICKS_PER_SECOND / kTICKS_PER_MICROSECOND);
     }
 
     int64_t Ticks() const
@@ -140,32 +140,32 @@ public:
 
     double TotalDays() const
     {
-        return static_cast<double>(mTicks) / TicksPerDay;
+        return static_cast<double>(mTicks) / kTICKS_PER_DAY;
     }
 
     double TotalHours() const
     {
-        return static_cast<double>(mTicks) / TicksPerHour;
+        return static_cast<double>(mTicks) / kTICKS_PER_HOUR;
     }
 
     double TotalMinutes() const
     {
-        return static_cast<double>(mTicks) / TicksPerMinute;
+        return static_cast<double>(mTicks) / kTICKS_PER_MINUTE;
     }
 
     double TotalSeconds() const
     {
-        return static_cast<double>(mTicks) / TicksPerSecond;
+        return static_cast<double>(mTicks) / kTICKS_PER_SECOND;
     }
     
     double TotalMilliseconds() const
     {
-        return static_cast<double>(mTicks) / TicksPerMillisecond;
+        return static_cast<double>(mTicks) / kTICKS_PER_MILLISECOND;
     }
     
     double TotalMicroseconds() const
     {
-        return static_cast<double>(mTicks) / TicksPerMicrosecond;
+        return static_cast<double>(mTicks) / kTICKS_PER_MICROSECOND;
     }
 
     std::string ToString() const
@@ -205,9 +205,9 @@ private:
             int seconds,
             int microseconds)
     {
-        mTicks = days * TicksPerDay +
-            (hours * 3600LL + minutes * 60LL + seconds) * TicksPerSecond +
-            microseconds * TicksPerMicrosecond;
+        mTicks = days * kTICKS_PER_DAY +
+            (hours * 3600LL + minutes * 60LL + seconds) * kTICKS_PER_SECOND +
+            microseconds * kTICKS_PER_MICROSECOND;
     }
 };
 
