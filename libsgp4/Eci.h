@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "CoordGeodetic.h"
@@ -30,17 +29,13 @@ namespace libsgp4
 class Eci
 {
 public:
-
     /**
      * @param[in] dt the date to be used for this position
      * @param[in] latitude the latitude in degrees
      * @param[in] longitude the longitude in degrees
      * @param[in] altitude the altitude in kilometers
      */
-    Eci(const DateTime& dt,
-            double latitude,
-            double longitude,
-            double altitude)
+    Eci(const DateTime& dt, double latitude, double longitude, double altitude)
     {
         ToEci(dt, CoordGeodetic(latitude, longitude, altitude));
     }
@@ -58,7 +53,7 @@ public:
      * @param[in] dt the date to be used for this position
      * @param[in] position the position
      */
-    Eci(const DateTime &dt, const Vector &position)
+    Eci(const DateTime& dt, const Vector& position)
         : mDt(dt)
         , mPosition(position)
     {
@@ -69,7 +64,7 @@ public:
      * @param[in] position the position
      * @param[in] velocity the velocity
      */
-    Eci(const DateTime &dt, const Vector &position, const Vector &velocity)
+    Eci(const DateTime& dt, const Vector& position, const Vector& velocity)
         : mDt(dt)
         , mPosition(position)
         , mVelocity(velocity)

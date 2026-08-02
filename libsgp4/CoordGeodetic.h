@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "Util.h"
@@ -46,11 +45,7 @@ public:
      * @param[in] alt the altitude in kilometers
      * @param[in] isRadians whether the latitude/longitude is in radians
      */
-    CoordGeodetic(
-            double lat,
-            double lon,
-            double alt,
-            bool isRadians = false)
+    CoordGeodetic(double lat, double lon, double alt, bool isRadians = false)
     {
         if (isRadians)
         {

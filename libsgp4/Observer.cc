@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-
 #include "Observer.h"
+
 #include "CoordTopocentric.h"
 
 namespace libsgp4
@@ -24,7 +24,7 @@ namespace libsgp4
 /*
  * calculate lookangle between the observer and the passed in Eci object
  */
-CoordTopocentric Observer::GetLookAngle(const Eci &eci)
+CoordTopocentric Observer::GetLookAngle(const Eci& eci)
 {
     /*
      * update the observers Eci to match the time of the Eci passed in
@@ -50,12 +50,9 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
     double sinTheta = sin(theta);
     double cosTheta = cos(theta);
 
-    double topS = sinLat * cosTheta * range.x
-        + sinLat * sinTheta * range.y - cosLat * range.z;
-    double topE = -sinTheta * range.x
-        + cosTheta * range.y;
-    double topZ = cosLat * cosTheta * range.x
-        + cosLat * sinTheta * range.y + sinLat * range.z;
+    double topS = sinLat * cosTheta * range.x + sinLat * sinTheta * range.y - cosLat * range.z;
+    double topE = -sinTheta * range.x + cosTheta * range.y;
+    double topZ = cosLat * cosTheta * range.x + cosLat * sinTheta * range.y + sinLat * range.z;
     double az = atan(-topE / topS);
 
     if (topS > 0.0)
@@ -77,10 +74,7 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
      * range in km
      * range rate in km/s
      */
-    return CoordTopocentric(az,
-            el,
-            range.w,
-            rate);
+    return CoordTopocentric(az, el, range.w, rate);
 }
 
 } // namespace libsgp4

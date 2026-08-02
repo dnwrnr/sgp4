@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "Globals.h"
@@ -25,9 +24,7 @@ namespace libsgp4
 {
 namespace Util
 {
-    template
-    <typename T>
-    bool FromString(const std::string& str, T& val)
+    template <typename T> bool FromString(const std::string& str, T& val)
     {
         std::stringstream ss(str);
         return !(ss >> val).fail();

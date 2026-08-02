@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include "CsvTleLoader.h"
 
 #include <fstream>

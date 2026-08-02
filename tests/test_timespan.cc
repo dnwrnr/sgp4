@@ -29,7 +29,7 @@ TEST(TimeSpanConstruction, DaysHoursMinutesSeconds)
     EXPECT_EQ(ts.Hours(), 3);
     EXPECT_EQ(ts.Minutes(), 30);
     EXPECT_EQ(ts.Seconds(), 45);
-    EXPECT_EQ(ts.TotalDays(), 2.0 + 3.0/24.0 + 30.0/1440.0 + 45.0/86400.0);
+    EXPECT_EQ(ts.TotalDays(), 2.0 + 3.0 / 24.0 + 30.0 / 1440.0 + 45.0 / 86400.0);
 }
 
 TEST(TimeSpanConstruction, WithMicroseconds)

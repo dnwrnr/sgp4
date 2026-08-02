@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "Util.h"
@@ -48,11 +47,7 @@ public:
      * @param[in] rnge range in kilometers
      * @param[in] rngeRate range rate in kilometers per second
      */
-    CoordTopocentric(
-            double az,
-            double el,
-            double rnge,
-            double rngeRate)
+    CoordTopocentric(double az, double el, double rnge, double rngeRate)
         : azimuth(az)
         , elevation(el)
         , range(rnge)
@@ -84,7 +79,6 @@ public:
     /** range rate in kilometers per second */
     double rangeRate{};
 };
-
 
 inline std::ostream& operator<<(std::ostream& strm, const CoordTopocentric& t)
 {

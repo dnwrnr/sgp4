@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "DateTime.h"
@@ -337,7 +336,6 @@ private:
     static const unsigned int TLE_LEN_LINE_DATA = 69;
     static const unsigned int TLE_LEN_LINE_NAME = 22;
 };
-
 
 inline std::ostream& operator<<(std::ostream& strm, const Tle& t)
 {

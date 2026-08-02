@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "DecayedException.h"
@@ -177,60 +176,56 @@ private:
                                    double& aycof);
     Eci FindPositionSDP4(double tsince) const;
     Eci FindPositionSGP4(double tsince) const;
-    static Eci CalculateFinalPositionVelocity(
-            const DateTime& date,
-            double e,
-            double a,
-            double omega,
-            double xl,
-            double xnode,
-            double xinc,
-            double xlcof,
-            double aycof,
-            double x3thm1,
-            double x1mth2,
-            double x7thm1,
-            double cosio,
-            double sinio);
+    static Eci CalculateFinalPositionVelocity(const DateTime& date,
+                                              double e,
+                                              double a,
+                                              double omega,
+                                              double xl,
+                                              double xnode,
+                                              double xinc,
+                                              double xlcof,
+                                              double aycof,
+                                              double x3thm1,
+                                              double x1mth2,
+                                              double x7thm1,
+                                              double cosio,
+                                              double sinio);
     /**
      * Deep space initialisation
      */
-    void DeepSpaceInitialise(
-            double eosq,
-            double sinio,
-            double cosio,
-            double betao,
-            double theta2,
-            double betao2,
-            double xmdot,
-            double omgdot,
-            double xnodot);
+    void DeepSpaceInitialise(double eosq,
+                             double sinio,
+                             double cosio,
+                             double betao,
+                             double theta2,
+                             double betao2,
+                             double xmdot,
+                             double omgdot,
+                             double xnodot);
     /**
      * Calculate lunar / solar periodics and apply
      */
-    static void DeepSpacePeriodics(
-            double tsince,
-            const DeepSpaceConstants& dsConstants,
-            double& em,
-            double& xinc,
-            double& omgasm,
-            double& xnodes,
-            double& xll);
+    static void DeepSpacePeriodics(double tsince,
+                                   const DeepSpaceConstants& dsConstants,
+                                   double& em,
+                                   double& xinc,
+                                   double& omgasm,
+                                   double& xnodes,
+                                   double& xll);
     /**
      * Deep space secular effects
      */
-    static void DeepSpaceSecular(
-            double tsince,
-            const OrbitalElements& elements,
-            const CommonConstants& cConstants,
-            const DeepSpaceConstants& dsConstants,
-            IntegratorParams& integParams,
-            double& xll,
-            double& omgasm,
-            double& xnodes,
-            double& em,
-            double& xinc,
-            double& xn);
+    static void DeepSpaceSecular(double tsince,
+                                 const OrbitalElements& elements,
+                                 const CommonConstants& cConstants,
+                                 const DeepSpaceConstants& dsConstants,
+                                 IntegratorParams& integParams,
+                                 double& xll,
+                                 double& omgasm,
+                                 double& xnodes,
+                                 double& em,
+                                 double& xinc,
+                                 double& xn);
 
     /**
      * Reset

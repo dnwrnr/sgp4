@@ -1,15 +1,13 @@
+#include <filesystem>
+#include <iomanip>
+#include <iostream>
 #include <libsgp4/CsvTleLoader.h>
 #include <libsgp4/Eci.h>
 #include <libsgp4/SGP4.h>
 
-#include <filesystem>
-#include <iomanip>
-#include <iostream>
-
 int main()
 {
-    std::filesystem::path csvPath =
-        std::filesystem::path(CSV_DATA_DIR) / "geodetic.csv";
+    std::filesystem::path csvPath = std::filesystem::path(CSV_DATA_DIR) / "geodetic.csv";
 
     std::vector<libsgp4::Tle> tles = libsgp4::LoadCsvTleFile(csvPath.string());
     if (tles.empty())
@@ -24,8 +22,7 @@ int main()
     libsgp4::DateTime start(2026, 7, 27, 0, 0, 0);
 
     std::cout << std::fixed << std::setprecision(6);
-    std::cout << "Satellite: " << tle.Name()
-              << " (NORAD " << tle.NoradNumber() << ")" << std::endl;
+    std::cout << "Satellite: " << tle.Name() << " (NORAD " << tle.NoradNumber() << ")" << std::endl;
     std::cout << "Start:     " << start << std::endl;
     std::cout << "Steps:     10 x 15 min" << std::endl;
     std::cout << std::string(72, '-') << std::endl;
@@ -37,10 +34,8 @@ int main()
         libsgp4::Vector pos = eci.Position();
         libsgp4::Vector vel = eci.Velocity();
 
-        std::cout << dt
-                  << "  pos=[" << pos.x << ", " << pos.y << ", " << pos.z << "]"
-                  << "  vel=[" << vel.x << ", " << vel.y << ", " << vel.z << "]"
-                  << std::endl;
+        std::cout << dt << "  pos=[" << pos.x << ", " << pos.y << ", " << pos.z << "]"
+                  << "  vel=[" << vel.x << ", " << vel.y << ", " << vel.z << "]" << std::endl;
     }
 
     return 0;

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "TimeSpan.h"
@@ -34,14 +33,12 @@ namespace
     static int kDAYS_IN_MONTH[2][13] = {
         //  1   2   3   4   5   6   7   8   9   10  11  12
         {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-        {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-    };
+        {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
     static int kCUMUL_DAYS_IN_MONTH[2][13] = {
         //  1  2   3   4   5    6    7    8    9    10   11   12
         {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
-        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
-    };
-}
+        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}};
+} // namespace
 
 /**
  * @brief Represents an instance in time.
@@ -74,8 +71,7 @@ public:
      */
     DateTime(unsigned int year, double doy)
     {
-        mEncoded = TimeSpan(
-                static_cast<int64_t>(AbsoluteDays(year, doy) * kTICKS_PER_DAY)).Ticks();
+        mEncoded = TimeSpan(static_cast<int64_t>(AbsoluteDays(year, doy) * kTICKS_PER_DAY)).Ticks();
     }
 
     /**
@@ -128,28 +124,14 @@ public:
      * @param[in] second the second
      * @param[in] microsecond the microsecond
      */
-    void Initialise(int year,
-            int month,
-            int day,
-            int hour,
-            int minute,
-            int second,
-            int microsecond)
+    void Initialise(int year, int month, int day, int hour, int minute, int second, int microsecond)
     {
-        if (!IsValidYearMonthDay(year, month, day) ||
-                hour < 0 || hour > 23 ||
-                minute < 0 || minute > 59 ||
-                second < 0 || second > 59 ||
-                microsecond < 0 || microsecond > 999999)
+        if (!IsValidYearMonthDay(year, month, day) || hour < 0 || hour > 23 || minute < 0 || minute > 59 ||
+            second < 0 || second > 59 || microsecond < 0 || microsecond > 999999)
         {
             assert(false && "Invalid date");
         }
-        mEncoded = TimeSpan(
-                AbsoluteDays(year, month, day),
-                hour,
-                minute,
-                second,
-                microsecond).Ticks();
+        mEncoded = TimeSpan(AbsoluteDays(year, month, day), hour, minute, second, microsecond).Ticks();
     }
 
     /**
@@ -162,15 +144,13 @@ public:
         using namespace std::chrono;
         if (useMicroseconds)
         {
-            return DateTime(kUNIX_EPOCH +
-                    duration_cast<microseconds>(system_clock::now()
-                    .time_since_epoch()).count() * kTICKS_PER_MICROSECOND);
+            return DateTime(kUNIX_EPOCH + duration_cast<microseconds>(system_clock::now().time_since_epoch()).count() *
+                                              kTICKS_PER_MICROSECOND);
         }
         else
         {
             return DateTime(kUNIX_EPOCH +
-                duration_cast<seconds>(system_clock::now()
-                    .time_since_epoch()).count() * kTICKS_PER_SECOND);
+                            duration_cast<seconds>(system_clock::now().time_since_epoch()).count() * kTICKS_PER_SECOND);
         }
     }
 
@@ -319,10 +299,7 @@ public:
          * - minus prior century years
          * + plus prior years divisible by 400 days
          */
-        int64_t daysSoFar = 365 * previousYear
-            + previousYear / 4LL
-            - previousYear / 100LL
-            + previousYear / 400LL;
+        int64_t daysSoFar = 365 * previousYear + previousYear / 4LL - previousYear / 100LL + previousYear / 400LL;
 
         return static_cast<double>(daysSoFar) + doy - 1.0;
     }
@@ -338,11 +315,8 @@ public:
          * - minus prior century years
          * + plus prior years divisible by 400 days
          */
-        int result = DayOfYear(year, month, day) - 1
-            + 365 * previousYear
-            + previousYear / 4
-            - previousYear / 100
-            + previousYear / 400;
+        int result = DayOfYear(year, month, day) - 1 + 365 * previousYear + previousYear / 4 - previousYear / 100 +
+                     previousYear / 400;
 
         return result;
     }
@@ -617,11 +591,11 @@ public:
         // julian date of previous midnight
         double jd0 = floor(ToJulian() + 0.5) - 0.5;
         // julian centuries since epoch
-        double t   = (jd0 - 2451545.0) / 36525.0;
+        double t = (jd0 - 2451545.0) / 36525.0;
         double jdf = ToJulian() - jd0;
 
-        double gt  = 24110.54841 + t * (8640184.812866 + t * (0.093104 - t * 6.2E-6));
-        gt  += jdf * 1.00273790935 * 86400.0;
+        double gt = 24110.54841 + t * (8640184.812866 + t * (0.093104 - t * 6.2E-6));
+        gt += jdf * 1.00273790935 * 86400.0;
 
         // 360.0 / 86400.0 = 1.0 / 240.0
         return Util::WrapTwoPI(Util::DegreesToRadians(gt / 240.0));

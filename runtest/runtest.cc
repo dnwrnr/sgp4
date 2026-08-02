@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-
+#include <cstdlib>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <libsgp4/CoordGeodetic.h>
 #include <libsgp4/CoordTopocentric.h>
 #include <libsgp4/Observer.h>
 #include <libsgp4/SGP4.h>
 #include <libsgp4/Tle.h>
-
-#include <cstdlib>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <list>
 #include <string>
 #include <vector>
@@ -36,8 +34,7 @@ void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
     bool running = true;
     bool firstRun = true;
 
-    std::cout << std::setprecision(0) << tle.NoradNumber() << " xx"
-        << std::endl;
+    std::cout << std::setprecision(0) << tle.NoradNumber() << " xx" << std::endl;
 
     while (running)
     {
@@ -198,7 +195,7 @@ void RunTest(const char* infile)
             {
                 if (line.length() >= libsgp4::Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
+                    // Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
                     /*
                      * store line and now read in second line
                      */
@@ -229,8 +226,7 @@ void RunTest(const char* infile)
             if (line.length() > 69)
             {
                 std::vector<std::string> tokens;
-                parameters = line.substr(libsgp4::Tle::LineLength() + 1,
-                        line.length() - libsgp4::Tle::LineLength());
+                parameters = line.substr(libsgp4::Tle::LineLength() + 1, line.length() - libsgp4::Tle::LineLength());
                 tokenize(parameters, tokens);
                 if (tokens.size() >= 3)
                 {
@@ -247,7 +243,7 @@ void RunTest(const char* infile)
             {
                 if (line.length() >= libsgp4::Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
+                    // Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
                     libsgp4::Tle tle("Test", line1, line2);
                     RunTle(tle, start, end, inc);
                 }

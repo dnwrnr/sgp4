@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include <cmath>
@@ -33,7 +32,6 @@ namespace libsgp4
 struct Vector
 {
 public:
-
     /**
      * Default constructor
      */
@@ -45,10 +43,10 @@ public:
      * @param argY y value
      * @param argZ z value
      */
-    Vector(double argX,
-            double argY,
-            double argZ)
-        : x(argX), y(argY), z(argZ)
+    Vector(double argX, double argY, double argZ)
+        : x(argX)
+        , y(argY)
+        , z(argZ)
     {
     }
 
@@ -59,11 +57,11 @@ public:
      * @param argZ z value
      * @param argW w value
      */
-    Vector(double argX,
-            double argY,
-            double argZ,
-            double argW)
-        : x(argX), y(argY), z(argZ), w(argW)
+    Vector(double argX, double argY, double argZ, double argW)
+        : x(argX)
+        , y(argY)
+        , z(argZ)
+        , w(argW)
     {
     }
 
@@ -73,10 +71,7 @@ public:
      */
     Vector operator-(const Vector& v) const
     {
-        return Vector(x - v.x,
-                y - v.y,
-                z - v.z,
-                0.0);
+        return Vector(x - v.x, y - v.y, z - v.z, 0.0);
     }
 
     /**
@@ -94,9 +89,7 @@ public:
      */
     double Dot(const Vector& vec) const
     {
-        return (x * vec.x) +
-            (y * vec.y) +
-            (z * vec.z);
+        return (x * vec.x) + (y * vec.y) + (z * vec.z);
     }
 
     /**

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include <cmath>
@@ -28,12 +27,12 @@ namespace libsgp4
 
 namespace
 {
-    static const int64_t kTICKS_PER_DAY =  86400000000LL;
-    static const int64_t kTICKS_PER_HOUR =  3600000000LL;
-    static const int64_t kTICKS_PER_MINUTE =  60000000LL;
-    static const int64_t kTICKS_PER_SECOND =   1000000LL;
+    static const int64_t kTICKS_PER_DAY = 86400000000LL;
+    static const int64_t kTICKS_PER_HOUR = 3600000000LL;
+    static const int64_t kTICKS_PER_MINUTE = 60000000LL;
+    static const int64_t kTICKS_PER_SECOND = 1000000LL;
     static const int64_t kTICKS_PER_MILLISECOND = 1000LL;
-    static const int64_t kTICKS_PER_MICROSECOND =    1LL;
+    static const int64_t kTICKS_PER_MICROSECOND = 1LL;
 
     static const int64_t kUNIX_EPOCH = 62135596800000000LL;
 
@@ -41,7 +40,7 @@ namespace
 
     // 1582-Oct-15
     static const int64_t kGREGORIAN_START = 49916304000000000LL;
-}
+} // namespace
 
 /**
  * @brief Represents a time interval.
@@ -199,15 +198,10 @@ public:
 private:
     int64_t mTicks{};
 
-    void CalculateTicks(int days,
-            int hours,
-            int minutes,
-            int seconds,
-            int microseconds)
+    void CalculateTicks(int days, int hours, int minutes, int seconds, int microseconds)
     {
-        mTicks = days * kTICKS_PER_DAY +
-            (hours * 3600LL + minutes * 60LL + seconds) * kTICKS_PER_SECOND +
-            microseconds * kTICKS_PER_MICROSECOND;
+        mTicks = days * kTICKS_PER_DAY + (hours * 3600LL + minutes * 60LL + seconds) * kTICKS_PER_SECOND +
+                 microseconds * kTICKS_PER_MICROSECOND;
     }
 };
 

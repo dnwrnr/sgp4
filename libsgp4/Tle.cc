@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include "Tle.h"
 
 #include <cstdio>
@@ -30,9 +29,9 @@ namespace
     const unsigned int TLE1_LEN_NORADNUM = 5;
     const unsigned int TLE1_COL_INTLDESC_A = 9;
     const unsigned int TLE1_LEN_INTLDESC_A = 2;
-//  static const unsigned int TLE1_COL_INTLDESC_B = 11;
+    //  static const unsigned int TLE1_COL_INTLDESC_B = 11;
     const unsigned int TLE1_LEN_INTLDESC_B = 3;
-//  static const unsigned int TLE1_COL_INTLDESC_C = 14;
+    //  static const unsigned int TLE1_COL_INTLDESC_C = 14;
     const unsigned int TLE1_LEN_INTLDESC_C = 3;
     const unsigned int TLE1_COL_EPOCH_A = 18;
     const unsigned int TLE1_LEN_EPOCH_A = 2;
@@ -44,10 +43,10 @@ namespace
     const unsigned int TLE1_LEN_MEANMOTIONDDT6 = 8;
     const unsigned int TLE1_COL_BSTAR = 53;
     const unsigned int TLE1_LEN_BSTAR = 8;
-//  static const unsigned int TLE1_COL_EPHEMTYPE = 62;
-//  static const unsigned int TLE1_LEN_EPHEMTYPE = 1;
-//  static const unsigned int TLE1_COL_ELNUM = 64;
-//  static const unsigned int TLE1_LEN_ELNUM = 4;
+    //  static const unsigned int TLE1_COL_EPHEMTYPE = 62;
+    //  static const unsigned int TLE1_LEN_EPHEMTYPE = 1;
+    //  static const unsigned int TLE1_COL_ELNUM = 64;
+    //  static const unsigned int TLE1_LEN_ELNUM = 4;
 
     const unsigned int TLE2_COL_NORADNUM = 2;
     const unsigned int TLE2_LEN_NORADNUM = 5;
@@ -65,7 +64,7 @@ namespace
     const unsigned int TLE2_LEN_MEANMOTION = 11;
     const unsigned int TLE2_COL_REVATEPOCH = 63;
     const unsigned int TLE2_LEN_REVATEPOCH = 5;
-}
+} // namespace
 
 /**
  * Initialise the tle object.
@@ -96,10 +95,8 @@ void Tle::Initialise()
     unsigned int satNumber1;
     unsigned int satNumber2;
 
-    ExtractInteger(mLineOne.substr(TLE1_COL_NORADNUM,
-                TLE1_LEN_NORADNUM), satNumber1);
-    ExtractInteger(mLineTwo.substr(TLE2_COL_NORADNUM,
-                TLE2_LEN_NORADNUM), satNumber2);
+    ExtractInteger(mLineOne.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM), satNumber1);
+    ExtractInteger(mLineTwo.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM), satNumber2);
 
     if (satNumber1 != satNumber2)
     {
@@ -113,40 +110,28 @@ void Tle::Initialise()
         mName = mLineOne.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
     }
 
-    mIntDesignator = mLineOne.substr(TLE1_COL_INTLDESC_A,
-            TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
+    mIntDesignator =
+        mLineOne.substr(TLE1_COL_INTLDESC_A, TLE1_LEN_INTLDESC_A + TLE1_LEN_INTLDESC_B + TLE1_LEN_INTLDESC_C);
 
     unsigned int year = 0;
     double day = 0.0;
 
-    ExtractInteger(mLineOne.substr(TLE1_COL_EPOCH_A,
-                TLE1_LEN_EPOCH_A), year);
-    ExtractDouble(mLineOne.substr(TLE1_COL_EPOCH_B,
-                TLE1_LEN_EPOCH_B), 4, day);
-    ExtractDouble(mLineOne.substr(TLE1_COL_MEANMOTIONDT2,
-                TLE1_LEN_MEANMOTIONDT2), 2, mMeanMotionDt2);
-    ExtractExponential(mLineOne.substr(TLE1_COL_MEANMOTIONDDT6,
-                TLE1_LEN_MEANMOTIONDDT6), mMeanMotionDdt6);
-    ExtractExponential(mLineOne.substr(TLE1_COL_BSTAR,
-                TLE1_LEN_BSTAR), mBstar);
+    ExtractInteger(mLineOne.substr(TLE1_COL_EPOCH_A, TLE1_LEN_EPOCH_A), year);
+    ExtractDouble(mLineOne.substr(TLE1_COL_EPOCH_B, TLE1_LEN_EPOCH_B), 4, day);
+    ExtractDouble(mLineOne.substr(TLE1_COL_MEANMOTIONDT2, TLE1_LEN_MEANMOTIONDT2), 2, mMeanMotionDt2);
+    ExtractExponential(mLineOne.substr(TLE1_COL_MEANMOTIONDDT6, TLE1_LEN_MEANMOTIONDDT6), mMeanMotionDdt6);
+    ExtractExponential(mLineOne.substr(TLE1_COL_BSTAR, TLE1_LEN_BSTAR), mBstar);
 
     /*
      * line 2
      */
-    ExtractDouble(mLineTwo.substr(TLE2_COL_INCLINATION,
-                TLE2_LEN_INCLINATION), 4, mInclination);
-    ExtractDouble(mLineTwo.substr(TLE2_COL_RAASCENDNODE,
-                TLE2_LEN_RAASCENDNODE), 4, mRightAscendingNode);
-    ExtractDouble(mLineTwo.substr(TLE2_COL_ECCENTRICITY,
-                TLE2_LEN_ECCENTRICITY), -1, mEccentricity);
-    ExtractDouble(mLineTwo.substr(TLE2_COL_ARGPERIGEE,
-                TLE2_LEN_ARGPERIGEE), 4, mArgumentPerigee);
-    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANANOMALY,
-                TLE2_LEN_MEANANOMALY), 4, mMeanAnomaly);
-    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANMOTION,
-                TLE2_LEN_MEANMOTION), 3, mMeanMotion);
-    ExtractInteger(mLineTwo.substr(TLE2_COL_REVATEPOCH,
-                TLE2_LEN_REVATEPOCH), mOrbitNumber);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_INCLINATION, TLE2_LEN_INCLINATION), 4, mInclination);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_RAASCENDNODE, TLE2_LEN_RAASCENDNODE), 4, mRightAscendingNode);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_ECCENTRICITY, TLE2_LEN_ECCENTRICITY), -1, mEccentricity);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_ARGPERIGEE, TLE2_LEN_ARGPERIGEE), 4, mArgumentPerigee);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANANOMALY, TLE2_LEN_MEANANOMALY), 4, mMeanAnomaly);
+    ExtractDouble(mLineTwo.substr(TLE2_COL_MEANMOTION, TLE2_LEN_MEANMOTION), 3, mMeanMotion);
+    ExtractInteger(mLineTwo.substr(TLE2_COL_REVATEPOCH, TLE2_LEN_REVATEPOCH), mOrbitNumber);
 
     if (year < 57)
     {
@@ -231,7 +216,7 @@ void Tle::ExtractDouble(const std::string& str, int pointPos, double& val)
 
             if (i == str.begin())
             {
-                if(*i == '-' || *i == '+')
+                if (*i == '-' || *i == '+')
                 {
                     /*
                      * first character could be signed
@@ -452,7 +437,7 @@ namespace
         }
         return std::stoi(digits.substr(0, 6));
     }
-}
+} // namespace
 
 Tle Tle::FromCsv(const std::string& csvLine)
 {
@@ -483,14 +468,12 @@ Tle Tle::FromCsv(const std::string& csvLine)
     double meanMotionDdt6 = std::stod(fields[16]);
 
     int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-    if (std::sscanf(epochStr.c_str(), "%d-%d-%dT%d:%d:%d",
-                     &year, &month, &day, &hour, &minute, &second) != 6)
+    if (std::sscanf(epochStr.c_str(), "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second) != 6)
     {
         throw TleException("Invalid epoch format");
     }
     std::string::size_type dotPos = epochStr.rfind('.');
-    int microsecond = dotPos == std::string::npos ? 0 :
-        ParseIsoMicrosecond(epochStr.substr(dotPos + 1));
+    int microsecond = dotPos == std::string::npos ? 0 : ParseIsoMicrosecond(epochStr.substr(dotPos + 1));
 
     DateTime epoch(year, month, day, hour, minute, second, microsecond);
 

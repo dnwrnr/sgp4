@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include "Eci.h"
 
 #include "Globals.h"
@@ -28,7 +27,7 @@ namespace libsgp4
  * @param[in] dt the date
  * @param[in] geo the geodetic position
  */
-void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
+void Eci::ToEci(const DateTime& dt, const CoordGeodetic& geo)
 {
     /*
      * set date
@@ -45,8 +44,7 @@ void Eci::ToEci(const DateTime& dt, const CoordGeodetic &geo)
     /*
      * take into account earth flattening
      */
-    const double c = 1.0
-        / sqrt(1.0 + kF * (kF - 2.0) * pow(sin(geo.latitude), 2.0));
+    const double c = 1.0 / sqrt(1.0 + kF * (kF - 2.0) * pow(sin(geo.latitude), 2.0));
     const double s = pow(1.0 - kF, 2.0) * c;
     const double achcp = (kXKMPER * c + geo.altitude) * cos(geo.latitude);
 
@@ -80,11 +78,9 @@ CoordGeodetic Eci::ToGeodetic() const
 {
     const double theta = Util::AcTan(mPosition.y, mPosition.x);
 
-    const double lon = Util::WrapNegPosPI(theta
-            - mDt.ToGreenwichSiderealTime());
+    const double lon = Util::WrapNegPosPI(theta - mDt.ToGreenwichSiderealTime());
 
-    const double r = sqrt((mPosition.x * mPosition.x)
-            + (mPosition.y * mPosition.y));
+    const double r = sqrt((mPosition.x * mPosition.x) + (mPosition.y * mPosition.y));
 
     const double e2 = kF * (2.0 - kF);
 
@@ -100,8 +96,7 @@ CoordGeodetic Eci::ToGeodetic() const
         c = 1.0 / sqrt(1.0 - e2 * sinphi * sinphi);
         lat = Util::AcTan(mPosition.z + kXKMPER * c * e2 * sinphi, r);
         cnt++;
-    }
-    while (std::abs(lat - phi) >= 1e-10 && cnt < 10);
+    } while (std::abs(lat - phi) >= 1e-10 && cnt < 10);
 
     const double alt = r / cos(lat) - kXKMPER * c;
 
