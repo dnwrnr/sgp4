@@ -58,12 +58,12 @@ find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format clang-format-21 clang-fo
 if(CLANG_FORMAT_EXECUTABLE)
     file(GLOB_RECURSE SGP4_FORMAT_SOURCES
         "${PROJECT_SOURCE_DIR}/libsgp4/*.h"
-        "${PROJECT_SOURCE_DIR}/libsgp4/*.cc"
-        "${PROJECT_SOURCE_DIR}/tests/*.cc"
-        "${PROJECT_SOURCE_DIR}/sattrack/*.cc"
-        "${PROJECT_SOURCE_DIR}/runtest/*.cc"
-        "${PROJECT_SOURCE_DIR}/passpredict/*.cc"
-        "${PROJECT_SOURCE_DIR}/csvprop/*.cc")
+        "${PROJECT_SOURCE_DIR}/libsgp4/*.cpp"
+        "${PROJECT_SOURCE_DIR}/tests/*.cpp"
+        "${PROJECT_SOURCE_DIR}/sattrack/*.cpp"
+        "${PROJECT_SOURCE_DIR}/runtest/*.cpp"
+        "${PROJECT_SOURCE_DIR}/passpredict/*.cpp"
+        "${PROJECT_SOURCE_DIR}/csvprop/*.cpp")
 
     add_custom_target(format
         COMMAND ${CLANG_FORMAT_EXECUTABLE} -i ${SGP4_FORMAT_SOURCES}

@@ -1,12 +1,12 @@
 add_executable(sgp4_tests
-    test_util.cc
-    test_timespan.cc
-    test_vector.cc
-    test_datetime.cc
-    test_tle.cc
-    test_sgp4.cc
-    test_observer.cc
-    test_csv_loader.cc)
+    test_util.cpp
+    test_timespan.cpp
+    test_vector.cpp
+    test_datetime.cpp
+    test_tle.cpp
+    test_sgp4.cpp
+    test_observer.cpp
+    test_csv_loader.cpp)
 
 target_link_libraries(sgp4_tests PRIVATE sgp4 gtest_main)
 
