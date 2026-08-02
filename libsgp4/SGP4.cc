@@ -262,7 +262,8 @@ Eci SGP4::FindPositionSDP4(double tsince) const
         throw SatelliteException("Error: (xn <= 0.0)");
     }
 
-    a = pow(kXKE / xn, kTWOTHIRD) * tempa * tempa;
+    const double v = kXKE / xn;
+    a = cbrt(v * v) * tempa * tempa;
     e = em - tempe;
     double xmam = xmdf + mElements.RecoveredMeanMotion() * templ;
 
@@ -397,8 +398,8 @@ Eci SGP4::FindPositionSGP4(double tsince) const
     if (!mUseSimpleModel)
     {
         const double delomg = mNearspaceConsts.omgcof * tsince;
-        const double delm =
-            mNearspaceConsts.xmcof * (pow(1.0 + mCommonConsts.eta * cos(xmdf), 3.0) - mNearspaceConsts.delmo);
+        const double x1p = 1.0 + mCommonConsts.eta * cos(xmdf);
+        const double delm = mNearspaceConsts.xmcof * (x1p * x1p * x1p - mNearspaceConsts.delmo);
         const double temp = delomg + delm;
 
         xmp += temp;
@@ -468,7 +469,8 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
                                          double sinio)
 {
     const double beta2 = 1.0 - e * e;
-    const double xn = kXKE / pow(a, 1.5);
+    const double sqrtA = sqrt(a);
+    const double xn = kXKE / (a * sqrtA);
     /*
      * long period periodics
      */
@@ -568,14 +570,13 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
 
     const double r = a * (1.0 - ecose);
     const double temp31 = 1.0 / r;
-    const double rdot = kXKE * sqrt(a) * esine * temp31;
+    const double rdot = kXKE * sqrtA * esine * temp31;
     const double rfdot = kXKE * sqrt(pl) * temp31;
     const double temp32 = a * temp31;
     const double betal = sqrt(temp21);
     const double temp33 = 1.0 / (1.0 + betal);
     const double cosu = temp32 * (cosepw - axn + ayn * esine * temp33);
     const double sinu = temp32 * (sinepw - ayn - axn * esine * temp33);
-    const double u = atan2(sinu, cosu);
     const double sin2u = 2.0 * sinu * cosu;
     const double cos2u = 2.0 * cosu * cosu - 1.0;
 
@@ -587,7 +588,7 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
     const double temp43 = temp42 * temp41;
 
     const double rk = r * (1.0 - 1.5 * temp43 * betal * x3thm1) + 0.5 * temp42 * x1mth2 * cos2u;
-    const double uk = u - 0.25 * temp43 * x7thm1 * sin2u;
+    const double delta = -0.25 * temp43 * x7thm1 * sin2u;
     const double xnodek = xnode + 1.5 * temp43 * cosio * sin2u;
     const double xinck = xinc + 1.5 * temp43 * cosio * sinio * cos2u;
     const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
@@ -596,8 +597,10 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
     /*
      * orientation vectors
      */
-    const double sinuk = sin(uk);
-    const double cosuk = cos(uk);
+    const double sindelta = sin(delta);
+    const double cosdelta = cos(delta);
+    const double sinuk = sinu * cosdelta + cosu * sindelta;
+    const double cosuk = cosu * cosdelta - sinu * sindelta;
     const double sinik = sin(xinck);
     const double cosik = cos(xinck);
     const double sinnok = sin(xnodek);
