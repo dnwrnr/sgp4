@@ -105,6 +105,22 @@ TEST(CsvTleFromCsv, NegativeBStar)
     EXPECT_NEAR(tle.MeanMotionDt2(), -0.25e-6, 1e-12);
 }
 
+TEST(CsvTleFromCsv, EpochWithoutFractionalSeconds)
+{
+    Tle tle = Tle::FromCsv(
+        "TEST SAT,2000-040A,2026-07-26T04:36:54,2.00558057,"
+        ".01202129,54.8474,213.6129,302.8892,63.8849,0,U,26407,999,19073,0,"
+        ".81E-6,0");
+    DateTime epoch = tle.Epoch();
+    EXPECT_EQ(epoch.Year(), 2026);
+    EXPECT_EQ(epoch.Month(), 7);
+    EXPECT_EQ(epoch.Day(), 26);
+    EXPECT_EQ(epoch.Hour(), 4);
+    EXPECT_EQ(epoch.Minute(), 36);
+    EXPECT_EQ(epoch.Second(), 54);
+    EXPECT_EQ(epoch.Microsecond(), 0);
+}
+
 TEST(CsvTleFromCsv, Line1Line2Empty)
 {
     Tle tle = Tle::FromCsv(CSV_LINE_GPS);

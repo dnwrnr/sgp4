@@ -183,7 +183,7 @@ void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 
     for (auto& i : str)
     {
-        if (isdigit(i))
+        if (isdigit(static_cast<unsigned char>(i)))
         {
             found_digit = true;
             temp = (temp * 10) + static_cast<unsigned int>(i - '0');
@@ -243,7 +243,7 @@ void Tle::ExtractDouble(const std::string& str, int point_pos, double& val)
 
             if (!done)
             {
-                if (isdigit(*i))
+                if (isdigit(static_cast<unsigned char>(*i)))
                 {
                     found_digit = true;
                     temp += *i;
@@ -488,8 +488,9 @@ Tle Tle::FromCsv(const std::string& csv_line)
     {
         throw TleException("Invalid epoch format");
     }
-    int microsecond = ParseIsoMicrosecond(
-        epoch_str.substr(epoch_str.rfind('.') + 1));
+    std::string::size_type dot_pos = epoch_str.rfind('.');
+    int microsecond = dot_pos == std::string::npos ? 0 :
+        ParseIsoMicrosecond(epoch_str.substr(dot_pos + 1));
 
     DateTime epoch(year, month, day, hour, minute, second, microsecond);
 

@@ -1,14 +1,16 @@
 #include <libsgp4/CsvTleLoader.h>
 #include <libsgp4/SGP4.h>
 #include <libsgp4/Eci.h>
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
 
 int main()
 {
-    std::string csv_path = std::string(CSV_DATA_DIR) + "/geodetic.csv";
+    std::filesystem::path csv_path =
+        std::filesystem::path(CSV_DATA_DIR) / "geodetic.csv";
 
-    std::vector<libsgp4::Tle> tles = libsgp4::LoadCsvTleFile(csv_path);
+    std::vector<libsgp4::Tle> tles = libsgp4::LoadCsvTleFile(csv_path.string());
     if (tles.empty())
     {
         std::cerr << "No TLEs loaded from " << csv_path << std::endl;
