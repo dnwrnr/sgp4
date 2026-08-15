@@ -50,102 +50,102 @@ public:
 private:
     struct CommonConstants
     {
-        double cosio;
-        double sinio;
+        double cosInclination0;
+        double sinInclination0;
         double eta;
-        double t2cof;
-        double x1mth2;
-        double x3thm1;
-        double x7thm1;
-        double aycof;
-        double xlcof;
-        double xnodcf;
-        double c1;
-        double c4;
-        double omgdot; // secular rate of omega (radians/sec)
-        double xnodot; // secular rate of xnode (radians/sec)
-        double xmdot;  // secular rate of xmo   (radians/sec)
+        double t2Coeff;
+        double sinSqInc;
+        double threeCosSqIncMinus1;
+        double sevenCosSqIncMinus1;
+        double ayCoeff;
+        double xlCoeff;
+        double raanDragCoeff;
+        double dragCoeff;
+        double dragCoeff4;
+        double argPerigeeDot;  // secular rate of argPerigee (radians/sec)
+        double raanDot;        // secular rate of raan    (radians/sec)
+        double meanAnomalyDot; // secular rate of meanAnomaly (radians/sec)
     };
 
     struct NearSpaceConstants
     {
-        double c5;
-        double omgcof;
-        double xmcof;
-        double delmo;
-        double sinmo;
-        double d2;
-        double d3;
-        double d4;
-        double t3cof;
-        double t4cof;
-        double t5cof;
+        double dragCoeff5;
+        double argPerigeeDragCoeff;
+        double meanAnomalyDragCoeff;
+        double deltaMeanAnomaly0;
+        double sinMeanAnomaly0;
+        double d2Coeff;
+        double d3Coeff;
+        double d4Coeff;
+        double t3Coeff;
+        double t4Coeff;
+        double t5Coeff;
     };
 
     struct DeepSpaceConstants
     {
-        double gsto;
-        double zmol;
-        double zmos;
+        double greenwichSiderealTime;
+        double lunarMeanAnomaly;
+        double solarMeanAnomaly;
 
         /*
          * lunar / solar constants for epoch
          * applied during DeepSpaceSecular()
          */
-        double sse;
-        double ssi;
-        double ssl;
-        double ssg;
-        double ssh;
+        double totalSecularEcc;
+        double totalSecularInc;
+        double totalSecularLong;
+        double totalSecularArgPerigee;
+        double totalSecularRaAn;
         /*
          * lunar / solar constants
          * used during DeepSpaceCalculateLunarSolarTerms()
          */
-        double se2;
-        double si2;
-        double sl2;
-        double sgh2;
-        double sh2;
-        double se3;
-        double si3;
-        double sl3;
-        double sgh3;
-        double sh3;
-        double sl4;
-        double sgh4;
-        double ee2;
-        double e3;
-        double xi2;
-        double xi3;
-        double xl2;
-        double xl3;
-        double xl4;
-        double xgh2;
-        double xgh3;
-        double xgh4;
-        double xh2;
-        double xh3;
+        double solarEcc2;
+        double solarInc2;
+        double solarLong2;
+        double solarArgPerigee2;
+        double solarRaAn2;
+        double solarEcc3;
+        double solarInc3;
+        double solarLong3;
+        double solarArgPerigee3;
+        double solarRaAn3;
+        double solarLong4;
+        double solarArgPerigee4;
+        double lunarEcc2;
+        double lunarEcc3;
+        double lunarInc2;
+        double lunarInc3;
+        double lunarLong2;
+        double lunarLong3;
+        double lunarLong4;
+        double lunarArgPerigee2;
+        double lunarArgPerigee3;
+        double lunarArgPerigee4;
+        double lunarRaAn2;
+        double lunarRaAn3;
         /*
          * used during DeepSpaceCalcDotTerms()
          */
-        double d2201;
-        double d2211;
-        double d3210;
-        double d3222;
-        double d4410;
-        double d4422;
-        double d5220;
-        double d5232;
-        double d5421;
-        double d5433;
-        double del1;
-        double del2;
-        double del3;
+        double resonanceD2201;
+        double resonanceD2211;
+        double resonanceD3210;
+        double resonanceD3222;
+        double resonanceD4410;
+        double resonanceD4422;
+        double resonanceD5220;
+        double resonanceD5232;
+        double resonanceD5421;
+        double resonanceD5433;
+        double synchronousDel1;
+        double synchronousDel2;
+        double synchronousDel3;
         /*
          * integrator constants
          */
-        double xfact;
-        double xlamo;
+        double resonancePhaseRate;
+        double resonancePhase0;
 
         enum TOrbitShape
         {
@@ -160,72 +160,72 @@ private:
         /*
          * integrator values
          */
-        double xli;
-        double xni;
-        double atime;
+        double resonancePhase;
+        double resonanceMeanMotion;
+        double integratorTime;
     };
 
     void Initialise();
-    static void RecomputeConstants(double xinc,
-                                   double& sinio,
-                                   double& cosio,
-                                   double& x3thm1,
-                                   double& x1mth2,
-                                   double& x7thm1,
-                                   double& xlcof,
-                                   double& aycof);
+    static void RecomputeConstants(double inclination,
+                                   double& sinInclination0,
+                                   double& cosInclination0,
+                                   double& threeCosSqIncMinus1,
+                                   double& sinSqInc,
+                                   double& sevenCosSqIncMinus1,
+                                   double& xlCoeff,
+                                   double& ayCoeff);
     Eci FindPositionSDP4(double tsince) const;
     Eci FindPositionSGP4(double tsince) const;
     static Eci CalculateFinalPositionVelocity(const DateTime& date,
-                                              double e,
-                                              double a,
-                                              double omega,
-                                              double xl,
-                                              double xnode,
-                                              double xinc,
-                                              double xlcof,
-                                              double aycof,
-                                              double x3thm1,
-                                              double x1mth2,
-                                              double x7thm1,
-                                              double cosio,
-                                              double sinio);
+                                              double eccentricity,
+                                              double semiMajorAxis,
+                                              double argPerigee,
+                                              double meanLongitude,
+                                              double raan,
+                                              double inclination,
+                                              double xlCoeff,
+                                              double ayCoeff,
+                                              double threeCosSqIncMinus1,
+                                              double sinSqInc,
+                                              double sevenCosSqIncMinus1,
+                                              double cosInclination0,
+                                              double sinInclination0);
     /**
      * Deep space initialisation
      */
-    void DeepSpaceInitialise(double eosq,
-                             double sinio,
-                             double cosio,
-                             double betao,
-                             double theta2,
-                             double betao2,
-                             double xmdot,
-                             double omgdot,
-                             double xnodot);
+    void DeepSpaceInitialise(double eccentricitySq,
+                             double sinInclination0,
+                             double cosInclination0,
+                             double sqrtOneMinusEccSq,
+                             double cosSqInc,
+                             double oneMinusEccSq,
+                             double meanAnomalyDot,
+                             double argPerigeeDot,
+                             double raanDot);
     /**
      * Calculate lunar / solar periodics and apply
      */
     static void DeepSpacePeriodics(double tsince,
-                                   const DeepSpaceConstants& dsConstants,
-                                   double& em,
-                                   double& xinc,
-                                   double& omgasm,
-                                   double& xnodes,
-                                   double& xll);
+                                   const DeepSpaceConstants& deepSpaceConstants,
+                                   double& eccentricity,
+                                   double& inclination,
+                                   double& argPerigee,
+                                   double& raan,
+                                   double& meanAnomaly);
     /**
      * Deep space secular effects
      */
     static void DeepSpaceSecular(double tsince,
                                  const OrbitalElements& elements,
-                                 const CommonConstants& cConstants,
-                                 const DeepSpaceConstants& dsConstants,
+                                 const CommonConstants& commonConstants,
+                                 const DeepSpaceConstants& deepSpaceConstants,
                                  IntegratorParams& integParams,
-                                 double& xll,
-                                 double& omgasm,
-                                 double& xnodes,
-                                 double& em,
-                                 double& xinc,
-                                 double& xn);
+                                 double& meanAnomaly,
+                                 double& argPerigee,
+                                 double& raan,
+                                 double& eccentricity,
+                                 double& inclination,
+                                 double& meanMotion);
 
     /**
      * Reset

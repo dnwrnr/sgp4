@@ -37,6 +37,34 @@ void SGP4::SetTle(const Tle& tle)
     Initialise();
 }
 
+/*
+ * traceability: short identifier -> descriptive name
+  aycof                    -> ayCoeff                            betao                    -> sqrtOneMinusEccSq
+  betao2                   -> oneMinusEccSq                      c1                       -> dragCoeff
+  c1sq                     -> dragCoeffSquared                   c2                       -> dragCoeff2
+  c3                       -> dragCoeff3                         c4                       -> dragCoeff4
+  c5                       -> dragCoeff5                         coef                     -> atmCoef
+  coef1                    -> atmCoef1                           cosio                    -> cosInclination0
+  d2                       -> d2Coeff                            d3                       -> d3Coeff
+  d4                       -> d4Coeff                            delmo                    -> deltaMeanAnomaly0
+  eeta                     -> eccTimesEta                        eosq                     -> eccentricitySq
+  etasq                    -> etaSquared                         gsto                     -> greenwichSiderealTime
+  omgcof                   -> argPerigeeDragCoeff                omgdot                   -> argPerigeeDot
+  pinvsq                   -> pinvSquared                        psisq                    -> psiSquared
+  qoms24                   -> qoms2t                             s4                       -> densityHeightS
+  sinio                    -> sinInclination0                    sinmo                    -> sinMeanAnomaly0
+  t2cof                    -> t2Coeff                            t3cof                    -> t3Coeff
+  t4cof                    -> t4Coeff                            t5cof                    -> t5Coeff
+  temp                     -> d3PreFactor                        temp1                    -> ck2Term1
+  temp2                    -> ck2Term2                           temp3                    -> ck4Term
+  theta2                   -> cosSqInc                           theta4                   -> cos4Inc
+  tsi                      -> inverseSmaMinusS                   x1m5th                   -> oneMinus5CosSqInc
+  x1mth2                   -> sinSqInc                           x3thm1                   -> threeCosSqIncMinus1
+  x7thm1                   -> sevenCosSqIncMinus1                xhdot1                   -> raanDotFirstOrder
+  xlcof                    -> xlCoeff                            xmcof                    -> meanAnomalyDragCoeff
+  xmdot                    -> meanAnomalyDot                     xnodcf                   -> raanDragCoeff
+  xnodot                   -> raanDot
+ */
 void SGP4::Initialise()
 {
     /*
@@ -58,18 +86,18 @@ void SGP4::Initialise()
     }
 
     RecomputeConstants(mElements.Inclination(),
-                       mCommonConsts.sinio,
-                       mCommonConsts.cosio,
-                       mCommonConsts.x3thm1,
-                       mCommonConsts.x1mth2,
-                       mCommonConsts.x7thm1,
-                       mCommonConsts.xlcof,
-                       mCommonConsts.aycof);
+                       mCommonConsts.sinInclination0,
+                       mCommonConsts.cosInclination0,
+                       mCommonConsts.threeCosSqIncMinus1,
+                       mCommonConsts.sinSqInc,
+                       mCommonConsts.sevenCosSqIncMinus1,
+                       mCommonConsts.xlCoeff,
+                       mCommonConsts.ayCoeff);
 
-    const double theta2 = mCommonConsts.cosio * mCommonConsts.cosio;
-    const double eosq = mElements.Eccentricity() * mElements.Eccentricity();
-    const double betao2 = 1.0 - eosq;
-    const double betao = sqrt(betao2);
+    const double cosSqInc = mCommonConsts.cosInclination0 * mCommonConsts.cosInclination0;
+    const double eccentricitySq = mElements.Eccentricity() * mElements.Eccentricity();
+    const double oneMinusEccSq = 1.0 - eccentricitySq;
+    const double sqrtOneMinusEccSq = sqrt(oneMinusEccSq);
 
     if (mElements.Period() >= 225.0)
     {
@@ -95,106 +123,116 @@ void SGP4::Initialise()
      * for perigee below 156km, the values of
      * s4 and qoms2t are altered
      */
-    double s4 = kS;
-    double qoms24 = kQOMS2T;
+    double densityHeightS = kS;
+    double qoms2t = kQOMS2T;
     if (mElements.Perigee() < 156.0)
     {
-        s4 = mElements.Perigee() - 78.0;
+        densityHeightS = mElements.Perigee() - 78.0;
         if (mElements.Perigee() < 98.0)
         {
-            s4 = 20.0;
+            densityHeightS = 20.0;
         }
-        qoms24 = pow((120.0 - s4) * kAE / kXKMPER, 4.0);
-        s4 = s4 / kXKMPER + kAE;
+        qoms2t = pow((120.0 - densityHeightS) * kAE / kXKMPER, 4.0);
+        densityHeightS = densityHeightS / kXKMPER + kAE;
     }
 
     /*
      * generate constants
      */
-    const double pinvsq =
-        1.0 / (mElements.RecoveredSemiMajorAxis() * mElements.RecoveredSemiMajorAxis() * betao2 * betao2);
-    const double tsi = 1.0 / (mElements.RecoveredSemiMajorAxis() - s4);
-    mCommonConsts.eta = mElements.RecoveredSemiMajorAxis() * mElements.Eccentricity() * tsi;
-    const double etasq = mCommonConsts.eta * mCommonConsts.eta;
-    const double eeta = mElements.Eccentricity() * mCommonConsts.eta;
-    const double psisq = std::abs(1.0 - etasq);
-    const double coef = qoms24 * pow(tsi, 4.0);
-    const double coef1 = coef / pow(psisq, 3.5);
-    const double c2 = coef1 * mElements.RecoveredMeanMotion() *
-                      (mElements.RecoveredSemiMajorAxis() * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
-                       0.75 * kCK2 * tsi / psisq * mCommonConsts.x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
-    mCommonConsts.c1 = mElements.BStar() * c2;
-    mCommonConsts.c4 = 2.0 * mElements.RecoveredMeanMotion() * coef1 * mElements.RecoveredSemiMajorAxis() * betao2 *
-                       (mCommonConsts.eta * (2.0 + 0.5 * etasq) + mElements.Eccentricity() * (0.5 + 2.0 * etasq) -
-                        2.0 * kCK2 * tsi / (mElements.RecoveredSemiMajorAxis() * psisq) *
-                            (-3.0 * mCommonConsts.x3thm1 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-                             0.75 * mCommonConsts.x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) *
-                                 cos(2.0 * mElements.ArgumentPerigee())));
-    const double theta4 = theta2 * theta2;
-    const double temp1 = 3.0 * kCK2 * pinvsq * mElements.RecoveredMeanMotion();
-    const double temp2 = temp1 * kCK2 * pinvsq;
-    const double temp3 = 1.25 * kCK4 * pinvsq * pinvsq * mElements.RecoveredMeanMotion();
-    mCommonConsts.xmdot = mElements.RecoveredMeanMotion() + 0.5 * temp1 * betao * mCommonConsts.x3thm1 +
-                          0.0625 * temp2 * betao * (13.0 - 78.0 * theta2 + 137.0 * theta4);
-    const double x1m5th = 1.0 - 5.0 * theta2;
-    mCommonConsts.omgdot = -0.5 * temp1 * x1m5th + 0.0625 * temp2 * (7.0 - 114.0 * theta2 + 395.0 * theta4) +
-                           temp3 * (3.0 - 36.0 * theta2 + 49.0 * theta4);
-    const double xhdot1 = -temp1 * mCommonConsts.cosio;
-    mCommonConsts.xnodot =
-        xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * theta2) + 2.0 * temp3 * (3.0 - 7.0 * theta2)) * mCommonConsts.cosio;
-    mCommonConsts.xnodcf = 3.5 * betao2 * xhdot1 * mCommonConsts.c1;
-    mCommonConsts.t2cof = 1.5 * mCommonConsts.c1;
+    const double pinvSquared =
+        1.0 / (mElements.RecoveredSemiMajorAxis() * mElements.RecoveredSemiMajorAxis() * oneMinusEccSq * oneMinusEccSq);
+    const double inverseSmaMinusS = 1.0 / (mElements.RecoveredSemiMajorAxis() - densityHeightS);
+    mCommonConsts.eta = mElements.RecoveredSemiMajorAxis() * mElements.Eccentricity() * inverseSmaMinusS;
+    const double etaSquared = mCommonConsts.eta * mCommonConsts.eta;
+    const double eccTimesEta = mElements.Eccentricity() * mCommonConsts.eta;
+    const double psiSquared = std::abs(1.0 - etaSquared);
+    const double atmCoef = qoms2t * pow(inverseSmaMinusS, 4.0);
+    const double atmCoef1 = atmCoef / pow(psiSquared, 3.5);
+    const double dragCoeff2 =
+        atmCoef1 * mElements.RecoveredMeanMotion() *
+        (mElements.RecoveredSemiMajorAxis() * (1.0 + 1.5 * etaSquared + eccTimesEta * (4.0 + etaSquared)) +
+         0.75 * kCK2 * inverseSmaMinusS / psiSquared * mCommonConsts.threeCosSqIncMinus1 *
+             (8.0 + 3.0 * etaSquared * (8.0 + etaSquared)));
+    mCommonConsts.dragCoeff = mElements.BStar() * dragCoeff2;
+    mCommonConsts.dragCoeff4 =
+        2.0 * mElements.RecoveredMeanMotion() * atmCoef1 * mElements.RecoveredSemiMajorAxis() * oneMinusEccSq *
+        (mCommonConsts.eta * (2.0 + 0.5 * etaSquared) + mElements.Eccentricity() * (0.5 + 2.0 * etaSquared) -
+         2.0 * kCK2 * inverseSmaMinusS / (mElements.RecoveredSemiMajorAxis() * psiSquared) *
+             (-3.0 * mCommonConsts.threeCosSqIncMinus1 *
+                  (1.0 - 2.0 * eccTimesEta + etaSquared * (1.5 - 0.5 * eccTimesEta)) +
+              0.75 * mCommonConsts.sinSqInc * (2.0 * etaSquared - eccTimesEta * (1.0 + etaSquared)) *
+                  cos(2.0 * mElements.ArgumentPerigee())));
+    const double cos4Inc = cosSqInc * cosSqInc;
+    const double ck2Term1 = 3.0 * kCK2 * pinvSquared * mElements.RecoveredMeanMotion();
+    const double ck2Term2 = ck2Term1 * kCK2 * pinvSquared;
+    const double ck4Term = 1.25 * kCK4 * pinvSquared * pinvSquared * mElements.RecoveredMeanMotion();
+    mCommonConsts.meanAnomalyDot = mElements.RecoveredMeanMotion() +
+                                   0.5 * ck2Term1 * sqrtOneMinusEccSq * mCommonConsts.threeCosSqIncMinus1 +
+                                   0.0625 * ck2Term2 * sqrtOneMinusEccSq * (13.0 - 78.0 * cosSqInc + 137.0 * cos4Inc);
+    const double oneMinus5CosSqInc = 1.0 - 5.0 * cosSqInc;
+    mCommonConsts.argPerigeeDot = -0.5 * ck2Term1 * oneMinus5CosSqInc +
+                                  0.0625 * ck2Term2 * (7.0 - 114.0 * cosSqInc + 395.0 * cos4Inc) +
+                                  ck4Term * (3.0 - 36.0 * cosSqInc + 49.0 * cos4Inc);
+    const double raanDotFirstOrder = -ck2Term1 * mCommonConsts.cosInclination0;
+    mCommonConsts.raanDot =
+        raanDotFirstOrder + (0.5 * ck2Term2 * (4.0 - 19.0 * cosSqInc) + 2.0 * ck4Term * (3.0 - 7.0 * cosSqInc)) *
+                                mCommonConsts.cosInclination0;
+    mCommonConsts.raanDragCoeff = 3.5 * oneMinusEccSq * raanDotFirstOrder * mCommonConsts.dragCoeff;
+    mCommonConsts.t2Coeff = 1.5 * mCommonConsts.dragCoeff;
 
     if (mUseDeepSpace)
     {
-        mDeepspaceConsts.gsto = mElements.Epoch().ToGreenwichSiderealTime();
+        mDeepspaceConsts.greenwichSiderealTime = mElements.Epoch().ToGreenwichSiderealTime();
 
-        DeepSpaceInitialise(eosq,
-                            mCommonConsts.sinio,
-                            mCommonConsts.cosio,
-                            betao,
-                            theta2,
-                            betao2,
-                            mCommonConsts.xmdot,
-                            mCommonConsts.omgdot,
-                            mCommonConsts.xnodot);
+        DeepSpaceInitialise(eccentricitySq,
+                            mCommonConsts.sinInclination0,
+                            mCommonConsts.cosInclination0,
+                            sqrtOneMinusEccSq,
+                            cosSqInc,
+                            oneMinusEccSq,
+                            mCommonConsts.meanAnomalyDot,
+                            mCommonConsts.argPerigeeDot,
+                            mCommonConsts.raanDot);
     }
     else
     {
-        double c3 = 0.0;
+        double dragCoeff3 = 0.0;
         if (mElements.Eccentricity() > 1.0e-4)
         {
-            c3 = coef * tsi * kA3OVK2 * mElements.RecoveredMeanMotion() * kAE * mCommonConsts.sinio /
-                 mElements.Eccentricity();
+            dragCoeff3 = atmCoef * inverseSmaMinusS * kA3OVK2 * mElements.RecoveredMeanMotion() * kAE *
+                         mCommonConsts.sinInclination0 / mElements.Eccentricity();
         }
 
-        mNearspaceConsts.c5 =
-            2.0 * coef1 * mElements.RecoveredSemiMajorAxis() * betao2 * (1.0 + 2.75 * (etasq + eeta) + eeta * etasq);
-        mNearspaceConsts.omgcof = mElements.BStar() * c3 * cos(mElements.ArgumentPerigee());
+        mNearspaceConsts.dragCoeff5 = 2.0 * atmCoef1 * mElements.RecoveredSemiMajorAxis() * oneMinusEccSq *
+                                      (1.0 + 2.75 * (etaSquared + eccTimesEta) + eccTimesEta * etaSquared);
+        mNearspaceConsts.argPerigeeDragCoeff = mElements.BStar() * dragCoeff3 * cos(mElements.ArgumentPerigee());
 
-        mNearspaceConsts.xmcof = 0.0;
+        mNearspaceConsts.meanAnomalyDragCoeff = 0.0;
         if (mElements.Eccentricity() > 1.0e-4)
         {
-            mNearspaceConsts.xmcof = -kTWOTHIRD * coef * mElements.BStar() * kAE / eeta;
+            mNearspaceConsts.meanAnomalyDragCoeff = -kTWOTHIRD * atmCoef * mElements.BStar() * kAE / eccTimesEta;
         }
 
-        mNearspaceConsts.delmo = pow(1.0 + mCommonConsts.eta * (cos(mElements.MeanAnomaly())), 3.0);
-        mNearspaceConsts.sinmo = sin(mElements.MeanAnomaly());
+        mNearspaceConsts.deltaMeanAnomaly0 = pow(1.0 + mCommonConsts.eta * (cos(mElements.MeanAnomaly())), 3.0);
+        mNearspaceConsts.sinMeanAnomaly0 = sin(mElements.MeanAnomaly());
 
         if (!mUseSimpleModel)
         {
-            const double c1sq = mCommonConsts.c1 * mCommonConsts.c1;
-            mNearspaceConsts.d2 = 4.0 * mElements.RecoveredSemiMajorAxis() * tsi * c1sq;
-            const double temp = mNearspaceConsts.d2 * tsi * mCommonConsts.c1 / 3.0;
-            mNearspaceConsts.d3 = (17.0 * mElements.RecoveredSemiMajorAxis() + s4) * temp;
-            mNearspaceConsts.d4 = 0.5 * temp * mElements.RecoveredSemiMajorAxis() * tsi *
-                                  (221.0 * mElements.RecoveredSemiMajorAxis() + 31.0 * s4) * mCommonConsts.c1;
-            mNearspaceConsts.t3cof = mNearspaceConsts.d2 + 2.0 * c1sq;
-            mNearspaceConsts.t4cof =
-                0.25 * (3.0 * mNearspaceConsts.d3 + mCommonConsts.c1 * (12.0 * mNearspaceConsts.d2 + 10.0 * c1sq));
-            mNearspaceConsts.t5cof = 0.2 * (3.0 * mNearspaceConsts.d4 + 12.0 * mCommonConsts.c1 * mNearspaceConsts.d3 +
-                                            6.0 * mNearspaceConsts.d2 * mNearspaceConsts.d2 +
-                                            15.0 * c1sq * (2.0 * mNearspaceConsts.d2 + c1sq));
+            const double dragCoeffSquared = mCommonConsts.dragCoeff * mCommonConsts.dragCoeff;
+            mNearspaceConsts.d2Coeff = 4.0 * mElements.RecoveredSemiMajorAxis() * inverseSmaMinusS * dragCoeffSquared;
+            const double d3PreFactor = mNearspaceConsts.d2Coeff * inverseSmaMinusS * mCommonConsts.dragCoeff / 3.0;
+            mNearspaceConsts.d3Coeff = (17.0 * mElements.RecoveredSemiMajorAxis() + densityHeightS) * d3PreFactor;
+            mNearspaceConsts.d4Coeff = 0.5 * d3PreFactor * mElements.RecoveredSemiMajorAxis() * inverseSmaMinusS *
+                                       (221.0 * mElements.RecoveredSemiMajorAxis() + 31.0 * densityHeightS) *
+                                       mCommonConsts.dragCoeff;
+            mNearspaceConsts.t3Coeff = mNearspaceConsts.d2Coeff + 2.0 * dragCoeffSquared;
+            mNearspaceConsts.t4Coeff =
+                0.25 * (3.0 * mNearspaceConsts.d3Coeff +
+                        mCommonConsts.dragCoeff * (12.0 * mNearspaceConsts.d2Coeff + 10.0 * dragCoeffSquared));
+            mNearspaceConsts.t5Coeff =
+                0.2 * (3.0 * mNearspaceConsts.d4Coeff + 12.0 * mCommonConsts.dragCoeff * mNearspaceConsts.d3Coeff +
+                       6.0 * mNearspaceConsts.d2Coeff * mNearspaceConsts.d2Coeff +
+                       15.0 * dragCoeffSquared * (2.0 * mNearspaceConsts.d2Coeff + dragCoeffSquared));
         }
     }
 }
@@ -221,221 +259,279 @@ Eci SGP4::FindPosition(double tsince) const
     }
 }
 
+/*
+ * traceability: short identifier -> descriptive name
+  a                        -> semiMajorAxis                      c1                       -> dragCoeff
+  c4                       -> dragCoeff4                         e                        -> eccentricity
+  em                       -> eccentricityFromEpoch              omega                    -> argPerigee
+  omgadf                   -> argPerigeeSecular                  omgdot                   -> argPerigeeDot
+  perturbedAycof           -> perturbedAyCoeff                   perturbedCosio           -> perturbedCosInclination0
+  perturbedSinio           -> perturbedSinInclination0           perturbedX1mth2          -> perturbedSinSqInc
+  perturbedX3thm1          -> perturbedThreeCosSqIncMinus1       perturbedX7thm1          ->
+ perturbedSevenCosSqIncMinus1 perturbedXlcof           -> perturbedXlCoeff                   t2cof                    ->
+ t2Coeff tempa                    -> semiMajorAxisDrag                  tempe                    -> eccentricityDrag
+  templ                    -> meanLongitudeDrag                  tsq                      -> tsinceSquared
+  v                        -> smaFactor                          xinc                     -> inclination
+  xl                       -> meanLongitude                      xmam                     -> meanAnomaly
+  xmdf                     -> meanAnomalySecular                 xmdot                    -> meanAnomalyDot
+  xn                       -> meanMotion                         xnodcf                   -> raanDragCoeff
+  xnoddf                   -> raanSecular                        xnode                    -> raan
+  xnodot                   -> raanDot
+ */
 Eci SGP4::FindPositionSDP4(double tsince) const
 {
     /*
      * the final values
      */
-    double e;
-    double a;
-    double omega;
-    double xl;
-    double xnode;
-    double xinc;
+    double eccentricity;
+    double semiMajorAxis;
+    double argPerigee;
+    double meanLongitude;
+    double raan;
+    double inclination;
 
     /*
      * update for secular gravity and atmospheric drag
      */
-    double xmdf = mElements.MeanAnomaly() + mCommonConsts.xmdot * tsince;
-    double omgadf = mElements.ArgumentPerigee() + mCommonConsts.omgdot * tsince;
-    const double xnoddf = mElements.AscendingNode() + mCommonConsts.xnodot * tsince;
+    double meanAnomalySecular = mElements.MeanAnomaly() + mCommonConsts.meanAnomalyDot * tsince;
+    double argPerigeeSecular = mElements.ArgumentPerigee() + mCommonConsts.argPerigeeDot * tsince;
+    const double raanSecular = mElements.AscendingNode() + mCommonConsts.raanDot * tsince;
 
-    const double tsq = tsince * tsince;
-    xnode = xnoddf + mCommonConsts.xnodcf * tsq;
-    double tempa = 1.0 - mCommonConsts.c1 * tsince;
-    double tempe = mElements.BStar() * mCommonConsts.c4 * tsince;
-    double templ = mCommonConsts.t2cof * tsq;
+    const double tsinceSquared = tsince * tsince;
+    raan = raanSecular + mCommonConsts.raanDragCoeff * tsinceSquared;
+    double semiMajorAxisDrag = 1.0 - mCommonConsts.dragCoeff * tsince;
+    double eccentricityDrag = mElements.BStar() * mCommonConsts.dragCoeff4 * tsince;
+    double meanLongitudeDrag = mCommonConsts.t2Coeff * tsinceSquared;
 
-    double xn = mElements.RecoveredMeanMotion();
-    double em = mElements.Eccentricity();
-    xinc = mElements.Inclination();
+    double meanMotion = mElements.RecoveredMeanMotion();
+    double eccentricityFromEpoch = mElements.Eccentricity();
+    inclination = mElements.Inclination();
 
     DeepSpaceSecular(tsince,
                      mElements,
                      mCommonConsts,
                      mDeepspaceConsts,
                      mIntegratorParams,
-                     xmdf,
-                     omgadf,
-                     xnode,
-                     em,
-                     xinc,
-                     xn);
+                     meanAnomalySecular,
+                     argPerigeeSecular,
+                     raan,
+                     eccentricityFromEpoch,
+                     inclination,
+                     meanMotion);
 
-    if (!(xn > 0.0))
+    if (!(meanMotion > 0.0))
     {
         throw SatelliteException("Error: (xn <= 0.0 or not finite)");
     }
 
-    const double v = kXKE / xn;
-    a = cbrt(v * v) * tempa * tempa;
-    e = em - tempe;
-    double xmam = xmdf + mElements.RecoveredMeanMotion() * templ;
+    const double smaFactor = kXKE / meanMotion;
+    semiMajorAxis = cbrt(smaFactor * smaFactor) * semiMajorAxisDrag * semiMajorAxisDrag;
+    eccentricity = eccentricityFromEpoch - eccentricityDrag;
+    double meanAnomaly = meanAnomalySecular + mElements.RecoveredMeanMotion() * meanLongitudeDrag;
 
-    DeepSpacePeriodics(tsince, mDeepspaceConsts, e, xinc, omgadf, xnode, xmam);
+    DeepSpacePeriodics(tsince, mDeepspaceConsts, eccentricity, inclination, argPerigeeSecular, raan, meanAnomaly);
 
     /*
      * keeping xinc positive important unless you need to display xinc
      * and dislike negative inclinations
      */
-    if (xinc < 0.0)
+    if (inclination < 0.0)
     {
-        xinc = -xinc;
-        xnode += kPI;
-        omgadf -= kPI;
+        inclination = -inclination;
+        raan += kPI;
+        argPerigeeSecular -= kPI;
     }
 
-    xl = xmam + omgadf + xnode;
-    omega = omgadf;
+    meanLongitude = meanAnomaly + argPerigeeSecular + raan;
+    argPerigee = argPerigeeSecular;
 
     /*
      * fix tolerance for error recognition
      */
-    if (!(e > -0.001))
+    if (!(eccentricity > -0.001))
     {
         throw SatelliteException("Error: (e <= -0.001 or not finite)");
     }
-    else if (e < 1.0e-6)
+    else if (eccentricity < 1.0e-6)
     {
-        e = 1.0e-6;
+        eccentricity = 1.0e-6;
     }
-    else if (e > (1.0 - 1.0e-6))
+    else if (eccentricity > (1.0 - 1.0e-6))
     {
-        e = 1.0 - 1.0e-6;
+        eccentricity = 1.0 - 1.0e-6;
     }
 
     /*
      * re-compute the perturbed values
      */
-    double perturbedSinio;
-    double perturbedCosio;
-    double perturbedX3thm1;
-    double perturbedX1mth2;
-    double perturbedX7thm1;
-    double perturbedXlcof;
-    double perturbedAycof;
-    RecomputeConstants(xinc,
-                       perturbedSinio,
-                       perturbedCosio,
-                       perturbedX3thm1,
-                       perturbedX1mth2,
-                       perturbedX7thm1,
-                       perturbedXlcof,
-                       perturbedAycof);
+    double perturbedSinInclination0;
+    double perturbedCosInclination0;
+    double perturbedThreeCosSqIncMinus1;
+    double perturbedSinSqInc;
+    double perturbedSevenCosSqIncMinus1;
+    double perturbedXlCoeff;
+    double perturbedAyCoeff;
+    RecomputeConstants(inclination,
+                       perturbedSinInclination0,
+                       perturbedCosInclination0,
+                       perturbedThreeCosSqIncMinus1,
+                       perturbedSinSqInc,
+                       perturbedSevenCosSqIncMinus1,
+                       perturbedXlCoeff,
+                       perturbedAyCoeff);
 
     /*
      * using calculated values, find position and velocity
      */
     return CalculateFinalPositionVelocity(mElements.Epoch().AddMinutes(tsince),
-                                          e,
-                                          a,
-                                          omega,
-                                          xl,
-                                          xnode,
-                                          xinc,
-                                          perturbedXlcof,
-                                          perturbedAycof,
-                                          perturbedX3thm1,
-                                          perturbedX1mth2,
-                                          perturbedX7thm1,
-                                          perturbedCosio,
-                                          perturbedSinio);
+                                          eccentricity,
+                                          semiMajorAxis,
+                                          argPerigee,
+                                          meanLongitude,
+                                          raan,
+                                          inclination,
+                                          perturbedXlCoeff,
+                                          perturbedAyCoeff,
+                                          perturbedThreeCosSqIncMinus1,
+                                          perturbedSinSqInc,
+                                          perturbedSevenCosSqIncMinus1,
+                                          perturbedCosInclination0,
+                                          perturbedSinInclination0);
 }
 
-void SGP4::RecomputeConstants(double xinc,
-                              double& sinio,
-                              double& cosio,
-                              double& x3thm1,
-                              double& x1mth2,
-                              double& x7thm1,
-                              double& xlcof,
-                              double& aycof)
+/*
+ * traceability: short identifier -> descriptive name
+  aycof                    -> ayCoeff                            cosio                    -> cosInclination0
+  sinio                    -> sinInclination0                    theta2                   -> cosSqInc
+  x1mth2                   -> sinSqInc                           x3thm1                   -> threeCosSqIncMinus1
+  x7thm1                   -> sevenCosSqIncMinus1                xinc                     -> inclination
+  xlcof                    -> xlCoeff
+ */
+void SGP4::RecomputeConstants(double inclination,
+                              double& sinInclination0,
+                              double& cosInclination0,
+                              double& threeCosSqIncMinus1,
+                              double& sinSqInc,
+                              double& sevenCosSqIncMinus1,
+                              double& xlCoeff,
+                              double& ayCoeff)
 {
-    sinio = sin(xinc);
-    cosio = cos(xinc);
+    sinInclination0 = sin(inclination);
+    cosInclination0 = cos(inclination);
 
-    const double theta2 = cosio * cosio;
+    const double cosSqInc = cosInclination0 * cosInclination0;
 
-    x3thm1 = 3.0 * theta2 - 1.0;
-    x1mth2 = 1.0 - theta2;
-    x7thm1 = 7.0 * theta2 - 1.0;
+    threeCosSqIncMinus1 = 3.0 * cosSqInc - 1.0;
+    sinSqInc = 1.0 - cosSqInc;
+    sevenCosSqIncMinus1 = 7.0 * cosSqInc - 1.0;
 
-    if (std::abs(cosio + 1.0) > 1.5e-12)
+    if (std::abs(cosInclination0 + 1.0) > 1.5e-12)
     {
-        xlcof = 0.125 * kA3OVK2 * sinio * (3.0 + 5.0 * cosio) / (1.0 + cosio);
+        xlCoeff = 0.125 * kA3OVK2 * sinInclination0 * (3.0 + 5.0 * cosInclination0) / (1.0 + cosInclination0);
     }
     else
     {
-        xlcof = 0.125 * kA3OVK2 * sinio * (3.0 + 5.0 * cosio) / 1.5e-12;
+        xlCoeff = 0.125 * kA3OVK2 * sinInclination0 * (3.0 + 5.0 * cosInclination0) / 1.5e-12;
     }
 
-    aycof = 0.25 * kA3OVK2 * sinio;
+    ayCoeff = 0.25 * kA3OVK2 * sinInclination0;
 }
 
+/*
+ * traceability: short identifier -> descriptive name
+  a                        -> semiMajorAxis                      aycof                    -> ayCoeff
+  c1                       -> dragCoeff                          c4                       -> dragCoeff4
+  c5                       -> dragCoeff5                         cosio                    -> cosInclination0
+  d2                       -> d2Coeff                            d3                       -> d3Coeff
+  d4                       -> d4Coeff                            delm                     -> meanAnomalyCorrection
+  delmo                    -> deltaMeanAnomaly0                  delomg                   -> argPerigeeCorrection
+  e                        -> eccentricity                       omega                    -> argPerigee
+  omgadf                   -> argPerigeeSecular                  omgcof                   -> argPerigeeDragCoeff
+  omgdot                   -> argPerigeeDot                      sinio                    -> sinInclination0
+  sinmo                    -> sinMeanAnomaly0                    t2cof                    -> t2Coeff
+  t3cof                    -> t3Coeff                            t4cof                    -> t4Coeff
+  t5cof                    -> t5Coeff                            tcube                    -> tsinceCubed
+  temp                     -> combinedCorrection                 tempa                    -> semiMajorAxisDrag
+  tempe                    -> eccentricityDrag                   templ                    -> meanLongitudeDrag
+  tfour                    -> tsinceFourth                       tsq                      -> tsinceSquared
+  x1mth2                   -> sinSqInc                           x1p                      -> onePlusEtaCosM
+  x3thm1                   -> threeCosSqIncMinus1                x7thm1                   -> sevenCosSqIncMinus1
+  xinc                     -> inclination                        xl                       -> meanLongitude
+  xlcof                    -> xlCoeff                            xmcof                    -> meanAnomalyDragCoeff
+  xmdf                     -> meanAnomalySecular                 xmdot                    -> meanAnomalyDot
+  xmp                      -> meanAnomalyPerturbed               xnodcf                   -> raanDragCoeff
+  xnoddf                   -> raanSecular                        xnode                    -> raan
+  xnodot                   -> raanDot
+ */
 Eci SGP4::FindPositionSGP4(double tsince) const
 {
     /*
      * the final values
      */
-    double e;
-    double a;
-    double omega;
-    double xl;
-    double xnode;
-    const double xinc = mElements.Inclination();
+    double eccentricity;
+    double semiMajorAxis;
+    double argPerigee;
+    double meanLongitude;
+    double raan;
+    const double inclination = mElements.Inclination();
 
     /*
      * update for secular gravity and atmospheric drag
      */
-    const double xmdf = mElements.MeanAnomaly() + mCommonConsts.xmdot * tsince;
-    const double omgadf = mElements.ArgumentPerigee() + mCommonConsts.omgdot * tsince;
-    const double xnoddf = mElements.AscendingNode() + mCommonConsts.xnodot * tsince;
+    const double meanAnomalySecular = mElements.MeanAnomaly() + mCommonConsts.meanAnomalyDot * tsince;
+    const double argPerigeeSecular = mElements.ArgumentPerigee() + mCommonConsts.argPerigeeDot * tsince;
+    const double raanSecular = mElements.AscendingNode() + mCommonConsts.raanDot * tsince;
 
-    omega = omgadf;
-    double xmp = xmdf;
+    argPerigee = argPerigeeSecular;
+    double meanAnomalyPerturbed = meanAnomalySecular;
 
-    const double tsq = tsince * tsince;
-    xnode = xnoddf + mCommonConsts.xnodcf * tsq;
-    double tempa = 1.0 - mCommonConsts.c1 * tsince;
-    double tempe = mElements.BStar() * mCommonConsts.c4 * tsince;
-    double templ = mCommonConsts.t2cof * tsq;
+    const double tsinceSquared = tsince * tsince;
+    raan = raanSecular + mCommonConsts.raanDragCoeff * tsinceSquared;
+    double semiMajorAxisDrag = 1.0 - mCommonConsts.dragCoeff * tsince;
+    double eccentricityDrag = mElements.BStar() * mCommonConsts.dragCoeff4 * tsince;
+    double meanLongitudeDrag = mCommonConsts.t2Coeff * tsinceSquared;
 
     if (!mUseSimpleModel)
     {
-        const double delomg = mNearspaceConsts.omgcof * tsince;
-        const double x1p = 1.0 + mCommonConsts.eta * cos(Util::WrapTwoPI(xmdf));
-        const double delm = mNearspaceConsts.xmcof * (x1p * x1p * x1p - mNearspaceConsts.delmo);
-        const double temp = delomg + delm;
+        const double argPerigeeCorrection = mNearspaceConsts.argPerigeeDragCoeff * tsince;
+        const double onePlusEtaCosM = 1.0 + mCommonConsts.eta * cos(Util::WrapTwoPI(meanAnomalySecular));
+        const double meanAnomalyCorrection =
+            mNearspaceConsts.meanAnomalyDragCoeff *
+            (onePlusEtaCosM * onePlusEtaCosM * onePlusEtaCosM - mNearspaceConsts.deltaMeanAnomaly0);
+        const double combinedCorrection = argPerigeeCorrection + meanAnomalyCorrection;
 
-        xmp += temp;
-        omega -= temp;
+        meanAnomalyPerturbed += combinedCorrection;
+        argPerigee -= combinedCorrection;
 
-        const double tcube = tsq * tsince;
-        const double tfour = tsince * tcube;
+        const double tsinceCubed = tsinceSquared * tsince;
+        const double tsinceFourth = tsince * tsinceCubed;
 
-        tempa = tempa - mNearspaceConsts.d2 * tsq - mNearspaceConsts.d3 * tcube - mNearspaceConsts.d4 * tfour;
-        tempe += mElements.BStar() * mNearspaceConsts.c5 * (sin(Util::WrapTwoPI(xmp)) - mNearspaceConsts.sinmo);
-        templ += mNearspaceConsts.t3cof * tcube + tfour * (mNearspaceConsts.t4cof + tsince * mNearspaceConsts.t5cof);
+        semiMajorAxisDrag = semiMajorAxisDrag - mNearspaceConsts.d2Coeff * tsinceSquared -
+                            mNearspaceConsts.d3Coeff * tsinceCubed - mNearspaceConsts.d4Coeff * tsinceFourth;
+        eccentricityDrag += mElements.BStar() * mNearspaceConsts.dragCoeff5 *
+                            (sin(Util::WrapTwoPI(meanAnomalyPerturbed)) - mNearspaceConsts.sinMeanAnomaly0);
+        meanLongitudeDrag += mNearspaceConsts.t3Coeff * tsinceCubed +
+                             tsinceFourth * (mNearspaceConsts.t4Coeff + tsince * mNearspaceConsts.t5Coeff);
     }
 
-    a = mElements.RecoveredSemiMajorAxis() * tempa * tempa;
-    e = mElements.Eccentricity() - tempe;
-    xl = xmp + omega + xnode + mElements.RecoveredMeanMotion() * templ;
+    semiMajorAxis = mElements.RecoveredSemiMajorAxis() * semiMajorAxisDrag * semiMajorAxisDrag;
+    eccentricity = mElements.Eccentricity() - eccentricityDrag;
+    meanLongitude = meanAnomalyPerturbed + argPerigee + raan + mElements.RecoveredMeanMotion() * meanLongitudeDrag;
 
     /*
      * fix tolerance for error recognition
      */
-    if (!(e > -0.001))
+    if (!(eccentricity > -0.001))
     {
         throw SatelliteException("Error: (e <= -0.001 or not finite)");
     }
-    else if (e < 1.0e-6)
+    else if (eccentricity < 1.0e-6)
     {
-        e = 1.0e-6;
+        eccentricity = 1.0e-6;
     }
-    else if (e > (1.0 - 1.0e-6))
+    else if (eccentricity > (1.0 - 1.0e-6))
     {
-        e = 1.0 - 1.0e-6;
+        eccentricity = 1.0 - 1.0e-6;
     }
 
     /*
@@ -443,57 +539,99 @@ Eci SGP4::FindPositionSGP4(double tsince) const
      * we can pass in constants from Initialise() as these dont change
      */
     return CalculateFinalPositionVelocity(mElements.Epoch().AddMinutes(tsince),
-                                          e,
-                                          a,
-                                          omega,
-                                          xl,
-                                          xnode,
-                                          xinc,
-                                          mCommonConsts.xlcof,
-                                          mCommonConsts.aycof,
-                                          mCommonConsts.x3thm1,
-                                          mCommonConsts.x1mth2,
-                                          mCommonConsts.x7thm1,
-                                          mCommonConsts.cosio,
-                                          mCommonConsts.sinio);
+                                          eccentricity,
+                                          semiMajorAxis,
+                                          argPerigee,
+                                          meanLongitude,
+                                          raan,
+                                          inclination,
+                                          mCommonConsts.xlCoeff,
+                                          mCommonConsts.ayCoeff,
+                                          mCommonConsts.threeCosSqIncMinus1,
+                                          mCommonConsts.sinSqInc,
+                                          mCommonConsts.sevenCosSqIncMinus1,
+                                          mCommonConsts.cosInclination0,
+                                          mCommonConsts.sinInclination0);
 }
 
+/*
+ * traceability: short identifier -> descriptive name
+  a                        -> semiMajorAxis                      axn                      -> eCosArgPerigee
+  aycof                    -> ayCoeff                            ayn                      -> eSinArgPerigee
+  aynl                     -> longPeriodAy                       beta2                    -> oneMinusEccSq
+  betal                    -> sqrtOneMinusEVectorSq              capu                     -> keplerMeanAnomaly
+  cos2u                    -> cosTwoArgLat                       cosdelta                 -> cosDelta
+  cosepw                   -> cosEccentricAnomaly                cosik                    -> cosIk
+  cosio                    -> cosInclination0                    cosnok                   -> cosNodeK
+  cosu                     -> cosArgLatitude                     cosuk                    -> cosUk
+  delta                    -> argLatitudePerturbation            deltaEpw                 -> eccentricAnomalyCorrection
+  e                        -> eccentricity                       ecose                    -> eCosE
+  elsq                     -> eVectorSq                          epw                      -> eccentricAnomaly
+  esine                    -> eSinE                              f                        -> keplerResidual
+  fdot                     -> keplerResidualDerivative           keplerRunning            -> keplerConverged
+  maxNewtonNaphson         -> keplerStepLimit                    omega                    -> argPerigee
+  pl                       -> semiLatusRectum                    r                        -> radius
+  rdot                     -> radialVelocity                     rdotk                    -> radialVelocityPerturbed
+  rfdot                    -> transverseVelocity                 rfdotk                   -> transverseVelocityPerturbed
+  rk                       -> radiusPerturbed                    sin2u                    -> sinTwoArgLat
+  sindelta                 -> sinDelta                           sinepw                   -> sinEccentricAnomaly
+  sinik                    -> sinIk                              sinio                    -> sinInclination0
+  sinnok                   -> sinNodeK                           sinu                     -> sinArgLatitude
+  sinuk                    -> sinUk                              sqrtA                    -> sqrtSemiMajorAxis
+  temp11                   -> oneOverSmaOneMinusEccSq            temp21                   -> oneMinusEVectorSq
+  temp31                   -> oneOverRadius                      temp32                   -> smaOverRadius
+  temp33                   -> oneOverOnePlusBeta                 temp41                   -> oneOverSemiLatusRectum
+  temp42                   -> ck2OverP                           temp43                   -> ck2OverPSq
+  ux                       -> uBasisX                            uy                       -> uBasisY
+  uz                       -> uBasisZ                            vx                       -> vBasisX
+  vy                       -> vBasisY                            vz                       -> vBasisZ
+  x                        -> posX                               x1mth2                   -> sinSqInc
+  x3thm1                   -> threeCosSqIncMinus1                x7thm1                   -> sevenCosSqIncMinus1
+  xdot                     -> velX                               xinc                     -> inclination
+  xinck                    -> inclinationPerturbed               xl                       -> meanLongitude
+  xlcof                    -> xlCoeff                            xll                      -> longPeriodCorrection
+  xlt                      -> longitudePerturbed                 xmx                      -> nodeVectorX
+  xmy                      -> nodeVectorY                        xn                       -> meanMotion
+  xnode                    -> raan                               xnodek                   -> raanPerturbed
+  y                        -> posY                               ydot                     -> velY
+  z                        -> posZ                               zdot                     -> velZ
+ */
 Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
-                                         double e,
-                                         double a,
-                                         double omega,
-                                         double xl,
-                                         double xnode,
-                                         double xinc,
-                                         double xlcof,
-                                         double aycof,
-                                         double x3thm1,
-                                         double x1mth2,
-                                         double x7thm1,
-                                         double cosio,
-                                         double sinio)
+                                         double eccentricity,
+                                         double semiMajorAxis,
+                                         double argPerigee,
+                                         double meanLongitude,
+                                         double raan,
+                                         double inclination,
+                                         double xlCoeff,
+                                         double ayCoeff,
+                                         double threeCosSqIncMinus1,
+                                         double sinSqInc,
+                                         double sevenCosSqIncMinus1,
+                                         double cosInclination0,
+                                         double sinInclination0)
 {
-    if (!std::isfinite(e) || !std::isfinite(a) || !std::isfinite(omega) || !std::isfinite(xl) ||
-        !std::isfinite(xnode) || !std::isfinite(xinc))
+    if (!std::isfinite(eccentricity) || !std::isfinite(semiMajorAxis) || !std::isfinite(argPerigee) ||
+        !std::isfinite(meanLongitude) || !std::isfinite(raan) || !std::isfinite(inclination))
     {
         throw SatelliteException("Error: (element not finite)");
     }
 
-    const double beta2 = 1.0 - e * e;
-    const double sqrtA = sqrt(a);
-    const double xn = kXKE / (a * sqrtA);
+    const double oneMinusEccSq = 1.0 - eccentricity * eccentricity;
+    const double sqrtSemiMajorAxis = sqrt(semiMajorAxis);
+    const double meanMotion = kXKE / (semiMajorAxis * sqrtSemiMajorAxis);
     /*
      * long period periodics
      */
-    const double axn = e * cos(omega);
-    const double temp11 = 1.0 / (a * beta2);
-    const double xll = temp11 * xlcof * axn;
-    const double aynl = temp11 * aycof;
-    const double xlt = xl + xll;
-    const double ayn = e * sin(omega) + aynl;
-    const double elsq = axn * axn + ayn * ayn;
+    const double eCosArgPerigee = eccentricity * cos(argPerigee);
+    const double oneOverSmaOneMinusEccSq = 1.0 / (semiMajorAxis * oneMinusEccSq);
+    const double longPeriodCorrection = oneOverSmaOneMinusEccSq * xlCoeff * eCosArgPerigee;
+    const double longPeriodAy = oneOverSmaOneMinusEccSq * ayCoeff;
+    const double longitudePerturbed = meanLongitude + longPeriodCorrection;
+    const double eSinArgPerigee = eccentricity * sin(argPerigee) + longPeriodAy;
+    const double eVectorSq = eCosArgPerigee * eCosArgPerigee + eSinArgPerigee * eSinArgPerigee;
 
-    if (!(elsq < 1.0))
+    if (!(eVectorSq < 1.0))
     {
         throw SatelliteException("Error: (elsq >= 1.0 or not finite)");
     }
@@ -506,41 +644,41 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
      * - The fmod saves reduction of angle to +/-2pi in sin/cos() and prevents
      * convergence problems.
      */
-    const double capu = fmod(xlt - xnode, kTWOPI);
-    double epw = capu;
+    const double keplerMeanAnomaly = fmod(longitudePerturbed - raan, kTWOPI);
+    double eccentricAnomaly = keplerMeanAnomaly;
 
-    double sinepw = 0.0;
-    double cosepw = 0.0;
-    double ecose = 0.0;
-    double esine = 0.0;
+    double sinEccentricAnomaly = 0.0;
+    double cosEccentricAnomaly = 0.0;
+    double eCosE = 0.0;
+    double eSinE = 0.0;
 
     /*
      * sensibility check for N-R correction
      */
-    const double maxNewtonNaphson = 1.25 * std::abs(sqrt(elsq));
+    const double keplerStepLimit = 1.25 * std::abs(sqrt(eVectorSq));
 
-    bool keplerRunning = true;
+    bool keplerConverged = true;
 
-    for (int i = 0; i < 10 && keplerRunning; i++)
+    for (int i = 0; i < 10 && keplerConverged; i++)
     {
-        sinepw = sin(epw);
-        cosepw = cos(epw);
-        ecose = axn * cosepw + ayn * sinepw;
-        esine = axn * sinepw - ayn * cosepw;
+        sinEccentricAnomaly = sin(eccentricAnomaly);
+        cosEccentricAnomaly = cos(eccentricAnomaly);
+        eCosE = eCosArgPerigee * cosEccentricAnomaly + eSinArgPerigee * sinEccentricAnomaly;
+        eSinE = eCosArgPerigee * sinEccentricAnomaly - eSinArgPerigee * cosEccentricAnomaly;
 
-        double f = capu - epw + esine;
+        double keplerResidual = keplerMeanAnomaly - eccentricAnomaly + eSinE;
 
-        if (std::abs(f) < 1.0e-12)
+        if (std::abs(keplerResidual) < 1.0e-12)
         {
-            keplerRunning = false;
+            keplerConverged = false;
         }
         else
         {
             /*
              * 1st order Newton-Raphson correction
              */
-            const double fdot = 1.0 - ecose;
-            double deltaEpw = f / fdot;
+            const double keplerResidualDerivative = 1.0 - eCosE;
+            double eccentricAnomalyCorrection = keplerResidual / keplerResidualDerivative;
 
             /*
              * 2nd order Newton-Raphson correction.
@@ -548,97 +686,103 @@ Eci SGP4::CalculateFinalPositionVelocity(const DateTime& dt,
              */
             if (i == 0)
             {
-                if (deltaEpw > maxNewtonNaphson)
+                if (eccentricAnomalyCorrection > keplerStepLimit)
                 {
-                    deltaEpw = maxNewtonNaphson;
+                    eccentricAnomalyCorrection = keplerStepLimit;
                 }
-                else if (deltaEpw < -maxNewtonNaphson)
+                else if (eccentricAnomalyCorrection < -keplerStepLimit)
                 {
-                    deltaEpw = -maxNewtonNaphson;
+                    eccentricAnomalyCorrection = -keplerStepLimit;
                 }
             }
             else
             {
-                deltaEpw = f / (fdot + 0.5 * esine * deltaEpw);
+                eccentricAnomalyCorrection =
+                    keplerResidual / (keplerResidualDerivative + 0.5 * eSinE * eccentricAnomalyCorrection);
             }
 
             /*
              * Newton-Raphson correction of -F/DF
              */
-            epw += deltaEpw;
+            eccentricAnomaly += eccentricAnomalyCorrection;
         }
     }
     /*
      * short period preliminary quantities
      */
-    const double temp21 = 1.0 - elsq;
-    const double pl = a * temp21;
+    const double oneMinusEVectorSq = 1.0 - eVectorSq;
+    const double semiLatusRectum = semiMajorAxis * oneMinusEVectorSq;
 
-    if (!(pl >= 0.0))
+    if (!(semiLatusRectum >= 0.0))
     {
         throw SatelliteException("Error: (pl < 0.0 or not finite)");
     }
 
-    const double r = a * (1.0 - ecose);
-    const double temp31 = 1.0 / r;
-    const double rdot = kXKE * sqrtA * esine * temp31;
-    const double rfdot = kXKE * sqrt(pl) * temp31;
-    const double temp32 = a * temp31;
-    const double betal = sqrt(temp21);
-    const double temp33 = 1.0 / (1.0 + betal);
-    const double cosu = temp32 * (cosepw - axn + ayn * esine * temp33);
-    const double sinu = temp32 * (sinepw - ayn - axn * esine * temp33);
-    const double sin2u = 2.0 * sinu * cosu;
-    const double cos2u = 2.0 * cosu * cosu - 1.0;
+    const double radius = semiMajorAxis * (1.0 - eCosE);
+    const double oneOverRadius = 1.0 / radius;
+    const double radialVelocity = kXKE * sqrtSemiMajorAxis * eSinE * oneOverRadius;
+    const double transverseVelocity = kXKE * sqrt(semiLatusRectum) * oneOverRadius;
+    const double smaOverRadius = semiMajorAxis * oneOverRadius;
+    const double sqrtOneMinusEVectorSq = sqrt(oneMinusEVectorSq);
+    const double oneOverOnePlusBeta = 1.0 / (1.0 + sqrtOneMinusEVectorSq);
+    const double cosArgLatitude =
+        smaOverRadius * (cosEccentricAnomaly - eCosArgPerigee + eSinArgPerigee * eSinE * oneOverOnePlusBeta);
+    const double sinArgLatitude =
+        smaOverRadius * (sinEccentricAnomaly - eSinArgPerigee - eCosArgPerigee * eSinE * oneOverOnePlusBeta);
+    const double sinTwoArgLat = 2.0 * sinArgLatitude * cosArgLatitude;
+    const double cosTwoArgLat = 2.0 * cosArgLatitude * cosArgLatitude - 1.0;
 
     /*
      * update for short periodics
      */
-    const double temp41 = 1.0 / pl;
-    const double temp42 = kCK2 * temp41;
-    const double temp43 = temp42 * temp41;
+    const double oneOverSemiLatusRectum = 1.0 / semiLatusRectum;
+    const double ck2OverP = kCK2 * oneOverSemiLatusRectum;
+    const double ck2OverPSq = ck2OverP * oneOverSemiLatusRectum;
 
-    const double rk = r * (1.0 - 1.5 * temp43 * betal * x3thm1) + 0.5 * temp42 * x1mth2 * cos2u;
-    const double delta = -0.25 * temp43 * x7thm1 * sin2u;
-    const double xnodek = xnode + 1.5 * temp43 * cosio * sin2u;
-    const double xinck = xinc + 1.5 * temp43 * cosio * sinio * cos2u;
-    const double rdotk = rdot - xn * temp42 * x1mth2 * sin2u;
-    const double rfdotk = rfdot + xn * temp42 * (x1mth2 * cos2u + 1.5 * x3thm1);
+    const double radiusPerturbed = radius * (1.0 - 1.5 * ck2OverPSq * sqrtOneMinusEVectorSq * threeCosSqIncMinus1) +
+                                   0.5 * ck2OverP * sinSqInc * cosTwoArgLat;
+    const double argLatitudePerturbation = -0.25 * ck2OverPSq * sevenCosSqIncMinus1 * sinTwoArgLat;
+    const double raanPerturbed = raan + 1.5 * ck2OverPSq * cosInclination0 * sinTwoArgLat;
+    const double inclinationPerturbed =
+        inclination + 1.5 * ck2OverPSq * cosInclination0 * sinInclination0 * cosTwoArgLat;
+    const double radialVelocityPerturbed = radialVelocity - meanMotion * ck2OverP * sinSqInc * sinTwoArgLat;
+    const double transverseVelocityPerturbed =
+        transverseVelocity + meanMotion * ck2OverP * (sinSqInc * cosTwoArgLat + 1.5 * threeCosSqIncMinus1);
 
     /*
      * orientation vectors
      */
-    const double sindelta = sin(delta);
-    const double cosdelta = cos(delta);
-    const double sinuk = sinu * cosdelta + cosu * sindelta;
-    const double cosuk = cosu * cosdelta - sinu * sindelta;
-    const double sinik = sin(xinck);
-    const double cosik = cos(xinck);
-    const double sinnok = sin(xnodek);
-    const double cosnok = cos(xnodek);
-    const double xmx = -sinnok * cosik;
-    const double xmy = cosnok * cosik;
-    const double ux = xmx * sinuk + cosnok * cosuk;
-    const double uy = xmy * sinuk + sinnok * cosuk;
-    const double uz = sinik * sinuk;
-    const double vx = xmx * cosuk - cosnok * sinuk;
-    const double vy = xmy * cosuk - sinnok * sinuk;
-    const double vz = sinik * cosuk;
+    const double sinDelta = sin(argLatitudePerturbation);
+    const double cosDelta = cos(argLatitudePerturbation);
+    const double sinUk = sinArgLatitude * cosDelta + cosArgLatitude * sinDelta;
+    const double cosUk = cosArgLatitude * cosDelta - sinArgLatitude * sinDelta;
+    const double sinIk = sin(inclinationPerturbed);
+    const double cosIk = cos(inclinationPerturbed);
+    const double sinNodeK = sin(raanPerturbed);
+    const double cosNodeK = cos(raanPerturbed);
+    const double nodeVectorX = -sinNodeK * cosIk;
+    const double nodeVectorY = cosNodeK * cosIk;
+    const double uBasisX = nodeVectorX * sinUk + cosNodeK * cosUk;
+    const double uBasisY = nodeVectorY * sinUk + sinNodeK * cosUk;
+    const double uBasisZ = sinIk * sinUk;
+    const double vBasisX = nodeVectorX * cosUk - cosNodeK * sinUk;
+    const double vBasisY = nodeVectorY * cosUk - sinNodeK * sinUk;
+    const double vBasisZ = sinIk * cosUk;
     /*
      * position and velocity
      */
-    const double x = rk * ux * kXKMPER;
-    const double y = rk * uy * kXKMPER;
-    const double z = rk * uz * kXKMPER;
-    Vector position(x, y, z);
-    const double xdot = (rdotk * ux + rfdotk * vx) * kXKMPER / 60.0;
-    const double ydot = (rdotk * uy + rfdotk * vy) * kXKMPER / 60.0;
-    const double zdot = (rdotk * uz + rfdotk * vz) * kXKMPER / 60.0;
-    Vector velocity(xdot, ydot, zdot);
+    const double posX = radiusPerturbed * uBasisX * kXKMPER;
+    const double posY = radiusPerturbed * uBasisY * kXKMPER;
+    const double posZ = radiusPerturbed * uBasisZ * kXKMPER;
+    Vector position(posX, posY, posZ);
+    const double velX = (radialVelocityPerturbed * uBasisX + transverseVelocityPerturbed * vBasisX) * kXKMPER / 60.0;
+    const double velY = (radialVelocityPerturbed * uBasisY + transverseVelocityPerturbed * vBasisY) * kXKMPER / 60.0;
+    const double velZ = (radialVelocityPerturbed * uBasisZ + transverseVelocityPerturbed * vBasisZ) * kXKMPER / 60.0;
+    Vector velocity(velX, velY, velZ);
 
-    if (!(rk >= 1.0))
+    if (!(radiusPerturbed >= 1.0))
     {
-        if (!std::isfinite(rk))
+        if (!std::isfinite(radiusPerturbed))
         {
             throw SatelliteException("Error: (position radius not finite)");
         }
@@ -657,141 +801,231 @@ static inline double EvaluateCubicPolynomial(const double x,
     return constant + x * linear + x * x * squared + x * x * x * cubed;
 }
 
-void SGP4::DeepSpaceInitialise(double eosq,
-                               double sinio,
-                               double cosio,
-                               double betao,
-                               double theta2,
-                               double betao2,
-                               double xmdot,
-                               double omgdot,
-                               double xnodot)
+/*
+ * traceability: short identifier -> descriptive name
+  C1L                      -> kLunarC1                           C1SS                     -> kSolarC1
+  Q22                      -> kSynchronousQ22                    Q31                      -> kSynchronousQ31
+  Q33                      -> kSynchronousQ33                    ROOT22                   -> kResonanceRoot22
+  ROOT32                   -> kResonanceRoot32                   ROOT44                   -> kResonanceRoot44
+  ROOT52                   -> kResonanceRoot52                   ROOT54                   -> kResonanceRoot54
+  ZCOSGS                   -> kCosSolarArgPerigee                ZCOSIS                   -> kCosSolarInclination
+  ZEL                      -> kLunarEccentricity                 ZES                      -> kSolarEccentricity
+  ZNL                      -> kLunarMeanMotion                   ZNS                      -> kSolarMeanMotion
+  ZSINGS                   -> kSinSolarArgPerigee                ZSINI                    -> kSinSolarInclination
+  a1                       -> dirCos1                            a10                      -> dirCos10
+  a2                       -> dirCos2                            a3                       -> dirCos3
+  a4                       -> dirCos4                            a5                       -> dirCos5
+  a6                       -> dirCos6                            a7                       -> dirCos7
+  a8                       -> dirCos8                            a9                       -> dirCos9
+  ainv2                    -> inverseSmaSquared                  aqnv                     -> inverseSemiMajorAxis0
+  atime                    -> integratorTime                     betao                    -> sqrtOneMinusEccSq
+  betao2                   -> oneMinusEccSq                      bfact                    -> resonanceFrequency
+  c                        -> lunarMeanLongitude                 cc                       -> bodyC1
+  cosg                     -> cosArgPerigee0                     cosio                    -> cosInclination0
+  cosq                     -> cosRaAn0                           ctem                     -> cosNodeLon
+  d2201                    -> resonanceD2201                     d2211                    -> resonanceD2211
+  d3210                    -> resonanceD3210                     d3222                    -> resonanceD3222
+  d4410                    -> resonanceD4410                     d4422                    -> resonanceD4422
+  d5220                    -> resonanceD5220                     d5232                    -> resonanceD5232
+  d5421                    -> resonanceD5421                     d5433                    -> resonanceD5433
+  del1                     -> synchronousDel1                    del2                     -> synchronousDel2
+  del3                     -> synchronousDel3                    e3                       -> lunarEcc3
+  ee2                      -> lunarEcc2                          eosq                     -> eccentricitySq
+  f220                     -> resonanceF220                      f311                     -> resonanceF311
+  f330                     -> resonanceF330                      g200                     -> resonanceG200
+  g201                     -> resonanceG201                      g211                     -> resonanceG211
+  g300                     -> resonanceG300                      g310                     -> resonanceG310
+  g322                     -> resonanceG322                      g410                     -> resonanceG410
+  g422                     -> resonanceG422                      g520                     -> resonanceG520
+  g521                     -> resonanceG521                      g532                     -> resonanceG532
+  g533                     -> resonanceG533                      gam                      -> lunarPerigeeLongitude
+  gsto                     -> greenwichSiderealTime              jday                     -> daysSince1900
+  omgdot                   -> argPerigeeDot                      s1                       -> dot1
+  s2                       -> dot2                               s3                       -> dot3
+  s4                       -> dot4                               s5                       -> dot5
+  s6                       -> dot6                               s7                       -> dot7
+  se                       -> bodySecularEcc                     se2                      -> solarEcc2
+  se3                      -> solarEcc3                          sgh                      -> bodySecularArgPerigee
+  sgh2                     -> solarArgPerigee2                   sgh3                     -> solarArgPerigee3
+  sgh4                     -> solarArgPerigee4                   sh2                      -> solarRaAn2
+  sh3                      -> solarRaAn3                         shdq                     -> bodySecularRaAn
+  si                       -> bodySecularInc                     si2                      -> solarInc2
+  si3                      -> solarInc3                          sing                     -> sinArgPerigee0
+  sini2                    -> sinSqInc                           sinio                    -> sinInclination0
+  sinq                     -> sinRaAn0                           sl                       -> bodySecularLong
+  sl2                      -> solarLong2                         sl3                      -> solarLong3
+  sl4                      -> solarLong4                         sse                      -> totalSecularEcc
+  ssg                      -> totalSecularArgPerigee             ssh                      -> totalSecularRaAn
+  ssi                      -> totalSecularInc                    ssl                      -> totalSecularLong
+  stem                     -> sinNodeLon                         temp                     -> resonanceCoef
+  temp1                    -> resonancePrefactor                 theta2                   -> cosSqInc
+  x1                       -> rot1                               x2                       -> rot2
+  x3                       -> rot3                               x4                       -> rot4
+  x5                       -> rot5                               x6                       -> rot6
+  x7                       -> rot7                               x8                       -> rot8
+  xfact                    -> resonancePhaseRate                 xgh2                     -> lunarArgPerigee2
+  xgh3                     -> lunarArgPerigee3                   xgh4                     -> lunarArgPerigee4
+  xh2                      -> lunarRaAn2                         xh3                      -> lunarRaAn3
+  xi2                      -> lunarInc2                          xi3                      -> lunarInc3
+  xl2                      -> lunarLong2                         xl3                      -> lunarLong3
+  xl4                      -> lunarLong4                         xlamo                    -> resonancePhase0
+  xli                      -> resonancePhase                     xmdot                    -> meanAnomalyDot
+  xni                      -> resonanceMeanMotion                xno2                     -> meanMotionSquared
+  xnodce                   -> lunarNodeLongitude                 xnodot                   -> raanDot
+  xnoi                     -> inverseMeanMotion                  xpidot                   -> argPerigeeRaAnDot
+  z1                       -> grav1                              z11                      -> grav11
+  z12                      -> grav12                             z13                      -> grav13
+  z2                       -> grav2                              z21                      -> grav21
+  z22                      -> grav22                             z23                      -> grav23
+  z3                       -> grav3                              z31                      -> grav31
+  z32                      -> grav32                             z33                      -> grav33
+  zcosg                    -> cosSolarArgPerigee                 zcosgl                   -> cosLunarArgPerigee
+  zcosh                    -> cosNodeRef                         zcoshl                   -> cosLunarNodeAngle
+  zcosi                    -> cosSolarIncl                       zcosil                   -> cosLunarIncl
+  ze                       -> bodyEccentricity                   zmol                     -> lunarMeanAnomaly
+  zmos                     -> solarMeanAnomaly                   zn                       -> bodyMeanMotion
+  zsing                    -> sinSolarArgPerigee                 zsingl                   -> sinLunarArgPerigee
+  zsinh                    -> sinNodeRef                         zsinhl                   -> sinLunarNodeAngle
+  zsini                    -> sinSolarIncl                       zsinil                   -> sinLunarIncl
+  zx                       -> lunarArgPerigeeSinInterim          zy                       -> lunarArgPerigeeCosInterim
+ */
+void SGP4::DeepSpaceInitialise(double eccentricitySq,
+                               double sinInclination0,
+                               double cosInclination0,
+                               double sqrtOneMinusEccSq,
+                               double cosSqInc,
+                               double oneMinusEccSq,
+                               double meanAnomalyDot,
+                               double argPerigeeDot,
+                               double raanDot)
 {
-    double se = 0.0;
-    double si = 0.0;
-    double sl = 0.0;
-    double sgh = 0.0;
-    double shdq = 0.0;
+    double bodySecularEcc = 0.0;
+    double bodySecularInc = 0.0;
+    double bodySecularLong = 0.0;
+    double bodySecularArgPerigee = 0.0;
+    double bodySecularRaAn = 0.0;
 
-    double bfact = 0.0;
+    double resonanceFrequency = 0.0;
 
-    const double ZNS = 1.19459E-5;
-    const double C1SS = 2.9864797E-6;
-    const double ZES = 0.01675;
-    const double ZNL = 1.5835218E-4;
-    const double C1L = 4.7968065E-7;
-    const double ZEL = 0.05490;
-    const double ZCOSIS = 0.91744867;
-    const double ZSINI = 0.39785416;
-    const double ZSINGS = -0.98088458;
-    const double ZCOSGS = 0.1945905;
-    const double Q22 = 1.7891679E-6;
-    const double Q31 = 2.1460748E-6;
-    const double Q33 = 2.2123015E-7;
-    const double ROOT22 = 1.7891679E-6;
-    const double ROOT32 = 3.7393792E-7;
-    const double ROOT44 = 7.3636953E-9;
-    const double ROOT52 = 1.1428639E-7;
-    const double ROOT54 = 2.1765803E-9;
+    const double kSolarMeanMotion = 1.19459E-5;
+    const double kSolarC1 = 2.9864797E-6;
+    const double kSolarEccentricity = 0.01675;
+    const double kLunarMeanMotion = 1.5835218E-4;
+    const double kLunarC1 = 4.7968065E-7;
+    const double kLunarEccentricity = 0.05490;
+    const double kCosSolarInclination = 0.91744867;
+    const double kSinSolarInclination = 0.39785416;
+    const double kSinSolarArgPerigee = -0.98088458;
+    const double kCosSolarArgPerigee = 0.1945905;
+    const double kSynchronousQ22 = 1.7891679E-6;
+    const double kSynchronousQ31 = 2.1460748E-6;
+    const double kSynchronousQ33 = 2.2123015E-7;
+    const double kResonanceRoot22 = 1.7891679E-6;
+    const double kResonanceRoot32 = 3.7393792E-7;
+    const double kResonanceRoot44 = 7.3636953E-9;
+    const double kResonanceRoot52 = 1.1428639E-7;
+    const double kResonanceRoot54 = 2.1765803E-9;
 
-    const double aqnv = 1.0 / mElements.RecoveredSemiMajorAxis();
-    const double xpidot = omgdot + xnodot;
-    const double sinq = sin(mElements.AscendingNode());
-    const double cosq = cos(mElements.AscendingNode());
-    const double sing = sin(mElements.ArgumentPerigee());
-    const double cosg = cos(mElements.ArgumentPerigee());
+    const double inverseSemiMajorAxis0 = 1.0 / mElements.RecoveredSemiMajorAxis();
+    const double argPerigeeRaAnDot = argPerigeeDot + raanDot;
+    const double sinRaAn0 = sin(mElements.AscendingNode());
+    const double cosRaAn0 = cos(mElements.AscendingNode());
+    const double sinArgPerigee0 = sin(mElements.ArgumentPerigee());
+    const double cosArgPerigee0 = cos(mElements.ArgumentPerigee());
 
     /*
      * initialize lunar / solar terms
      */
-    const double jday = mElements.Epoch().ToJ1900();
+    const double daysSince1900 = mElements.Epoch().ToJ1900();
 
-    const double xnodce = Util::WrapTwoPI(4.5236020 - 9.2422029e-4 * jday);
-    const double stem = sin(xnodce);
-    const double ctem = cos(xnodce);
-    const double zcosil = 0.91375164 - 0.03568096 * ctem;
-    const double zsinil = sqrt(1.0 - zcosil * zcosil);
-    const double zsinhl = 0.089683511 * stem / zsinil;
-    const double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
-    const double c = 4.7199672 + 0.22997150 * jday;
-    const double gam = 5.8351514 + 0.0019443680 * jday;
-    mDeepspaceConsts.zmol = Util::WrapTwoPI(c - gam);
-    double zx = 0.39785416 * stem / zsinil;
-    double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
-    zx = atan2(zx, zy);
-    zx = gam + zx - xnodce;
+    const double lunarNodeLongitude = Util::WrapTwoPI(4.5236020 - 9.2422029e-4 * daysSince1900);
+    const double sinNodeLon = sin(lunarNodeLongitude);
+    const double cosNodeLon = cos(lunarNodeLongitude);
+    const double cosLunarIncl = 0.91375164 - 0.03568096 * cosNodeLon;
+    const double sinLunarIncl = sqrt(1.0 - cosLunarIncl * cosLunarIncl);
+    const double sinLunarNodeAngle = 0.089683511 * sinNodeLon / sinLunarIncl;
+    const double cosLunarNodeAngle = sqrt(1.0 - sinLunarNodeAngle * sinLunarNodeAngle);
+    const double lunarMeanLongitude = 4.7199672 + 0.22997150 * daysSince1900;
+    const double lunarPerigeeLongitude = 5.8351514 + 0.0019443680 * daysSince1900;
+    mDeepspaceConsts.lunarMeanAnomaly = Util::WrapTwoPI(lunarMeanLongitude - lunarPerigeeLongitude);
+    double lunarArgPerigeeSinInterim = 0.39785416 * sinNodeLon / sinLunarIncl;
+    double lunarArgPerigeeCosInterim = cosLunarNodeAngle * cosNodeLon + 0.91744867 * sinLunarNodeAngle * sinNodeLon;
+    lunarArgPerigeeSinInterim = atan2(lunarArgPerigeeSinInterim, lunarArgPerigeeCosInterim);
+    lunarArgPerigeeSinInterim = lunarPerigeeLongitude + lunarArgPerigeeSinInterim - lunarNodeLongitude;
 
-    const double zcosgl = cos(zx);
-    const double zsingl = sin(zx);
-    mDeepspaceConsts.zmos = Util::WrapTwoPI(6.2565837 + 0.017201977 * jday);
+    const double cosLunarArgPerigee = cos(lunarArgPerigeeSinInterim);
+    const double sinLunarArgPerigee = sin(lunarArgPerigeeSinInterim);
+    mDeepspaceConsts.solarMeanAnomaly = Util::WrapTwoPI(6.2565837 + 0.017201977 * daysSince1900);
 
     /*
      * do solar terms
      */
-    double zcosg = ZCOSGS;
-    double zsing = ZSINGS;
-    double zcosi = ZCOSIS;
-    double zsini = ZSINI;
-    double zcosh = cosq;
-    double zsinh = sinq;
-    double cc = C1SS;
-    double zn = ZNS;
-    double ze = ZES;
-    const double xnoi = 1.0 / mElements.RecoveredMeanMotion();
+    double cosSolarArgPerigee = kCosSolarArgPerigee;
+    double sinSolarArgPerigee = kSinSolarArgPerigee;
+    double cosSolarIncl = kCosSolarInclination;
+    double sinSolarIncl = kSinSolarInclination;
+    double cosNodeRef = cosRaAn0;
+    double sinNodeRef = sinRaAn0;
+    double bodyC1 = kSolarC1;
+    double bodyMeanMotion = kSolarMeanMotion;
+    double bodyEccentricity = kSolarEccentricity;
+    const double inverseMeanMotion = 1.0 / mElements.RecoveredMeanMotion();
 
     for (int cnt = 0; cnt < 2; cnt++)
     {
         /*
          * solar terms are done a second time after lunar terms are done
          */
-        const double a1 = zcosg * zcosh + zsing * zcosi * zsinh;
-        const double a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
-        const double a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
-        const double a8 = zsing * zsini;
-        const double a9 = zsing * zsinh + zcosg * zcosi * zcosh;
-        const double a10 = zcosg * zsini;
-        const double a2 = cosio * a7 + sinio * a8;
-        const double a4 = cosio * a9 + sinio * a10;
-        const double a5 = -sinio * a7 + cosio * a8;
-        const double a6 = -sinio * a9 + cosio * a10;
-        const double x1 = a1 * cosg + a2 * sing;
-        const double x2 = a3 * cosg + a4 * sing;
-        const double x3 = -a1 * sing + a2 * cosg;
-        const double x4 = -a3 * sing + a4 * cosg;
-        const double x5 = a5 * sing;
-        const double x6 = a6 * sing;
-        const double x7 = a5 * cosg;
-        const double x8 = a6 * cosg;
-        const double z31 = 12.0 * x1 * x1 - 3. * x3 * x3;
-        const double z32 = 24.0 * x1 * x2 - 6. * x3 * x4;
-        const double z33 = 12.0 * x2 * x2 - 3. * x4 * x4;
-        double z1 = 3.0 * (a1 * a1 + a2 * a2) + z31 * eosq;
-        double z2 = 6.0 * (a1 * a3 + a2 * a4) + z32 * eosq;
-        double z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * eosq;
+        const double dirCos1 = cosSolarArgPerigee * cosNodeRef + sinSolarArgPerigee * cosSolarIncl * sinNodeRef;
+        const double dirCos3 = -sinSolarArgPerigee * cosNodeRef + cosSolarArgPerigee * cosSolarIncl * sinNodeRef;
+        const double dirCos7 = -cosSolarArgPerigee * sinNodeRef + sinSolarArgPerigee * cosSolarIncl * cosNodeRef;
+        const double dirCos8 = sinSolarArgPerigee * sinSolarIncl;
+        const double dirCos9 = sinSolarArgPerigee * sinNodeRef + cosSolarArgPerigee * cosSolarIncl * cosNodeRef;
+        const double dirCos10 = cosSolarArgPerigee * sinSolarIncl;
+        const double dirCos2 = cosInclination0 * dirCos7 + sinInclination0 * dirCos8;
+        const double dirCos4 = cosInclination0 * dirCos9 + sinInclination0 * dirCos10;
+        const double dirCos5 = -sinInclination0 * dirCos7 + cosInclination0 * dirCos8;
+        const double dirCos6 = -sinInclination0 * dirCos9 + cosInclination0 * dirCos10;
+        const double rot1 = dirCos1 * cosArgPerigee0 + dirCos2 * sinArgPerigee0;
+        const double rot2 = dirCos3 * cosArgPerigee0 + dirCos4 * sinArgPerigee0;
+        const double rot3 = -dirCos1 * sinArgPerigee0 + dirCos2 * cosArgPerigee0;
+        const double rot4 = -dirCos3 * sinArgPerigee0 + dirCos4 * cosArgPerigee0;
+        const double rot5 = dirCos5 * sinArgPerigee0;
+        const double rot6 = dirCos6 * sinArgPerigee0;
+        const double rot7 = dirCos5 * cosArgPerigee0;
+        const double rot8 = dirCos6 * cosArgPerigee0;
+        const double grav31 = 12.0 * rot1 * rot1 - 3. * rot3 * rot3;
+        const double grav32 = 24.0 * rot1 * rot2 - 6. * rot3 * rot4;
+        const double grav33 = 12.0 * rot2 * rot2 - 3. * rot4 * rot4;
+        double grav1 = 3.0 * (dirCos1 * dirCos1 + dirCos2 * dirCos2) + grav31 * eccentricitySq;
+        double grav2 = 6.0 * (dirCos1 * dirCos3 + dirCos2 * dirCos4) + grav32 * eccentricitySq;
+        double grav3 = 3.0 * (dirCos3 * dirCos3 + dirCos4 * dirCos4) + grav33 * eccentricitySq;
 
-        const double z11 = -6.0 * a1 * a5 + eosq * (-24. * x1 * x7 - 6. * x3 * x5);
-        const double z12 = -6.0 * (a1 * a6 + a3 * a5) + eosq * (-24. * (x2 * x7 + x1 * x8) - 6. * (x3 * x6 + x4 * x5));
-        const double z13 = -6.0 * a3 * a6 + eosq * (-24. * x2 * x8 - 6. * x4 * x6);
-        const double z21 = 6.0 * a2 * a5 + eosq * (24. * x1 * x5 - 6. * x3 * x7);
-        const double z22 = 6.0 * (a4 * a5 + a2 * a6) + eosq * (24. * (x2 * x5 + x1 * x6) - 6. * (x4 * x7 + x3 * x8));
-        const double z23 = 6.0 * a4 * a6 + eosq * (24. * x2 * x6 - 6. * x4 * x8);
+        const double grav11 = -6.0 * dirCos1 * dirCos5 + eccentricitySq * (-24. * rot1 * rot7 - 6. * rot3 * rot5);
+        const double grav12 = -6.0 * (dirCos1 * dirCos6 + dirCos3 * dirCos5) +
+                              eccentricitySq * (-24. * (rot2 * rot7 + rot1 * rot8) - 6. * (rot3 * rot6 + rot4 * rot5));
+        const double grav13 = -6.0 * dirCos3 * dirCos6 + eccentricitySq * (-24. * rot2 * rot8 - 6. * rot4 * rot6);
+        const double grav21 = 6.0 * dirCos2 * dirCos5 + eccentricitySq * (24. * rot1 * rot5 - 6. * rot3 * rot7);
+        const double grav22 = 6.0 * (dirCos4 * dirCos5 + dirCos2 * dirCos6) +
+                              eccentricitySq * (24. * (rot2 * rot5 + rot1 * rot6) - 6. * (rot4 * rot7 + rot3 * rot8));
+        const double grav23 = 6.0 * dirCos4 * dirCos6 + eccentricitySq * (24. * rot2 * rot6 - 6. * rot4 * rot8);
 
-        z1 = z1 + z1 + betao2 * z31;
-        z2 = z2 + z2 + betao2 * z32;
-        z3 = z3 + z3 + betao2 * z33;
+        grav1 = grav1 + grav1 + oneMinusEccSq * grav31;
+        grav2 = grav2 + grav2 + oneMinusEccSq * grav32;
+        grav3 = grav3 + grav3 + oneMinusEccSq * grav33;
 
-        const double s3 = cc * xnoi;
-        const double s2 = -0.5 * s3 / betao;
-        const double s4 = s3 * betao;
-        const double s1 = -15.0 * mElements.Eccentricity() * s4;
-        const double s5 = x1 * x3 + x2 * x4;
-        const double s6 = x2 * x3 + x1 * x4;
-        const double s7 = x2 * x4 - x1 * x3;
+        const double dot3 = bodyC1 * inverseMeanMotion;
+        const double dot2 = -0.5 * dot3 / sqrtOneMinusEccSq;
+        const double dot4 = dot3 * sqrtOneMinusEccSq;
+        const double dot1 = -15.0 * mElements.Eccentricity() * dot4;
+        const double dot5 = rot1 * rot3 + rot2 * rot4;
+        const double dot6 = rot2 * rot3 + rot1 * rot4;
+        const double dot7 = rot2 * rot4 - rot1 * rot3;
 
-        se = s1 * zn * s5;
-        si = s2 * zn * (z11 + z13);
-        sl = -zn * s3 * (z1 + z3 - 14.0 - 6.0 * eosq);
-        sgh = s4 * zn * (z31 + z33 - 6.0);
+        bodySecularEcc = dot1 * bodyMeanMotion * dot5;
+        bodySecularInc = dot2 * bodyMeanMotion * (grav11 + grav13);
+        bodySecularLong = -bodyMeanMotion * dot3 * (grav1 + grav3 - 14.0 - 6.0 * eccentricitySq);
+        bodySecularArgPerigee = dot4 * bodyMeanMotion * (grav31 + grav33 - 6.0);
 
         /*
          * replaced
@@ -801,25 +1035,25 @@ void SGP4::DeepSpaceInitialise(double eosq,
          */
         if (mElements.Inclination() < 5.2359877e-2 || mElements.Inclination() > kPI - 5.2359877e-2)
         {
-            shdq = 0.0;
+            bodySecularRaAn = 0.0;
         }
         else
         {
-            shdq = (-zn * s2 * (z21 + z23)) / sinio;
+            bodySecularRaAn = (-bodyMeanMotion * dot2 * (grav21 + grav23)) / sinInclination0;
         }
 
-        mDeepspaceConsts.ee2 = 2.0 * s1 * s6;
-        mDeepspaceConsts.e3 = 2.0 * s1 * s7;
-        mDeepspaceConsts.xi2 = 2.0 * s2 * z12;
-        mDeepspaceConsts.xi3 = 2.0 * s2 * (z13 - z11);
-        mDeepspaceConsts.xl2 = -2.0 * s3 * z2;
-        mDeepspaceConsts.xl3 = -2.0 * s3 * (z3 - z1);
-        mDeepspaceConsts.xl4 = -2.0 * s3 * (-21.0 - 9.0 * eosq) * ze;
-        mDeepspaceConsts.xgh2 = 2.0 * s4 * z32;
-        mDeepspaceConsts.xgh3 = 2.0 * s4 * (z33 - z31);
-        mDeepspaceConsts.xgh4 = -18.0 * s4 * ze;
-        mDeepspaceConsts.xh2 = -2.0 * s2 * z22;
-        mDeepspaceConsts.xh3 = -2.0 * s2 * (z23 - z21);
+        mDeepspaceConsts.lunarEcc2 = 2.0 * dot1 * dot6;
+        mDeepspaceConsts.lunarEcc3 = 2.0 * dot1 * dot7;
+        mDeepspaceConsts.lunarInc2 = 2.0 * dot2 * grav12;
+        mDeepspaceConsts.lunarInc3 = 2.0 * dot2 * (grav13 - grav11);
+        mDeepspaceConsts.lunarLong2 = -2.0 * dot3 * grav2;
+        mDeepspaceConsts.lunarLong3 = -2.0 * dot3 * (grav3 - grav1);
+        mDeepspaceConsts.lunarLong4 = -2.0 * dot3 * (-21.0 - 9.0 * eccentricitySq) * bodyEccentricity;
+        mDeepspaceConsts.lunarArgPerigee2 = 2.0 * dot4 * grav32;
+        mDeepspaceConsts.lunarArgPerigee3 = 2.0 * dot4 * (grav33 - grav31);
+        mDeepspaceConsts.lunarArgPerigee4 = -18.0 * dot4 * bodyEccentricity;
+        mDeepspaceConsts.lunarRaAn2 = -2.0 * dot2 * grav22;
+        mDeepspaceConsts.lunarRaAn3 = -2.0 * dot2 * (grav23 - grav21);
 
         if (cnt == 1)
         {
@@ -828,39 +1062,40 @@ void SGP4::DeepSpaceInitialise(double eosq,
         /*
          * do lunar terms
          */
-        mDeepspaceConsts.sse = se;
-        mDeepspaceConsts.ssi = si;
-        mDeepspaceConsts.ssl = sl;
-        mDeepspaceConsts.ssh = shdq;
-        mDeepspaceConsts.ssg = sgh - cosio * mDeepspaceConsts.ssh;
-        mDeepspaceConsts.se2 = mDeepspaceConsts.ee2;
-        mDeepspaceConsts.si2 = mDeepspaceConsts.xi2;
-        mDeepspaceConsts.sl2 = mDeepspaceConsts.xl2;
-        mDeepspaceConsts.sgh2 = mDeepspaceConsts.xgh2;
-        mDeepspaceConsts.sh2 = mDeepspaceConsts.xh2;
-        mDeepspaceConsts.se3 = mDeepspaceConsts.e3;
-        mDeepspaceConsts.si3 = mDeepspaceConsts.xi3;
-        mDeepspaceConsts.sl3 = mDeepspaceConsts.xl3;
-        mDeepspaceConsts.sgh3 = mDeepspaceConsts.xgh3;
-        mDeepspaceConsts.sh3 = mDeepspaceConsts.xh3;
-        mDeepspaceConsts.sl4 = mDeepspaceConsts.xl4;
-        mDeepspaceConsts.sgh4 = mDeepspaceConsts.xgh4;
-        zcosg = zcosgl;
-        zsing = zsingl;
-        zcosi = zcosil;
-        zsini = zsinil;
-        zcosh = zcoshl * cosq + zsinhl * sinq;
-        zsinh = sinq * zcoshl - cosq * zsinhl;
-        zn = ZNL;
-        cc = C1L;
-        ze = ZEL;
+        mDeepspaceConsts.totalSecularEcc = bodySecularEcc;
+        mDeepspaceConsts.totalSecularInc = bodySecularInc;
+        mDeepspaceConsts.totalSecularLong = bodySecularLong;
+        mDeepspaceConsts.totalSecularRaAn = bodySecularRaAn;
+        mDeepspaceConsts.totalSecularArgPerigee =
+            bodySecularArgPerigee - cosInclination0 * mDeepspaceConsts.totalSecularRaAn;
+        mDeepspaceConsts.solarEcc2 = mDeepspaceConsts.lunarEcc2;
+        mDeepspaceConsts.solarInc2 = mDeepspaceConsts.lunarInc2;
+        mDeepspaceConsts.solarLong2 = mDeepspaceConsts.lunarLong2;
+        mDeepspaceConsts.solarArgPerigee2 = mDeepspaceConsts.lunarArgPerigee2;
+        mDeepspaceConsts.solarRaAn2 = mDeepspaceConsts.lunarRaAn2;
+        mDeepspaceConsts.solarEcc3 = mDeepspaceConsts.lunarEcc3;
+        mDeepspaceConsts.solarInc3 = mDeepspaceConsts.lunarInc3;
+        mDeepspaceConsts.solarLong3 = mDeepspaceConsts.lunarLong3;
+        mDeepspaceConsts.solarArgPerigee3 = mDeepspaceConsts.lunarArgPerigee3;
+        mDeepspaceConsts.solarRaAn3 = mDeepspaceConsts.lunarRaAn3;
+        mDeepspaceConsts.solarLong4 = mDeepspaceConsts.lunarLong4;
+        mDeepspaceConsts.solarArgPerigee4 = mDeepspaceConsts.lunarArgPerigee4;
+        cosSolarArgPerigee = cosLunarArgPerigee;
+        sinSolarArgPerigee = sinLunarArgPerigee;
+        cosSolarIncl = cosLunarIncl;
+        sinSolarIncl = sinLunarIncl;
+        cosNodeRef = cosLunarNodeAngle * cosRaAn0 + sinLunarNodeAngle * sinRaAn0;
+        sinNodeRef = sinRaAn0 * cosLunarNodeAngle - cosRaAn0 * sinLunarNodeAngle;
+        bodyMeanMotion = kLunarMeanMotion;
+        bodyC1 = kLunarC1;
+        bodyEccentricity = kLunarEccentricity;
     }
 
-    mDeepspaceConsts.sse += se;
-    mDeepspaceConsts.ssi += si;
-    mDeepspaceConsts.ssl += sl;
-    mDeepspaceConsts.ssg += sgh - cosio * shdq;
-    mDeepspaceConsts.ssh += shdq;
+    mDeepspaceConsts.totalSecularEcc += bodySecularEcc;
+    mDeepspaceConsts.totalSecularInc += bodySecularInc;
+    mDeepspaceConsts.totalSecularLong += bodySecularLong;
+    mDeepspaceConsts.totalSecularArgPerigee += bodySecularArgPerigee - cosInclination0 * bodySecularRaAn;
+    mDeepspaceConsts.totalSecularRaAn += bodySecularRaAn;
 
     mDeepspaceConsts.shape = DeepSpaceConstants::NONE;
 
@@ -871,21 +1106,28 @@ void SGP4::DeepSpaceInitialise(double eosq,
          */
         mDeepspaceConsts.shape = DeepSpaceConstants::SYNCHRONOUS;
 
-        const double g200 = 1.0 + eosq * (-2.5 + 0.8125 * eosq);
-        const double g310 = 1.0 + 2.0 * eosq;
-        const double g300 = 1.0 + eosq * (-6.0 + 6.60937 * eosq);
-        const double f220 = 0.75 * (1.0 + cosio) * (1.0 + cosio);
-        const double f311 = 0.9375 * sinio * sinio * (1.0 + 3.0 * cosio) - 0.75 * (1.0 + cosio);
-        double f330 = 1.0 + cosio;
-        f330 = 1.875 * f330 * f330 * f330;
-        mDeepspaceConsts.del1 = 3.0 * mElements.RecoveredMeanMotion() * mElements.RecoveredMeanMotion() * aqnv * aqnv;
-        mDeepspaceConsts.del2 = 2.0 * mDeepspaceConsts.del1 * f220 * g200 * Q22;
-        mDeepspaceConsts.del3 = 3.0 * mDeepspaceConsts.del1 * f330 * g300 * Q33 * aqnv;
-        mDeepspaceConsts.del1 = mDeepspaceConsts.del1 * f311 * g310 * Q31 * aqnv;
+        const double resonanceG200 = 1.0 + eccentricitySq * (-2.5 + 0.8125 * eccentricitySq);
+        const double resonanceG310 = 1.0 + 2.0 * eccentricitySq;
+        const double resonanceG300 = 1.0 + eccentricitySq * (-6.0 + 6.60937 * eccentricitySq);
+        const double resonanceF220 = 0.75 * (1.0 + cosInclination0) * (1.0 + cosInclination0);
+        const double resonanceF311 =
+            0.9375 * sinInclination0 * sinInclination0 * (1.0 + 3.0 * cosInclination0) - 0.75 * (1.0 + cosInclination0);
+        double resonanceF330 = 1.0 + cosInclination0;
+        resonanceF330 = 1.875 * resonanceF330 * resonanceF330 * resonanceF330;
+        mDeepspaceConsts.synchronousDel1 = 3.0 * mElements.RecoveredMeanMotion() * mElements.RecoveredMeanMotion() *
+                                           inverseSemiMajorAxis0 * inverseSemiMajorAxis0;
+        mDeepspaceConsts.synchronousDel2 =
+            2.0 * mDeepspaceConsts.synchronousDel1 * resonanceF220 * resonanceG200 * kSynchronousQ22;
+        mDeepspaceConsts.synchronousDel3 = 3.0 * mDeepspaceConsts.synchronousDel1 * resonanceF330 * resonanceG300 *
+                                           kSynchronousQ33 * inverseSemiMajorAxis0;
+        mDeepspaceConsts.synchronousDel1 =
+            mDeepspaceConsts.synchronousDel1 * resonanceF311 * resonanceG310 * kSynchronousQ31 * inverseSemiMajorAxis0;
 
-        mDeepspaceConsts.xlamo = Util::WrapTwoPI(mElements.MeanAnomaly() + mElements.AscendingNode() +
-                                                 mElements.ArgumentPerigee() - mDeepspaceConsts.gsto);
-        bfact = xmdot + xpidot - kTHDT + mDeepspaceConsts.ssl + mDeepspaceConsts.ssg + mDeepspaceConsts.ssh;
+        mDeepspaceConsts.resonancePhase0 =
+            Util::WrapTwoPI(mElements.MeanAnomaly() + mElements.AscendingNode() + mElements.ArgumentPerigee() -
+                            mDeepspaceConsts.greenwichSiderealTime);
+        resonanceFrequency = meanAnomalyDot + argPerigeeRaAnDot - kTHDT + mDeepspaceConsts.totalSecularLong +
+                             mDeepspaceConsts.totalSecularArgPerigee + mDeepspaceConsts.totalSecularRaAn;
     }
     else if (mElements.RecoveredMeanMotion() < 8.26e-3 || mElements.RecoveredMeanMotion() > 9.24e-3 ||
              mElements.Eccentricity() < 0.5)
@@ -899,106 +1141,116 @@ void SGP4::DeepSpaceInitialise(double eosq,
          */
         mDeepspaceConsts.shape = DeepSpaceConstants::RESONANCE;
 
-        double g211;
-        double g310;
-        double g322;
-        double g410;
-        double g422;
-        double g520;
+        double resonanceG211;
+        double resonanceG310;
+        double resonanceG322;
+        double resonanceG410;
+        double resonanceG422;
+        double resonanceG520;
 
-        double g201 = -0.306 - (mElements.Eccentricity() - 0.64) * 0.440;
+        double resonanceG201 = -0.306 - (mElements.Eccentricity() - 0.64) * 0.440;
 
         if (mElements.Eccentricity() <= 0.65)
         {
-            g211 = EvaluateCubicPolynomial(mElements.Eccentricity(), 3.616, -13.247, 16.290, 0.0);
-            g310 = EvaluateCubicPolynomial(mElements.Eccentricity(), -19.302, 117.390, -228.419, 156.591);
-            g322 = EvaluateCubicPolynomial(mElements.Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
-            g410 = EvaluateCubicPolynomial(mElements.Eccentricity(), -41.122, 242.694, -471.094, 313.953);
-            g422 = EvaluateCubicPolynomial(mElements.Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
-            g520 = EvaluateCubicPolynomial(mElements.Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
+            resonanceG211 = EvaluateCubicPolynomial(mElements.Eccentricity(), 3.616, -13.247, 16.290, 0.0);
+            resonanceG310 = EvaluateCubicPolynomial(mElements.Eccentricity(), -19.302, 117.390, -228.419, 156.591);
+            resonanceG322 = EvaluateCubicPolynomial(mElements.Eccentricity(), -18.9068, 109.7927, -214.6334, 146.5816);
+            resonanceG410 = EvaluateCubicPolynomial(mElements.Eccentricity(), -41.122, 242.694, -471.094, 313.953);
+            resonanceG422 = EvaluateCubicPolynomial(mElements.Eccentricity(), -146.407, 841.880, -1629.014, 1083.435);
+            resonanceG520 = EvaluateCubicPolynomial(mElements.Eccentricity(), -532.114, 3017.977, -5740.032, 3708.276);
         }
         else
         {
-            g211 = EvaluateCubicPolynomial(mElements.Eccentricity(), -72.099, 331.819, -508.738, 266.724);
-            g310 = EvaluateCubicPolynomial(mElements.Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
-            g322 = EvaluateCubicPolynomial(mElements.Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
-            g410 = EvaluateCubicPolynomial(mElements.Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
-            g422 = EvaluateCubicPolynomial(mElements.Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
+            resonanceG211 = EvaluateCubicPolynomial(mElements.Eccentricity(), -72.099, 331.819, -508.738, 266.724);
+            resonanceG310 = EvaluateCubicPolynomial(mElements.Eccentricity(), -346.844, 1582.851, -2415.925, 1246.113);
+            resonanceG322 = EvaluateCubicPolynomial(mElements.Eccentricity(), -342.585, 1554.908, -2366.899, 1215.972);
+            resonanceG410 = EvaluateCubicPolynomial(mElements.Eccentricity(), -1052.797, 4758.686, -7193.992, 3651.957);
+            resonanceG422 = EvaluateCubicPolynomial(mElements.Eccentricity(), -3581.69, 16178.11, -24462.77, 12422.52);
 
             if (mElements.Eccentricity() <= 0.715)
             {
-                g520 = EvaluateCubicPolynomial(mElements.Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
+                resonanceG520 = EvaluateCubicPolynomial(mElements.Eccentricity(), 1464.74, -4664.75, 3763.64, 0.0);
             }
             else
             {
-                g520 = EvaluateCubicPolynomial(mElements.Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
+                resonanceG520 =
+                    EvaluateCubicPolynomial(mElements.Eccentricity(), -5149.66, 29936.92, -54087.36, 31324.56);
             }
         }
 
-        double g533;
-        double g521;
-        double g532;
+        double resonanceG533;
+        double resonanceG521;
+        double resonanceG532;
 
         if (mElements.Eccentricity() < 0.7)
         {
-            g533 = EvaluateCubicPolynomial(mElements.Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
-            g521 = EvaluateCubicPolynomial(mElements.Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
-            g532 = EvaluateCubicPolynomial(mElements.Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
+            resonanceG533 = EvaluateCubicPolynomial(mElements.Eccentricity(), -919.2277, 4988.61, -9064.77, 5542.21);
+            resonanceG521 =
+                EvaluateCubicPolynomial(mElements.Eccentricity(), -822.71072, 4568.6173, -8491.4146, 5337.524);
+            resonanceG532 = EvaluateCubicPolynomial(mElements.Eccentricity(), -853.666, 4690.25, -8624.77, 5341.4);
         }
         else
         {
-            g533 = EvaluateCubicPolynomial(mElements.Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
-            g521 = EvaluateCubicPolynomial(mElements.Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
-            g532 = EvaluateCubicPolynomial(mElements.Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
+            resonanceG533 =
+                EvaluateCubicPolynomial(mElements.Eccentricity(), -37995.78, 161616.52, -229838.2, 109377.94);
+            resonanceG521 =
+                EvaluateCubicPolynomial(mElements.Eccentricity(), -51752.104, 218913.95, -309468.16, 146349.42);
+            resonanceG532 =
+                EvaluateCubicPolynomial(mElements.Eccentricity(), -40023.88, 170470.89, -242699.48, 115605.82);
         }
 
-        const double sini2 = sinio * sinio;
-        const double f220 = 0.75 * (1.0 + 2.0 * cosio + theta2);
-        const double f221 = 1.5 * sini2;
-        const double f321 = 1.875 * sinio * (1.0 - 2.0 * cosio - 3.0 * theta2);
-        const double f322 = -1.875 * sinio * (1.0 + 2.0 * cosio - 3.0 * theta2);
-        const double f441 = 35.0 * sini2 * f220;
-        const double f442 = 39.3750 * sini2 * sini2;
-        const double f522 =
-            9.84375 * sinio *
-            (sini2 * (1.0 - 2.0 * cosio - 5.0 * theta2) + 0.33333333 * (-2.0 + 4.0 * cosio + 6.0 * theta2));
-        const double f523 = sinio * (4.92187512 * sini2 * (-2.0 - 4.0 * cosio + 10.0 * theta2) +
-                                     6.56250012 * (1.0 + 2.0 * cosio - 3.0 * theta2));
-        const double f542 = 29.53125 * sinio * (2.0 - 8.0 * cosio + theta2 * (-12.0 + 8.0 * cosio + 10.0 * theta2));
-        const double f543 = 29.53125 * sinio * (-2.0 - 8.0 * cosio + theta2 * (12.0 + 8.0 * cosio - 10.0 * theta2));
+        const double sinSqInc = sinInclination0 * sinInclination0;
+        const double resonanceF220 = 0.75 * (1.0 + 2.0 * cosInclination0 + cosSqInc);
+        const double f221 = 1.5 * sinSqInc;
+        const double f321 = 1.875 * sinInclination0 * (1.0 - 2.0 * cosInclination0 - 3.0 * cosSqInc);
+        const double f322 = -1.875 * sinInclination0 * (1.0 + 2.0 * cosInclination0 - 3.0 * cosSqInc);
+        const double f441 = 35.0 * sinSqInc * resonanceF220;
+        const double f442 = 39.3750 * sinSqInc * sinSqInc;
+        const double f522 = 9.84375 * sinInclination0 *
+                            (sinSqInc * (1.0 - 2.0 * cosInclination0 - 5.0 * cosSqInc) +
+                             0.33333333 * (-2.0 + 4.0 * cosInclination0 + 6.0 * cosSqInc));
+        const double f523 =
+            sinInclination0 * (4.92187512 * sinSqInc * (-2.0 - 4.0 * cosInclination0 + 10.0 * cosSqInc) +
+                               6.56250012 * (1.0 + 2.0 * cosInclination0 - 3.0 * cosSqInc));
+        const double f542 =
+            29.53125 * sinInclination0 *
+            (2.0 - 8.0 * cosInclination0 + cosSqInc * (-12.0 + 8.0 * cosInclination0 + 10.0 * cosSqInc));
+        const double f543 =
+            29.53125 * sinInclination0 *
+            (-2.0 - 8.0 * cosInclination0 + cosSqInc * (12.0 + 8.0 * cosInclination0 - 10.0 * cosSqInc));
 
-        const double xno2 = mElements.RecoveredMeanMotion() * mElements.RecoveredMeanMotion();
-        const double ainv2 = aqnv * aqnv;
+        const double meanMotionSquared = mElements.RecoveredMeanMotion() * mElements.RecoveredMeanMotion();
+        const double inverseSmaSquared = inverseSemiMajorAxis0 * inverseSemiMajorAxis0;
 
-        double temp1 = 3.0 * xno2 * ainv2;
-        double temp = temp1 * ROOT22;
-        mDeepspaceConsts.d2201 = temp * f220 * g201;
-        mDeepspaceConsts.d2211 = temp * f221 * g211;
+        double resonancePrefactor = 3.0 * meanMotionSquared * inverseSmaSquared;
+        double resonanceCoef = resonancePrefactor * kResonanceRoot22;
+        mDeepspaceConsts.resonanceD2201 = resonanceCoef * resonanceF220 * resonanceG201;
+        mDeepspaceConsts.resonanceD2211 = resonanceCoef * f221 * resonanceG211;
 
-        temp1 *= aqnv;
-        temp = temp1 * ROOT32;
-        mDeepspaceConsts.d3210 = temp * f321 * g310;
-        mDeepspaceConsts.d3222 = temp * f322 * g322;
+        resonancePrefactor *= inverseSemiMajorAxis0;
+        resonanceCoef = resonancePrefactor * kResonanceRoot32;
+        mDeepspaceConsts.resonanceD3210 = resonanceCoef * f321 * resonanceG310;
+        mDeepspaceConsts.resonanceD3222 = resonanceCoef * f322 * resonanceG322;
 
-        temp1 *= aqnv;
-        temp = 2.0 * temp1 * ROOT44;
-        mDeepspaceConsts.d4410 = temp * f441 * g410;
-        mDeepspaceConsts.d4422 = temp * f442 * g422;
+        resonancePrefactor *= inverseSemiMajorAxis0;
+        resonanceCoef = 2.0 * resonancePrefactor * kResonanceRoot44;
+        mDeepspaceConsts.resonanceD4410 = resonanceCoef * f441 * resonanceG410;
+        mDeepspaceConsts.resonanceD4422 = resonanceCoef * f442 * resonanceG422;
 
-        temp1 *= aqnv;
-        temp = temp1 * ROOT52;
-        mDeepspaceConsts.d5220 = temp * f522 * g520;
-        mDeepspaceConsts.d5232 = temp * f523 * g532;
+        resonancePrefactor *= inverseSemiMajorAxis0;
+        resonanceCoef = resonancePrefactor * kResonanceRoot52;
+        mDeepspaceConsts.resonanceD5220 = resonanceCoef * f522 * resonanceG520;
+        mDeepspaceConsts.resonanceD5232 = resonanceCoef * f523 * resonanceG532;
 
-        temp = 2.0 * temp1 * ROOT54;
-        mDeepspaceConsts.d5421 = temp * f542 * g521;
-        mDeepspaceConsts.d5433 = temp * f543 * g533;
+        resonanceCoef = 2.0 * resonancePrefactor * kResonanceRoot54;
+        mDeepspaceConsts.resonanceD5421 = resonanceCoef * f542 * resonanceG521;
+        mDeepspaceConsts.resonanceD5433 = resonanceCoef * f543 * resonanceG533;
 
-        mDeepspaceConsts.xlamo =
+        mDeepspaceConsts.resonancePhase0 =
             Util::WrapTwoPI(mElements.MeanAnomaly() + mElements.AscendingNode() + mElements.AscendingNode() -
-                            mDeepspaceConsts.gsto - mDeepspaceConsts.gsto);
-        bfact = xmdot + xnodot + xnodot - kTHDT - kTHDT + mDeepspaceConsts.ssl + mDeepspaceConsts.ssh +
-                mDeepspaceConsts.ssh;
+                            mDeepspaceConsts.greenwichSiderealTime - mDeepspaceConsts.greenwichSiderealTime);
+        resonanceFrequency = meanAnomalyDot + raanDot + raanDot - kTHDT - kTHDT + mDeepspaceConsts.totalSecularLong +
+                             mDeepspaceConsts.totalSecularRaAn + mDeepspaceConsts.totalSecularRaAn;
     }
 
     if (mDeepspaceConsts.shape != DeepSpaceConstants::NONE)
@@ -1006,10 +1258,10 @@ void SGP4::DeepSpaceInitialise(double eosq,
         /*
          * initialise integrator
          */
-        mDeepspaceConsts.xfact = bfact - mElements.RecoveredMeanMotion();
-        mIntegratorParams.atime = 0.0;
-        mIntegratorParams.xni = mElements.RecoveredMeanMotion();
-        mIntegratorParams.xli = mDeepspaceConsts.xlamo;
+        mDeepspaceConsts.resonancePhaseRate = resonanceFrequency - mElements.RecoveredMeanMotion();
+        mIntegratorParams.integratorTime = 0.0;
+        mIntegratorParams.resonanceMeanMotion = mElements.RecoveredMeanMotion();
+        mIntegratorParams.resonancePhase = mDeepspaceConsts.resonancePhase0;
     }
 }
 
@@ -1018,54 +1270,99 @@ void SGP4::DeepSpaceInitialise(double eosq,
  * zmos, se2, se3, si2, si3, sl2, sl3, sl4, sgh2, sgh3, sgh4, sh2, sh3
  * zmol, ee2,  e3, xi2, xi3, xl2, xl3, xl4, xgh2, xgh3, xgh4, xh2, xh3
  */
+/*
+ * traceability: short identifier -> descriptive name
+  ZEL                      -> kLunarEccentricity                 ZES                      -> kSolarEccentricity
+  ZNL                      -> kLunarMeanMotion                   ZNS                      -> kSolarMeanMotion
+  alfdp                    -> lyddaneAlpha                       betdp                    -> lyddaneBeta
+  cosis                    -> cosIncl                            cosok                    -> cosRaAn
+  dalf                     -> dAlphaLyddane                      dbet                     -> dBetaLyddane
+  dls                      -> longitudePerturb                   dsConstants              -> deepSpaceConstants
+  e3                       -> lunarEcc3                          ee2                      -> lunarEcc2
+  em                       -> eccentricity                       f2                       -> fourier2
+  f3                       -> fourier3                           oldxnodes                -> previousRaAn
+  omgasm                   -> argPerigee                         pe                       -> perturbEcc
+  pgh                      -> perturbArgPerigee                  ph                       -> perturbRaAn
+  pinc                     -> perturbInc                         pl                       -> perturbLong
+  se2                      -> solarEcc2                          se3                      -> solarEcc3
+  sel                      -> lunarPerturbEcc                    ses                      -> solarPerturbEcc
+  sgh2                     -> solarArgPerigee2                   sgh3                     -> solarArgPerigee3
+  sgh4                     -> solarArgPerigee4                   sghl                     -> lunarPerturbArgPerigee
+  sghs                     -> solarPerturbArgPerigee             sh2                      -> solarRaAn2
+  sh3                      -> solarRaAn3                         shl                      -> lunarPerturbRaAn
+  shs                      -> solarPerturbRaAn                   si2                      -> solarInc2
+  si3                      -> solarInc3                          sil                      -> lunarPerturbInc
+  sinis                    -> sinIncl                            sinok                    -> sinRaAn
+  sinzf                    -> sinEccentricAnomaly                sis                      -> solarPerturbInc
+  sl2                      -> solarLong2                         sl3                      -> solarLong3
+  sl4                      -> solarLong4                         sll                      -> lunarPerturbLong
+  sls                      -> solarPerturbLong                   xgh2                     -> lunarArgPerigee2
+  xgh3                     -> lunarArgPerigee3                   xgh4                     -> lunarArgPerigee4
+  xh2                      -> lunarRaAn2                         xh3                      -> lunarRaAn3
+  xi2                      -> lunarInc2                          xi3                      -> lunarInc3
+  xinc                     -> inclination                        xl2                      -> lunarLong2
+  xl3                      -> lunarLong3                         xl4                      -> lunarLong4
+  xll                      -> meanAnomaly                        xls                      -> perturbedLongitude
+  xnodes                   -> raan                               zf                       -> bodyEccentricAnomaly
+  zm                       -> bodyMeanAnomaly                    zmol                     -> lunarMeanAnomaly
+  zmos                     -> solarMeanAnomaly
+ */
 void SGP4::DeepSpacePeriodics(double tsince,
-                              const DeepSpaceConstants& dsConstants,
-                              double& em,
-                              double& xinc,
-                              double& omgasm,
-                              double& xnodes,
-                              double& xll)
+                              const DeepSpaceConstants& deepSpaceConstants,
+                              double& eccentricity,
+                              double& inclination,
+                              double& argPerigee,
+                              double& raan,
+                              double& meanAnomaly)
 {
-    const double ZES = 0.01675;
-    const double ZNS = 1.19459E-5;
-    const double ZNL = 1.5835218E-4;
-    const double ZEL = 0.05490;
+    const double kSolarEccentricity = 0.01675;
+    const double kSolarMeanMotion = 1.19459E-5;
+    const double kLunarMeanMotion = 1.5835218E-4;
+    const double kLunarEccentricity = 0.05490;
 
     // calculate solar terms for time tsince
-    double zm = Util::WrapTwoPI(dsConstants.zmos + ZNS * tsince);
-    double zf = zm + 2.0 * ZES * sin(zm);
-    double sinzf = sin(zf);
-    double f2 = 0.5 * sinzf * sinzf - 0.25;
-    double f3 = -0.5 * sinzf * cos(zf);
+    double bodyMeanAnomaly = Util::WrapTwoPI(deepSpaceConstants.solarMeanAnomaly + kSolarMeanMotion * tsince);
+    double bodyEccentricAnomaly = bodyMeanAnomaly + 2.0 * kSolarEccentricity * sin(bodyMeanAnomaly);
+    double sinEccentricAnomaly = sin(bodyEccentricAnomaly);
+    double fourier2 = 0.5 * sinEccentricAnomaly * sinEccentricAnomaly - 0.25;
+    double fourier3 = -0.5 * sinEccentricAnomaly * cos(bodyEccentricAnomaly);
 
-    const double ses = dsConstants.se2 * f2 + dsConstants.se3 * f3;
-    const double sis = dsConstants.si2 * f2 + dsConstants.si3 * f3;
-    const double sls = dsConstants.sl2 * f2 + dsConstants.sl3 * f3 + dsConstants.sl4 * sinzf;
-    const double sghs = dsConstants.sgh2 * f2 + dsConstants.sgh3 * f3 + dsConstants.sgh4 * sinzf;
-    const double shs = dsConstants.sh2 * f2 + dsConstants.sh3 * f3;
+    const double solarPerturbEcc = deepSpaceConstants.solarEcc2 * fourier2 + deepSpaceConstants.solarEcc3 * fourier3;
+    const double solarPerturbInc = deepSpaceConstants.solarInc2 * fourier2 + deepSpaceConstants.solarInc3 * fourier3;
+    const double solarPerturbLong = deepSpaceConstants.solarLong2 * fourier2 +
+                                    deepSpaceConstants.solarLong3 * fourier3 +
+                                    deepSpaceConstants.solarLong4 * sinEccentricAnomaly;
+    const double solarPerturbArgPerigee = deepSpaceConstants.solarArgPerigee2 * fourier2 +
+                                          deepSpaceConstants.solarArgPerigee3 * fourier3 +
+                                          deepSpaceConstants.solarArgPerigee4 * sinEccentricAnomaly;
+    const double solarPerturbRaAn = deepSpaceConstants.solarRaAn2 * fourier2 + deepSpaceConstants.solarRaAn3 * fourier3;
 
     // calculate lunar terms for time tsince
-    zm = Util::WrapTwoPI(dsConstants.zmol + ZNL * tsince);
-    zf = zm + 2.0 * ZEL * sin(zm);
-    sinzf = sin(zf);
-    f2 = 0.5 * sinzf * sinzf - 0.25;
-    f3 = -0.5 * sinzf * cos(zf);
+    bodyMeanAnomaly = Util::WrapTwoPI(deepSpaceConstants.lunarMeanAnomaly + kLunarMeanMotion * tsince);
+    bodyEccentricAnomaly = bodyMeanAnomaly + 2.0 * kLunarEccentricity * sin(bodyMeanAnomaly);
+    sinEccentricAnomaly = sin(bodyEccentricAnomaly);
+    fourier2 = 0.5 * sinEccentricAnomaly * sinEccentricAnomaly - 0.25;
+    fourier3 = -0.5 * sinEccentricAnomaly * cos(bodyEccentricAnomaly);
 
-    const double sel = dsConstants.ee2 * f2 + dsConstants.e3 * f3;
-    const double sil = dsConstants.xi2 * f2 + dsConstants.xi3 * f3;
-    const double sll = dsConstants.xl2 * f2 + dsConstants.xl3 * f3 + dsConstants.xl4 * sinzf;
-    const double sghl = dsConstants.xgh2 * f2 + dsConstants.xgh3 * f3 + dsConstants.xgh4 * sinzf;
-    const double shl = dsConstants.xh2 * f2 + dsConstants.xh3 * f3;
+    const double lunarPerturbEcc = deepSpaceConstants.lunarEcc2 * fourier2 + deepSpaceConstants.lunarEcc3 * fourier3;
+    const double lunarPerturbInc = deepSpaceConstants.lunarInc2 * fourier2 + deepSpaceConstants.lunarInc3 * fourier3;
+    const double lunarPerturbLong = deepSpaceConstants.lunarLong2 * fourier2 +
+                                    deepSpaceConstants.lunarLong3 * fourier3 +
+                                    deepSpaceConstants.lunarLong4 * sinEccentricAnomaly;
+    const double lunarPerturbArgPerigee = deepSpaceConstants.lunarArgPerigee2 * fourier2 +
+                                          deepSpaceConstants.lunarArgPerigee3 * fourier3 +
+                                          deepSpaceConstants.lunarArgPerigee4 * sinEccentricAnomaly;
+    const double lunarPerturbRaAn = deepSpaceConstants.lunarRaAn2 * fourier2 + deepSpaceConstants.lunarRaAn3 * fourier3;
 
     // merge calculated values
-    const double pe = ses + sel;
-    const double pinc = sis + sil;
-    const double pl = sls + sll;
-    const double pgh = sghs + sghl;
-    const double ph = shs + shl;
+    const double perturbEcc = solarPerturbEcc + lunarPerturbEcc;
+    const double perturbInc = solarPerturbInc + lunarPerturbInc;
+    const double perturbLong = solarPerturbLong + lunarPerturbLong;
+    const double perturbArgPerigee = solarPerturbArgPerigee + lunarPerturbArgPerigee;
+    const double perturbRaAn = solarPerturbRaAn + lunarPerturbRaAn;
 
-    xinc += pinc;
-    em += pe;
+    inclination += perturbInc;
+    eccentricity += perturbEcc;
 
     /* Spacetrack report #3 has sin/cos from before perturbations
      * added to xinc (oldxinc), but apparently report # 6 has then
@@ -1076,90 +1373,120 @@ void SGP4::DeepSpacePeriodics(double tsince,
      * if (xinc >= 0.2)
      * (moved from start of function)
      */
-    const double sinis = sin(xinc);
-    const double cosis = cos(xinc);
+    const double sinIncl = sin(inclination);
+    const double cosIncl = cos(inclination);
 
-    if (xinc >= 0.2)
+    if (inclination >= 0.2)
     {
         // apply periodics directly
-        omgasm += pgh - cosis * ph / sinis;
-        xnodes += ph / sinis;
-        xll += pl;
+        argPerigee += perturbArgPerigee - cosIncl * perturbRaAn / sinIncl;
+        raan += perturbRaAn / sinIncl;
+        meanAnomaly += perturbLong;
     }
     else
     {
         // apply periodics with lyddane modification
-        const double sinok = sin(xnodes);
-        const double cosok = cos(xnodes);
-        double alfdp = sinis * sinok;
-        double betdp = sinis * cosok;
-        const double dalf = ph * cosok + pinc * cosis * sinok;
-        const double dbet = -ph * sinok + pinc * cosis * cosok;
-        alfdp += dalf;
-        betdp += dbet;
-        xnodes = Util::WrapTwoPI(xnodes);
-        double xls = xll + omgasm + cosis * xnodes;
-        double dls = pl + pgh - pinc * xnodes * sinis;
-        xls += dls;
-        const double oldxnodes = xnodes;
-        xnodes = atan2(alfdp, betdp);
+        const double sinRaAn = sin(raan);
+        const double cosRaAn = cos(raan);
+        double lyddaneAlpha = sinIncl * sinRaAn;
+        double lyddaneBeta = sinIncl * cosRaAn;
+        const double dAlphaLyddane = perturbRaAn * cosRaAn + perturbInc * cosIncl * sinRaAn;
+        const double dBetaLyddane = -perturbRaAn * sinRaAn + perturbInc * cosIncl * cosRaAn;
+        lyddaneAlpha += dAlphaLyddane;
+        lyddaneBeta += dBetaLyddane;
+        raan = Util::WrapTwoPI(raan);
+        double perturbedLongitude = meanAnomaly + argPerigee + cosIncl * raan;
+        double longitudePerturb = perturbLong + perturbArgPerigee - perturbInc * raan * sinIncl;
+        perturbedLongitude += longitudePerturb;
+        const double previousRaAn = raan;
+        raan = atan2(lyddaneAlpha, lyddaneBeta);
         /**
          * Get perturbed xnodes in to same quadrant as original.
          * RAAN is in the range of 0 to 360 degrees
          * atan2 is in the range of -180 to 180 degrees
          */
-        if (std::abs(oldxnodes - xnodes) > kPI)
+        if (std::abs(previousRaAn - raan) > kPI)
         {
-            if (xnodes < oldxnodes)
+            if (raan < previousRaAn)
             {
-                xnodes += kTWOPI;
+                raan += kTWOPI;
             }
             else
             {
-                xnodes -= kTWOPI;
+                raan -= kTWOPI;
             }
         }
 
-        xll += pl;
-        omgasm = xls - xll - cosis * xnodes;
+        meanAnomaly += perturbLong;
+        argPerigee = perturbedLongitude - meanAnomaly - cosIncl * raan;
     }
 }
 
+/*
+ * traceability: short identifier -> descriptive name
+  FASX2                    -> kResonanceFasx2                    FASX4                    -> kResonanceFasx4
+  FASX6                    -> kResonanceFasx6                    G22                      -> kResonanceG22
+  G32                      -> kResonanceG32                      G44                      -> kResonanceG44
+  G52                      -> kResonanceG52                      G54                      -> kResonanceG54
+  STEP                     -> kIntegratorStep                    STEP2                    -> kIntegratorStepSquared
+  atime                    -> integratorTime                     cConstants               -> commonConstants
+  d2201                    -> resonanceD2201                     d2211                    -> resonanceD2211
+  d3210                    -> resonanceD3210                     d3222                    -> resonanceD3222
+  d4410                    -> resonanceD4410                     d4422                    -> resonanceD4422
+  d5220                    -> resonanceD5220                     d5232                    -> resonanceD5232
+  d5421                    -> resonanceD5421                     d5433                    -> resonanceD5433
+  del1                     -> synchronousDel1                    del2                     -> synchronousDel2
+  del3                     -> synchronousDel3                    delt                     -> integrationStep
+  dsConstants              -> deepSpaceConstants                 em                       -> eccentricity
+  ft                       -> timeRemaining                      gsto                     -> greenwichSiderealTime
+  omgasm                   -> argPerigee                         omgdot                   -> argPerigeeDot
+  sse                      -> totalSecularEcc                    ssg                      -> totalSecularArgPerigee
+  ssh                      -> totalSecularRaAn                   ssi                      -> totalSecularInc
+  ssl                      -> totalSecularLong                   theta                    -> greenwichSiderealTime
+  x2li                     -> twoResonancePhase                  x2omi                    -> twoArgPerigeeAtTime
+  xfact                    -> resonancePhaseRate                 xinc                     -> inclination
+  xlTemp                   -> resonancePhaseAtTime               xlamo                    -> resonancePhase0
+  xldot                    -> resonancePhaseDot                  xli                      -> resonancePhase
+  xll                      -> meanAnomaly                        xn                       -> meanMotion
+  xnddt                    -> meanMotionSecondDerivative         xndot                    -> meanMotionDot
+  xni                      -> resonanceMeanMotion                xnodes                   -> raan
+  xomi                     -> argPerigeeAtTime
+ */
 void SGP4::DeepSpaceSecular(double tsince,
                             const OrbitalElements& elements,
-                            const CommonConstants& cConstants,
-                            const DeepSpaceConstants& dsConstants,
+                            const CommonConstants& commonConstants,
+                            const DeepSpaceConstants& deepSpaceConstants,
                             IntegratorParams& integParams,
-                            double& xll,
-                            double& omgasm,
-                            double& xnodes,
-                            double& em,
-                            double& xinc,
-                            double& xn)
+                            double& meanAnomaly,
+                            double& argPerigee,
+                            double& raan,
+                            double& eccentricity,
+                            double& inclination,
+                            double& meanMotion)
 {
-    const double G22 = 5.7686396;
-    const double G32 = 0.95240898;
-    const double G44 = 1.8014998;
-    const double G52 = 1.0508330;
-    const double G54 = 4.4108898;
-    const double FASX2 = 0.13130908;
-    const double FASX4 = 2.8843198;
-    const double FASX6 = 0.37448087;
+    const double kResonanceG22 = 5.7686396;
+    const double kResonanceG32 = 0.95240898;
+    const double kResonanceG44 = 1.8014998;
+    const double kResonanceG52 = 1.0508330;
+    const double kResonanceG54 = 4.4108898;
+    const double kResonanceFasx2 = 0.13130908;
+    const double kResonanceFasx4 = 2.8843198;
+    const double kResonanceFasx6 = 0.37448087;
 
-    const double STEP = 720.0;
-    const double STEP2 = 259200.0;
+    const double kIntegratorStep = 720.0;
+    const double kIntegratorStepSquared = 259200.0;
 
-    xll += dsConstants.ssl * tsince;
-    omgasm += dsConstants.ssg * tsince;
-    xnodes += dsConstants.ssh * tsince;
-    em += dsConstants.sse * tsince;
-    xinc += dsConstants.ssi * tsince;
+    meanAnomaly += deepSpaceConstants.totalSecularLong * tsince;
+    argPerigee += deepSpaceConstants.totalSecularArgPerigee * tsince;
+    raan += deepSpaceConstants.totalSecularRaAn * tsince;
+    eccentricity += deepSpaceConstants.totalSecularEcc * tsince;
+    inclination += deepSpaceConstants.totalSecularInc * tsince;
 
-    if (dsConstants.shape != DeepSpaceConstants::NONE)
+    if (deepSpaceConstants.shape != DeepSpaceConstants::NONE)
     {
-        double xndot = 0.0;
-        double xnddt = 0.0;
-        double xldot = 0.0;
+        double meanMotionDot = 0.0;
+        double meanMotionSecondDerivative = 0.0;
+        double resonancePhaseDot = 0.0;
         /*
          * 1st condition (if tsince is less than one time step from epoch)
          * 2nd condition (if atime and
@@ -1167,15 +1494,15 @@ void SGP4::DeepSpaceSecular(double tsince,
          * 3rd condition (if tsince is closer to zero than
          *     atime, only integrate away from zero)
          */
-        if (std::abs(tsince) < STEP || tsince * integParams.atime <= 0.0 ||
-            std::abs(tsince) < std::abs(integParams.atime))
+        if (std::abs(tsince) < kIntegratorStep || tsince * integParams.integratorTime <= 0.0 ||
+            std::abs(tsince) < std::abs(integParams.integratorTime))
         {
             // restart back at the epoch
-            integParams.atime = 0.0;
+            integParams.integratorTime = 0.0;
             // TODO: check
-            integParams.xni = elements.RecoveredMeanMotion();
+            integParams.resonanceMeanMotion = elements.RecoveredMeanMotion();
             // TODO: check
-            integParams.xli = dsConstants.xlamo;
+            integParams.resonancePhase = deepSpaceConstants.resonancePhase0;
         }
 
         bool running = true;
@@ -1183,66 +1510,94 @@ void SGP4::DeepSpaceSecular(double tsince,
         {
             // always calculate dot terms ready for integration beginning
             // from the start of the range which is 'atime'
-            if (dsConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
+            if (deepSpaceConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
             {
-                xndot = dsConstants.del1 * sin(integParams.xli - FASX2) +
-                        dsConstants.del2 * sin(2.0 * (integParams.xli - FASX4)) +
-                        dsConstants.del3 * sin(3.0 * (integParams.xli - FASX6));
-                xnddt = dsConstants.del1 * cos(integParams.xli - FASX2) +
-                        2.0 * dsConstants.del2 * cos(2.0 * (integParams.xli - FASX4)) +
-                        3.0 * dsConstants.del3 * cos(3.0 * (integParams.xli - FASX6));
+                meanMotionDot =
+                    deepSpaceConstants.synchronousDel1 * sin(integParams.resonancePhase - kResonanceFasx2) +
+                    deepSpaceConstants.synchronousDel2 * sin(2.0 * (integParams.resonancePhase - kResonanceFasx4)) +
+                    deepSpaceConstants.synchronousDel3 * sin(3.0 * (integParams.resonancePhase - kResonanceFasx6));
+                meanMotionSecondDerivative =
+                    deepSpaceConstants.synchronousDel1 * cos(integParams.resonancePhase - kResonanceFasx2) +
+                    2.0 * deepSpaceConstants.synchronousDel2 *
+                        cos(2.0 * (integParams.resonancePhase - kResonanceFasx4)) +
+                    3.0 * deepSpaceConstants.synchronousDel3 *
+                        cos(3.0 * (integParams.resonancePhase - kResonanceFasx6));
             }
             else
             {
                 // TODO: check
-                const double xomi = elements.ArgumentPerigee() + cConstants.omgdot * integParams.atime;
-                const double x2omi = xomi + xomi;
-                const double x2li = integParams.xli + integParams.xli;
-                xndot = dsConstants.d2201 * sin(x2omi + integParams.xli - G22) +
-                        dsConstants.d2211 * sin(integParams.xli - G22) +
-                        dsConstants.d3210 * sin(xomi + integParams.xli - G32) +
-                        dsConstants.d3222 * sin(-xomi + integParams.xli - G32) +
-                        dsConstants.d4410 * sin(x2omi + x2li - G44) + dsConstants.d4422 * sin(x2li - G44) +
-                        dsConstants.d5220 * sin(xomi + integParams.xli - G52) +
-                        dsConstants.d5232 * sin(-xomi + integParams.xli - G52) +
-                        dsConstants.d5421 * sin(xomi + x2li - G54) + dsConstants.d5433 * sin(-xomi + x2li - G54);
-                xnddt =
-                    dsConstants.d2201 * cos(x2omi + integParams.xli - G22) +
-                    dsConstants.d2211 * cos(integParams.xli - G22) +
-                    dsConstants.d3210 * cos(xomi + integParams.xli - G32) +
-                    dsConstants.d3222 * cos(-xomi + integParams.xli - G32) +
-                    dsConstants.d5220 * cos(xomi + integParams.xli - G52) +
-                    dsConstants.d5232 * cos(-xomi + integParams.xli - G52) +
-                    2.0 * (dsConstants.d4410 * cos(x2omi + x2li - G44) + dsConstants.d4422 * cos(x2li - G44) +
-                           dsConstants.d5421 * cos(xomi + x2li - G54) + dsConstants.d5433 * cos(-xomi + x2li - G54));
+                const double argPerigeeAtTime =
+                    elements.ArgumentPerigee() + commonConstants.argPerigeeDot * integParams.integratorTime;
+                const double twoArgPerigeeAtTime = argPerigeeAtTime + argPerigeeAtTime;
+                const double twoResonancePhase = integParams.resonancePhase + integParams.resonancePhase;
+                meanMotionDot =
+                    deepSpaceConstants.resonanceD2201 *
+                        sin(twoArgPerigeeAtTime + integParams.resonancePhase - kResonanceG22) +
+                    deepSpaceConstants.resonanceD2211 * sin(integParams.resonancePhase - kResonanceG22) +
+                    deepSpaceConstants.resonanceD3210 *
+                        sin(argPerigeeAtTime + integParams.resonancePhase - kResonanceG32) +
+                    deepSpaceConstants.resonanceD3222 *
+                        sin(-argPerigeeAtTime + integParams.resonancePhase - kResonanceG32) +
+                    deepSpaceConstants.resonanceD4410 * sin(twoArgPerigeeAtTime + twoResonancePhase - kResonanceG44) +
+                    deepSpaceConstants.resonanceD4422 * sin(twoResonancePhase - kResonanceG44) +
+                    deepSpaceConstants.resonanceD5220 *
+                        sin(argPerigeeAtTime + integParams.resonancePhase - kResonanceG52) +
+                    deepSpaceConstants.resonanceD5232 *
+                        sin(-argPerigeeAtTime + integParams.resonancePhase - kResonanceG52) +
+                    deepSpaceConstants.resonanceD5421 * sin(argPerigeeAtTime + twoResonancePhase - kResonanceG54) +
+                    deepSpaceConstants.resonanceD5433 * sin(-argPerigeeAtTime + twoResonancePhase - kResonanceG54);
+                meanMotionSecondDerivative =
+                    deepSpaceConstants.resonanceD2201 *
+                        cos(twoArgPerigeeAtTime + integParams.resonancePhase - kResonanceG22) +
+                    deepSpaceConstants.resonanceD2211 * cos(integParams.resonancePhase - kResonanceG22) +
+                    deepSpaceConstants.resonanceD3210 *
+                        cos(argPerigeeAtTime + integParams.resonancePhase - kResonanceG32) +
+                    deepSpaceConstants.resonanceD3222 *
+                        cos(-argPerigeeAtTime + integParams.resonancePhase - kResonanceG32) +
+                    deepSpaceConstants.resonanceD5220 *
+                        cos(argPerigeeAtTime + integParams.resonancePhase - kResonanceG52) +
+                    deepSpaceConstants.resonanceD5232 *
+                        cos(-argPerigeeAtTime + integParams.resonancePhase - kResonanceG52) +
+                    2.0 *
+                        (deepSpaceConstants.resonanceD4410 *
+                             cos(twoArgPerigeeAtTime + twoResonancePhase - kResonanceG44) +
+                         deepSpaceConstants.resonanceD4422 * cos(twoResonancePhase - kResonanceG44) +
+                         deepSpaceConstants.resonanceD5421 * cos(argPerigeeAtTime + twoResonancePhase - kResonanceG54) +
+                         deepSpaceConstants.resonanceD5433 *
+                             cos(-argPerigeeAtTime + twoResonancePhase - kResonanceG54));
             }
-            xldot = integParams.xni + dsConstants.xfact;
-            xnddt *= xldot;
+            resonancePhaseDot = integParams.resonanceMeanMotion + deepSpaceConstants.resonancePhaseRate;
+            meanMotionSecondDerivative *= resonancePhaseDot;
 
-            double ft = tsince - integParams.atime;
-            if (std::abs(ft) >= STEP)
+            double timeRemaining = tsince - integParams.integratorTime;
+            if (std::abs(timeRemaining) >= kIntegratorStep)
             {
-                const double delt = (ft >= 0.0 ? STEP : -STEP);
+                const double integrationStep = (timeRemaining >= 0.0 ? kIntegratorStep : -kIntegratorStep);
                 // integrate by a full step ('delt'), updating the cached
                 // values for the new 'atime'
-                integParams.xli = integParams.xli + xldot * delt + xndot * STEP2;
-                integParams.xni = integParams.xni + xndot * delt + xnddt * STEP2;
-                integParams.atime += delt;
+                integParams.resonancePhase = integParams.resonancePhase + resonancePhaseDot * integrationStep +
+                                             meanMotionDot * kIntegratorStepSquared;
+                integParams.resonanceMeanMotion = integParams.resonanceMeanMotion + meanMotionDot * integrationStep +
+                                                  meanMotionSecondDerivative * kIntegratorStepSquared;
+                integParams.integratorTime += integrationStep;
             }
             else
             {
                 // integrate by the difference 'ft' remaining
-                xn = integParams.xni + xndot * ft + xnddt * ft * ft * 0.5;
-                const double xlTemp = integParams.xli + xldot * ft + xndot * ft * ft * 0.5;
+                meanMotion = integParams.resonanceMeanMotion + meanMotionDot * timeRemaining +
+                             meanMotionSecondDerivative * timeRemaining * timeRemaining * 0.5;
+                const double resonancePhaseAtTime = integParams.resonancePhase + resonancePhaseDot * timeRemaining +
+                                                    meanMotionDot * timeRemaining * timeRemaining * 0.5;
 
-                const double theta = Util::WrapTwoPI(dsConstants.gsto + tsince * kTHDT);
-                if (dsConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
+                const double greenwichSiderealTime =
+                    Util::WrapTwoPI(deepSpaceConstants.greenwichSiderealTime + tsince * kTHDT);
+                if (deepSpaceConstants.shape == DeepSpaceConstants::SYNCHRONOUS)
                 {
-                    xll = xlTemp + theta - xnodes - omgasm;
+                    meanAnomaly = resonancePhaseAtTime + greenwichSiderealTime - raan - argPerigee;
                 }
                 else
                 {
-                    xll = xlTemp + 2.0 * (theta - xnodes);
+                    meanAnomaly = resonancePhaseAtTime + 2.0 * (greenwichSiderealTime - raan);
                 }
                 running = false;
             }
