@@ -50,20 +50,17 @@ void SGP4::SetTle(const Tle& tle)
   eeta                     -> eccTimesEta                        eosq                     -> eccentricitySq
   etasq                    -> etaSquared                         gsto                     -> greenwichSiderealTime
   omgcof                   -> argPerigeeDragCoeff                omgdot                   -> argPerigeeDot
-  pinvsq                   -> pinvSquared                        psisq                    -> psiSquared
-  qoms24                   -> qoms2t                             s4                       -> densityHeightS
-  sinio                    -> sinInclination0                    sinmo                    -> sinMeanAnomaly0
-  t2cof                    -> t2Coeff                            t3cof                    -> t3Coeff
-  t4cof                    -> t4Coeff                            t5cof                    -> t5Coeff
-  temp                     -> d3PreFactor                        temp1                    -> ck2Term1
-  temp2                    -> ck2Term2                           temp3                    -> ck4Term
+  psisq                    -> psiSquared                         qoms24                   -> qoms2t
+  s4                       -> densityHeightS                     sinio                    -> sinInclination0
+  sinmo                    -> sinMeanAnomaly0                    t2cof                    -> t2Coeff
+  t3cof                    -> t3Coeff                            t4cof                    -> t4Coeff
+  t5cof                    -> t5Coeff                            temp                     -> d3PreFactor
   theta2                   -> cosSqInc                           theta4                   -> cos4Inc
-  tsi                      -> inverseSmaMinusS                   x1m5th                   -> oneMinus5CosSqInc
-  x1mth2                   -> sinSqInc                           x3thm1                   -> threeCosSqIncMinus1
-  x7thm1                   -> sevenCosSqIncMinus1                xhdot1                   -> raanDotFirstOrder
-  xlcof                    -> xlCoeff                            xmcof                    -> meanAnomalyDragCoeff
-  xmdot                    -> meanAnomalyDot                     xnodcf                   -> raanDragCoeff
-  xnodot                   -> raanDot
+  tsi                      -> inverseSmaMinusS                   x1mth2                   -> sinSqInc
+  x3thm1                   -> threeCosSqIncMinus1                x7thm1                   -> sevenCosSqIncMinus1
+  xhdot1                   -> raanDotFirstOrder                  xlcof                    -> xlCoeff
+  xmcof                    -> meanAnomalyDragCoeff               xmdot                    -> meanAnomalyDot
+  xnodcf                   -> raanDragCoeff                      xnodot                   -> raanDot
  */
 void SGP4::Initialise()
 {
@@ -139,8 +136,6 @@ void SGP4::Initialise()
     /*
      * generate constants
      */
-    const double pinvSquared =
-        1.0 / (mElements.RecoveredSemiMajorAxis() * mElements.RecoveredSemiMajorAxis() * oneMinusEccSq * oneMinusEccSq);
     const double inverseSmaMinusS = 1.0 / (mElements.RecoveredSemiMajorAxis() - densityHeightS);
     mCommonConsts.eta = mElements.RecoveredSemiMajorAxis() * mElements.Eccentricity() * inverseSmaMinusS;
     const double etaSquared = mCommonConsts.eta * mCommonConsts.eta;
@@ -162,21 +157,36 @@ void SGP4::Initialise()
                   (1.0 - 2.0 * eccTimesEta + etaSquared * (1.5 - 0.5 * eccTimesEta)) +
               0.75 * mCommonConsts.sinSqInc * (2.0 * etaSquared - eccTimesEta * (1.0 + etaSquared)) *
                   cos(2.0 * mElements.ArgumentPerigee())));
+    const double recoveredMeanMotion = mElements.RecoveredMeanMotion();
+    const double recoveredSemiMajorAxisSquared =
+        mElements.RecoveredSemiMajorAxis() * mElements.RecoveredSemiMajorAxis();
+    const double recoveredSemiMajorAxisFourth = recoveredSemiMajorAxisSquared * recoveredSemiMajorAxisSquared;
+    const double betaCubed = sqrtOneMinusEccSq * oneMinusEccSq;
+    const double betaFourth = oneMinusEccSq * oneMinusEccSq;
+    const double betaSeventh = betaCubed * betaFourth;
+    const double betaEighth = betaFourth * betaFourth;
     const double cos4Inc = cosSqInc * cosSqInc;
-    const double ck2Term1 = 3.0 * kCK2 * pinvSquared * mElements.RecoveredMeanMotion();
-    const double ck2Term2 = ck2Term1 * kCK2 * pinvSquared;
-    const double ck4Term = 1.25 * kCK4 * pinvSquared * pinvSquared * mElements.RecoveredMeanMotion();
-    mCommonConsts.meanAnomalyDot = mElements.RecoveredMeanMotion() +
-                                   0.5 * ck2Term1 * sqrtOneMinusEccSq * mCommonConsts.threeCosSqIncMinus1 +
-                                   0.0625 * ck2Term2 * sqrtOneMinusEccSq * (13.0 - 78.0 * cosSqInc + 137.0 * cos4Inc);
-    const double oneMinus5CosSqInc = 1.0 - 5.0 * cosSqInc;
-    mCommonConsts.argPerigeeDot = -0.5 * ck2Term1 * oneMinus5CosSqInc +
-                                  0.0625 * ck2Term2 * (7.0 - 114.0 * cosSqInc + 395.0 * cos4Inc) +
-                                  ck4Term * (3.0 - 36.0 * cosSqInc + 49.0 * cos4Inc);
-    const double raanDotFirstOrder = -ck2Term1 * mCommonConsts.cosInclination0;
+
+    mCommonConsts.meanAnomalyDot =
+        recoveredMeanMotion *
+        (1.0 + 3.0 * kCK2 * mCommonConsts.threeCosSqIncMinus1 / (2.0 * recoveredSemiMajorAxisSquared * betaCubed) +
+         3.0 * kCK2 * kCK2 * (13.0 - 78.0 * cosSqInc + 137.0 * cos4Inc) /
+             (16.0 * recoveredSemiMajorAxisFourth * betaSeventh));
+
+    mCommonConsts.argPerigeeDot =
+        recoveredMeanMotion *
+        (-3.0 * kCK2 * (1.0 - 5.0 * cosSqInc) / (2.0 * recoveredSemiMajorAxisSquared * betaFourth) +
+         3.0 * kCK2 * kCK2 * (7.0 - 114.0 * cosSqInc + 395.0 * cos4Inc) /
+             (16.0 * recoveredSemiMajorAxisFourth * betaEighth) +
+         5.0 * kCK4 * (3.0 - 36.0 * cosSqInc + 49.0 * cos4Inc) / (4.0 * recoveredSemiMajorAxisFourth * betaEighth));
+
+    const double raanDotFirstOrder = -3.0 * kCK2 * recoveredMeanMotion * mCommonConsts.cosInclination0 /
+                                     (recoveredSemiMajorAxisSquared * betaFourth);
     mCommonConsts.raanDot =
-        raanDotFirstOrder + (0.5 * ck2Term2 * (4.0 - 19.0 * cosSqInc) + 2.0 * ck4Term * (3.0 - 7.0 * cosSqInc)) *
-                                mCommonConsts.cosInclination0;
+        raanDotFirstOrder +
+        recoveredMeanMotion * mCommonConsts.cosInclination0 *
+            (3.0 * kCK2 * kCK2 * (4.0 - 19.0 * cosSqInc) / (2.0 * recoveredSemiMajorAxisFourth * betaEighth) +
+             5.0 * kCK4 * (3.0 - 7.0 * cosSqInc) / (2.0 * recoveredSemiMajorAxisFourth * betaEighth));
     mCommonConsts.raanDragCoeff = 3.5 * oneMinusEccSq * raanDotFirstOrder * mCommonConsts.dragCoeff;
     mCommonConsts.t2Coeff = 1.5 * mCommonConsts.dragCoeff;
 
