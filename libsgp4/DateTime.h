@@ -14,33 +14,31 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
+#include "TimeSpan.h"
+#include "Util.h"
+
+#include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <chrono>
-#include <algorithm>
-#include <cassert>
-#include "TimeSpan.h"
-#include "Util.h"
 
 namespace libsgp4
 {
 namespace
 {
-    static int daysInMonth[2][13] = {
+    static int kDAYS_IN_MONTH[2][13] = {
         //  1   2   3   4   5   6   7   8   9   10  11  12
         {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-        {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-    };
-    static int cumulDaysInMonth[2][13] = {
+        {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
+    static int kCUMUL_DAYS_IN_MONTH[2][13] = {
         //  1  2   3   4   5    6    7    8    9    10   11   12
         {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
-        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
-    };
-}
+        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}};
+} // namespace
 
 /**
  * @brief Represents an instance in time.
@@ -62,7 +60,7 @@ public:
      * @param[in] ticks raw tick value
      */
     explicit DateTime(int64_t ticks)
-        : m_encoded(ticks)
+        : mEncoded(ticks)
     {
     }
 
@@ -73,8 +71,7 @@ public:
      */
     DateTime(unsigned int year, double doy)
     {
-        m_encoded = TimeSpan(
-                static_cast<int64_t>(AbsoluteDays(year, doy) * TicksPerDay)).Ticks();
+        mEncoded = TimeSpan(static_cast<int64_t>(AbsoluteDays(year, doy) * kTICKS_PER_DAY)).Ticks();
     }
 
     /**
@@ -127,28 +124,14 @@ public:
      * @param[in] second the second
      * @param[in] microsecond the microsecond
      */
-    void Initialise(int year,
-            int month,
-            int day,
-            int hour,
-            int minute,
-            int second,
-            int microsecond)
+    void Initialise(int year, int month, int day, int hour, int minute, int second, int microsecond)
     {
-        if (!IsValidYearMonthDay(year, month, day) ||
-                hour < 0 || hour > 23 ||
-                minute < 0 || minute > 59 ||
-                second < 0 || second > 59 ||
-                microsecond < 0 || microsecond > 999999)
+        if (!IsValidYearMonthDay(year, month, day) || hour < 0 || hour > 23 || minute < 0 || minute > 59 ||
+            second < 0 || second > 59 || microsecond < 0 || microsecond > 999999)
         {
             assert(false && "Invalid date");
         }
-        m_encoded = TimeSpan(
-                AbsoluteDays(year, month, day),
-                hour,
-                minute,
-                second,
-                microsecond).Ticks();
+        mEncoded = TimeSpan(AbsoluteDays(year, month, day), hour, minute, second, microsecond).Ticks();
     }
 
     /**
@@ -161,15 +144,13 @@ public:
         using namespace std::chrono;
         if (useMicroseconds)
         {
-            return DateTime(UnixEpoch +
-                    duration_cast<microseconds>(system_clock::now()
-                    .time_since_epoch()).count() * TicksPerMicrosecond);
+            return DateTime(kUNIX_EPOCH + duration_cast<microseconds>(system_clock::now().time_since_epoch()).count() *
+                                              kTICKS_PER_MICROSECOND);
         }
         else
         {
-            return DateTime(UnixEpoch +
-                duration_cast<seconds>(system_clock::now()
-                    .time_since_epoch()).count() * TicksPerSecond);
+            return DateTime(kUNIX_EPOCH +
+                            duration_cast<seconds>(system_clock::now().time_since_epoch()).count() * kTICKS_PER_SECOND);
         }
     }
 
@@ -219,13 +200,13 @@ public:
                 valid = false;
             }
         }
-        else 
+        else
         {
             valid = false;
         }
         return valid;
     }
-    
+
     /**
      * Check whether the year/month/day is valid
      * @param[in] year the year to check
@@ -262,16 +243,16 @@ public:
         {
             assert(false && "Invalid year and month");
         }
-        
+
         const int* daysInMonthPtr;
 
         if (IsLeapYear(year))
         {
-            daysInMonthPtr = daysInMonth[1];
+            daysInMonthPtr = kDAYS_IN_MONTH[1];
         }
         else
         {
-            daysInMonthPtr = daysInMonth[0];
+            daysInMonthPtr = kDAYS_IN_MONTH[0];
         }
 
         return daysInMonthPtr[month];
@@ -295,11 +276,11 @@ public:
 
         if (IsLeapYear(year))
         {
-            daysThisYear += cumulDaysInMonth[1][month];
+            daysThisYear += kCUMUL_DAYS_IN_MONTH[1][month];
         }
         else
         {
-            daysThisYear += cumulDaysInMonth[0][month];
+            daysThisYear += kCUMUL_DAYS_IN_MONTH[0][month];
         }
 
         return daysThisYear;
@@ -318,10 +299,7 @@ public:
          * - minus prior century years
          * + plus prior years divisible by 400 days
          */
-        int64_t daysSoFar = 365 * previousYear
-            + previousYear / 4LL
-            - previousYear / 100LL
-            + previousYear / 400LL;
+        int64_t daysSoFar = 365 * previousYear + previousYear / 4LL - previousYear / 100LL + previousYear / 400LL;
 
         return static_cast<double>(daysSoFar) + doy - 1.0;
     }
@@ -337,18 +315,15 @@ public:
          * - minus prior century years
          * + plus prior years divisible by 400 days
          */
-        int result = DayOfYear(year, month, day) - 1
-            + 365 * previousYear
-            + previousYear / 4
-            - previousYear / 100
-            + previousYear / 400;
+        int result = DayOfYear(year, month, day) - 1 + 365 * previousYear + previousYear / 4 - previousYear / 100 +
+                     previousYear / 400;
 
         return result;
     }
 
     TimeSpan TimeOfDay() const
     {
-        return TimeSpan(Ticks() % TicksPerDay);
+        return TimeSpan(Ticks() % kTICKS_PER_DAY);
     }
 
     int DayOfWeek() const
@@ -363,23 +338,23 @@ public:
          * 5 Friday
          * 6 Saturday
          */
-        return static_cast<int>(((m_encoded / TicksPerDay) + 1LL) % 7LL);
+        return static_cast<int>(((mEncoded / kTICKS_PER_DAY) + 1LL) % 7LL);
     }
 
     bool Equals(const DateTime& dt) const
     {
-        return (m_encoded == dt.m_encoded);
+        return (mEncoded == dt.mEncoded);
     }
 
     int Compare(const DateTime& dt) const
     {
         int ret = 0;
 
-        if (m_encoded < dt.m_encoded)
+        if (mEncoded < dt.mEncoded)
         {
             return -1;
         }
-        else if (m_encoded > dt.m_encoded)
+        else if (mEncoded > dt.mEncoded)
         {
             return 1;
         }
@@ -387,12 +362,12 @@ public:
         return ret;
     }
 
-    DateTime AddYears(const int years) const
+    DateTime AddYears(int years) const
     {
         return AddMonths(years * 12);
     }
 
-    DateTime AddMonths(const int months) const
+    DateTime AddMonths(int months) const
     {
         int year;
         int month;
@@ -428,35 +403,35 @@ public:
         return AddTicks(t.Ticks());
     }
 
-    DateTime AddDays(const double days) const
+    DateTime AddDays(double days) const
     {
         return AddMicroseconds(days * 86400000000.0);
     }
 
-    DateTime AddHours(const double hours) const
+    DateTime AddHours(double hours) const
     {
         return AddMicroseconds(hours * 3600000000.0);
     }
 
-    DateTime AddMinutes(const double minutes) const
+    DateTime AddMinutes(double minutes) const
     {
         return AddMicroseconds(minutes * 60000000.0);
     }
 
-    DateTime AddSeconds(const double seconds) const
+    DateTime AddSeconds(double seconds) const
     {
         return AddMicroseconds(seconds * 1000000.0);
     }
 
-    DateTime AddMicroseconds(const double microseconds) const
+    DateTime AddMicroseconds(double microseconds) const
     {
-        auto ticks = static_cast<int64_t>(microseconds * TicksPerMicrosecond);
+        auto ticks = static_cast<int64_t>(microseconds * kTICKS_PER_MICROSECOND);
         return AddTicks(ticks);
     }
 
     DateTime AddTicks(int64_t ticks) const
     {
-        return DateTime(m_encoded + ticks);
+        return DateTime(mEncoded + ticks);
     }
 
     /**
@@ -465,13 +440,13 @@ public:
      */
     int64_t Ticks() const
     {
-        return m_encoded;
+        return mEncoded;
     }
 
     void FromTicks(int& year, int& month, int& day) const
     {
-        int totalDays = static_cast<int>(m_encoded / TicksPerDay);
-        
+        int totalDays = static_cast<int>(mEncoded / kTICKS_PER_DAY);
+
         /*
          * number of 400 year cycles
          */
@@ -511,18 +486,18 @@ public:
          * find year
          */
         year = (num400 * 400) + (num100 * 100) + (num4 * 4) + num1 + 1;
-        
+
         /*
          * convert day of year to month/day
          */
         const int* daysInMonthPtr;
         if (IsLeapYear(year))
         {
-            daysInMonthPtr = daysInMonth[1];
+            daysInMonthPtr = kDAYS_IN_MONTH[1];
         }
         else
         {
-            daysInMonthPtr = daysInMonth[0];
+            daysInMonthPtr = kDAYS_IN_MONTH[0];
         }
 
         month = 1;
@@ -567,7 +542,7 @@ public:
      */
     int Hour() const
     {
-        return static_cast<int>(m_encoded % TicksPerDay / TicksPerHour);
+        return static_cast<int>(mEncoded % kTICKS_PER_DAY / kTICKS_PER_HOUR);
     }
 
     /**
@@ -576,7 +551,7 @@ public:
      */
     int Minute() const
     {
-        return static_cast<int>(m_encoded % TicksPerHour / TicksPerMinute);
+        return static_cast<int>(mEncoded % kTICKS_PER_HOUR / kTICKS_PER_MINUTE);
     }
 
     /**
@@ -585,7 +560,7 @@ public:
      */
     int Second() const
     {
-        return static_cast<int>(m_encoded % TicksPerMinute / TicksPerSecond);
+        return static_cast<int>(mEncoded % kTICKS_PER_MINUTE / kTICKS_PER_SECOND);
     }
 
     /**
@@ -594,7 +569,7 @@ public:
      */
     int Microsecond() const
     {
-        return static_cast<int>(m_encoded % TicksPerSecond / TicksPerMicrosecond);
+        return static_cast<int>(mEncoded % kTICKS_PER_SECOND / kTICKS_PER_MICROSECOND);
     }
 
     /**
@@ -616,11 +591,11 @@ public:
         // julian date of previous midnight
         double jd0 = floor(ToJulian() + 0.5) - 0.5;
         // julian centuries since epoch
-        double t   = (jd0 - 2451545.0) / 36525.0;
+        double t = (jd0 - 2451545.0) / 36525.0;
         double jdf = ToJulian() - jd0;
 
-        double gt  = 24110.54841 + t * (8640184.812866 + t * (0.093104 - t * 6.2E-6));
-        gt  += jdf * 1.00273790935 * 86400.0;
+        double gt = 24110.54841 + t * (8640184.812866 + t * (0.093104 - t * 6.2E-6));
+        gt += jdf * 1.00273790935 * 86400.0;
 
         // 360.0 / 86400.0 = 1.0 / 240.0
         return Util::WrapTwoPI(Util::DegreesToRadians(gt / 240.0));
@@ -651,7 +626,7 @@ public:
      * @param[in] lon observers longitude
      * @returns the local mean sidereal time
      */
-    double ToLocalMeanSiderealTime(const double lon) const
+    double ToLocalMeanSiderealTime(double lon) const
     {
         return Util::WrapTwoPI(ToGreenwichSiderealTime() + lon);
     }
@@ -675,7 +650,7 @@ public:
     }
 
 private:
-    int64_t m_encoded{};
+    int64_t mEncoded{};
 };
 
 inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)
@@ -683,7 +658,7 @@ inline std::ostream& operator<<(std::ostream& strm, const DateTime& dt)
     return strm << dt.ToString();
 }
 
-inline DateTime operator+(const DateTime& dt, TimeSpan ts)
+inline DateTime operator+(const DateTime& dt, const TimeSpan& ts)
 {
     return DateTime(dt.Ticks() + ts.Ticks());
 }

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "CoordGeodetic.h"
-#include "Vector.h"
 #include "DateTime.h"
+#include "Vector.h"
 
 namespace libsgp4
 {
@@ -30,17 +29,13 @@ namespace libsgp4
 class Eci
 {
 public:
-
     /**
      * @param[in] dt the date to be used for this position
      * @param[in] latitude the latitude in degrees
      * @param[in] longitude the longitude in degrees
      * @param[in] altitude the altitude in kilometers
      */
-    Eci(const DateTime& dt,
-            const double latitude,
-            const double longitude,
-            const double altitude)
+    Eci(const DateTime& dt, double latitude, double longitude, double altitude)
     {
         ToEci(dt, CoordGeodetic(latitude, longitude, altitude));
     }
@@ -58,9 +53,9 @@ public:
      * @param[in] dt the date to be used for this position
      * @param[in] position the position
      */
-    Eci(const DateTime &dt, const Vector &position)
-        : m_dt(dt)
-        , m_position(position)
+    Eci(const DateTime& dt, const Vector& position)
+        : mDt(dt)
+        , mPosition(position)
     {
     }
 
@@ -69,10 +64,10 @@ public:
      * @param[in] position the position
      * @param[in] velocity the velocity
      */
-    Eci(const DateTime &dt, const Vector &position, const Vector &velocity)
-        : m_dt(dt)
-        , m_position(position)
-        , m_velocity(velocity)
+    Eci(const DateTime& dt, const Vector& position, const Vector& velocity)
+        : mDt(dt)
+        , mPosition(position)
+        , mVelocity(velocity)
     {
     }
 
@@ -83,7 +78,7 @@ public:
      */
     bool operator==(const DateTime& dt) const
     {
-        return m_dt == dt;
+        return mDt == dt;
     }
 
     /**
@@ -93,7 +88,7 @@ public:
      */
     bool operator!=(const DateTime& dt) const
     {
-        return m_dt != dt;
+        return mDt != dt;
     }
 
     /**
@@ -111,7 +106,7 @@ public:
      */
     Vector Position() const
     {
-        return m_position;
+        return mPosition;
     }
 
     /**
@@ -119,7 +114,7 @@ public:
      */
     Vector Velocity() const
     {
-        return m_velocity;
+        return mVelocity;
     }
 
     /**
@@ -127,7 +122,7 @@ public:
      */
     DateTime GetDateTime() const
     {
-        return m_dt;
+        return mDt;
     }
 
     /**
@@ -138,9 +133,9 @@ public:
 private:
     void ToEci(const DateTime& dt, const CoordGeodetic& geo);
 
-    DateTime m_dt;
-    Vector m_position;
-    Vector m_velocity;
+    DateTime mDt;
+    Vector mPosition;
+    Vector mVelocity;
 };
 
 } // namespace libsgp4

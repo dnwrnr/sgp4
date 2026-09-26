@@ -14,5 +14,27 @@
  * limitations under the License.
  */
 
+#include "Util.h"
 
-#include "Vector.h"
+#include <algorithm>
+#include <functional>
+#include <locale>
+
+namespace libsgp4::Util
+{
+void TrimLeft(std::string& s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c) { return std::isgraph(c) != 0; }));
+}
+
+void TrimRight(std::string& s)
+{
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char c) { return std::isgraph(c) != 0; }).base(), s.end());
+}
+
+void Trim(std::string& s)
+{
+    TrimLeft(s);
+    TrimRight(s);
+}
+} // namespace libsgp4::Util

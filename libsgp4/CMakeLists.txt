@@ -1,21 +1,21 @@
 set(SGP4_SOURCES
-    CoordGeodetic.cc
-    CoordTopocentric.cc
-    CsvTleLoader.cc
-    DateTime.cc
-    DecayedException.cc
-    Eci.cc
-    Globals.cc
-    Observer.cc
-    OrbitalElements.cc
-    SGP4.cc
-    SatelliteException.cc
-    SolarPosition.cc
-    TimeSpan.cc
-    Tle.cc
-    TleException.cc
-    Util.cc
-    Vector.cc)
+    CoordGeodetic.cpp
+    CoordTopocentric.cpp
+    CsvTleLoader.cpp
+    DateTime.cpp
+    DecayedException.cpp
+    Eci.cpp
+    Globals.cpp
+    Observer.cpp
+    OrbitalElements.cpp
+    SGP4.cpp
+    SatelliteException.cpp
+    SolarPosition.cpp
+    TimeSpan.cpp
+    Tle.cpp
+    TleException.cpp
+    Util.cpp
+    Vector.cpp)
 
 set(SGP4_HEADERS
     CoordGeodetic.h
@@ -65,7 +65,8 @@ foreach(target sgp4 sgp4s)
     else()
         target_compile_options(${target} PRIVATE
             -Wall -Wextra -Wshadow -Wnon-virtual-dtor
-            -pedantic -Wno-long-long -Wcast-align -Wsign-conversion)
+            -pedantic -Wno-long-long -Wcast-align -Wsign-conversion
+            -fno-math-errno)
     endif()
 endforeach()
 

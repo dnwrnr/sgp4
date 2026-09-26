@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-
 #include "OrbitalElements.h"
 
+#include "SatelliteException.h"
 #include "Tle.h"
+
+#include <cmath>
 
 namespace libsgp4
 {
@@ -27,14 +29,30 @@ OrbitalElements::OrbitalElements(const Tle& tle)
     /*
      * extract and format tle data
      */
-    mean_anomoly_ = tle.MeanAnomaly(false);
-    ascending_node_ = tle.RightAscendingNode(false);
-    argument_perigee_ = tle.ArgumentPerigee(false);
-    eccentricity_ = tle.Eccentricity();
-    inclination_ = tle.Inclination(false);
-    mean_motion_ = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
-    bstar_ = tle.BStar();
-    epoch_ = tle.Epoch();
+    mMeanAnomaly = tle.MeanAnomaly(false);
+    mAscendingNode = tle.RightAscendingNode(false);
+    mArgumentPerigee = tle.ArgumentPerigee(false);
+    mEccentricity = tle.Eccentricity();
+    mInclination = tle.Inclination(false);
+    mMeanMotion = tle.MeanMotion() * kTWOPI / kMINUTES_PER_DAY;
+    mBstar = tle.BStar();
+    mEpoch = tle.Epoch();
+
+    /*
+     * validate input elements
+     */
+    if (!std::isfinite(MeanMotion()) || !(MeanMotion() > 0.0))
+    {
+        throw SatelliteException("Error: (mean motion <= 0.0 or not finite)");
+    }
+    if (!std::isfinite(Eccentricity()) || Eccentricity() < 0.0 || Eccentricity() > 0.999)
+    {
+        throw SatelliteException("Error: (eccentricity out of range or not finite)");
+    }
+    if (!std::isfinite(Inclination()) || Inclination() < 0.0 || Inclination() > kPI)
+    {
+        throw SatelliteException("Error: (inclination out of range or not finite)");
+    }
 
     /*
      * recover original mean motion (xnodp) and semimajor axis (aodp)
@@ -52,19 +70,25 @@ OrbitalElements::OrbitalElements(const Tle& tle)
     const double a0 = a1 * (1.0 - del1 * (1.0 / 3.0 + del1 * (1.0 + del1 * 134.0 / 81.0)));
     const double del0 = temp / (a0 * a0);
 
-    recovered_mean_motion_ = MeanMotion() / (1.0 + del0);
+    mRecoveredMeanMotion = MeanMotion() / (1.0 + del0);
     /*
      * alternative way to calculate
      * doesnt affect final results
-     * recovered_semi_major_axis_ = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
+     * mRecoveredSemiMajorAxis = pow(XKE / RecoveredMeanMotion(), TWOTHIRD);
      */
-    recovered_semi_major_axis_ = a0 / (1.0 - del0);
+    mRecoveredSemiMajorAxis = a0 / (1.0 - del0);
+
+    if (!std::isfinite(a1) || !std::isfinite(del1) || !std::isfinite(a0) || !std::isfinite(del0) ||
+        !std::isfinite(mRecoveredMeanMotion) || !std::isfinite(mRecoveredSemiMajorAxis))
+    {
+        throw SatelliteException("Error: (recovered orbital elements not finite)");
+    }
 
     /*
      * find perigee and period
      */
-    perigee_ = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
-    period_ = kTWOPI / RecoveredMeanMotion();
+    mPerigee = (RecoveredSemiMajorAxis() * (1.0 - Eccentricity()) - kAE) * kXKMPER;
+    mPeriod = kTWOPI / RecoveredMeanMotion();
 }
 
 } // namespace libsgp4

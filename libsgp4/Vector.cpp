@@ -14,30 +14,4 @@
  * limitations under the License.
  */
 
-#pragma once
-
-#include <stdexcept>
-#include <string>
-
-namespace libsgp4
-{
-
-/**
- * @brief The exception that the Tle class throws on an error.
- *
- * The exception that the Tle decoder will throw on an error.
- */
-class TleException : public std::runtime_error
-{
-public:
-    /**
-     * Constructor
-     * @param message Exception message
-     */
-    explicit TleException(const char* message)
-        : runtime_error(message)
-    {
-    }
-};
-
-} // namespace libsgp4
+#include "Vector.h"

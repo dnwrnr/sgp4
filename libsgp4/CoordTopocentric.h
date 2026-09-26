@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "Util.h"
 
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -46,46 +45,14 @@ public:
      * @param[in] az azimuth in radians
      * @param[in] el elevation in radians
      * @param[in] rnge range in kilometers
-     * @param[in] rnge_rate range rate in kilometers per second
+     * @param[in] rngeRate range rate in kilometers per second
      */
-    CoordTopocentric(
-            double az,
-            double el,
-            double rnge,
-            double rnge_rate)
+    CoordTopocentric(double az, double el, double rnge, double rngeRate)
         : azimuth(az)
         , elevation(el)
         , range(rnge)
-        , range_rate(rnge_rate)
+        , rangeRate(rngeRate)
     {
-    }
-
-    /**
-     * Copy constructor
-     * @param[in] topo object to copy from
-     */
-    CoordTopocentric(const CoordTopocentric& topo)
-    {
-        azimuth = topo.azimuth;
-        elevation = topo.elevation;
-        range = topo.range;
-        range_rate = topo.range_rate;
-    }
-
-    /**
-     * Assignment operator
-     * @param[in] topo object to copy from
-     */
-    CoordTopocentric& operator=(const CoordTopocentric& topo)
-    {
-        if (this != &topo)
-        {
-            azimuth = topo.azimuth;
-            elevation = topo.elevation;
-            range = topo.range;
-            range_rate = topo.range_rate;
-        }
-        return *this;
     }
 
     /**
@@ -99,7 +66,7 @@ public:
         ss << "Az: " << std::setw(8) << Util::RadiansToDegrees(azimuth);
         ss << ", El: " << std::setw(8) << Util::RadiansToDegrees(elevation);
         ss << ", Rng: " << std::setw(10) << range;
-        ss << ", Rng Rt: " << std::setw(7) << range_rate;
+        ss << ", Rng Rt: " << std::setw(7) << rangeRate;
         return ss.str();
     }
 
@@ -110,9 +77,8 @@ public:
     /** range in kilometers */
     double range{};
     /** range rate in kilometers per second */
-    double range_rate{};
+    double rangeRate{};
 };
-
 
 inline std::ostream& operator<<(std::ostream& strm, const CoordTopocentric& t)
 {

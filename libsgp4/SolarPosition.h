@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "DateTime.h"
@@ -34,7 +33,7 @@ public:
     Eci FindPosition(const DateTime& dt);
 
 private:
-    double Delta_ET(double year) const;
+    double DeltaEt(double year) const;
 };
 
 } // namespace libsgp4

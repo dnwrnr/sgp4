@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-
-#include <libsgp4/CoordTopocentric.h>
+#include <iostream>
 #include <libsgp4/CoordGeodetic.h>
+#include <libsgp4/CoordTopocentric.h>
 #include <libsgp4/Observer.h>
 #include <libsgp4/SGP4.h>
-
-#include <iostream>
 
 int main()
 {
     libsgp4::Observer obs(51.507406923983446, -0.12773752212524414, 0.05);
     libsgp4::Tle tle = libsgp4::Tle("UK-DMC 2                ",
-        "1 35683U 09041C   12289.23158813  .00000484  00000-0  89219-4 0  5863",
-        "2 35683  98.0221 185.3682 0001499 100.5295 259.6088 14.69819587172294");
+                                    "1 35683U 09041C   12289.23158813  .00000484  00000-0  89219-4 0  5863",
+                                    "2 35683  98.0221 185.3682 0001499 100.5295 259.6088 14.69819587172294");
     libsgp4::SGP4 sgp4(tle);
 
     std::cout << tle << std::endl;

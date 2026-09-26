@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
-#include "Util.h"
 #include "DateTime.h"
 #include "TleException.h"
+#include "Util.h"
 
 namespace libsgp4
 {
@@ -34,28 +33,28 @@ class Tle
 public:
     /**
      * @details Initialise given the two lines of a tle
-     * @param[in] line_one Tle line one
-     * @param[in] line_two Tle line two
+     * @param[in] lineOne Tle line one
+     * @param[in] lineTwo Tle line two
      */
-    Tle(std::string line_one, std::string line_two)
-        : line_one_(std::move(line_one))
-        , line_two_(std::move(line_two))
+    Tle(std::string lineOne, std::string lineTwo)
+        : mLineOne(std::move(lineOne))
+        , mLineTwo(std::move(lineTwo))
     {
-        Initialize();
+        Initialise();
     }
 
     /**
      * @details Initialise given the satellite name and the two lines of a tle
      * @param[in] name Satellite name
-     * @param[in] line_one Tle line one
-     * @param[in] line_two Tle line two
+     * @param[in] lineOne Tle line one
+     * @param[in] lineTwo Tle line two
      */
-    Tle(std::string name, std::string line_one, std::string line_two)
-        : name_(std::move(name))
-        , line_one_(std::move(line_one))
-        , line_two_(std::move(line_two))
+    Tle(std::string name, std::string lineOne, std::string lineTwo)
+        : mName(std::move(name))
+        , mLineOne(std::move(lineOne))
+        , mLineTwo(std::move(lineTwo))
     {
-        Initialize();
+        Initialise();
     }
 
     /**
@@ -67,37 +66,12 @@ public:
      *   EPHEMERIS_TYPE,CLASSIFICATION_TYPE,NORAD_CAT_ID,ELEMENT_SET_NO,
      *   REV_AT_EPOCH,BSTAR,MEAN_MOTION_DOT,MEAN_MOTION_DDOT
      *
-     * @param csv_line A single CSV data line (no header)
+     * @param csvLine A single CSV data line (no header)
      * @returns A Tle object with all orbital elements populated.
      *          Line1() and Line2() will return empty strings.
      * @throws TleException if the line is malformed or has wrong field count
      */
-    static Tle FromCsv(const std::string& csv_line);
-
-    /**
-     * Copy constructor
-     * @param[in] tle Tle object to copy from
-     */
-    Tle(const Tle& tle)
-    {
-        name_ = tle.name_;
-        line_one_ = tle.line_one_;
-        line_two_ = tle.line_two_;
-
-        norad_number_ = tle.norad_number_;
-        int_designator_ = tle.int_designator_;
-        epoch_ = tle.epoch_;
-        mean_motion_dt2_ = tle.mean_motion_dt2_;
-        mean_motion_ddt6_ = tle.mean_motion_ddt6_;
-        bstar_ = tle.bstar_;
-        inclination_ = tle.inclination_;
-        right_ascending_node_ = tle.right_ascending_node_;
-        eccentricity_ = tle.eccentricity_;
-        argument_perigee_ = tle.argument_perigee_;
-        mean_anomaly_ = tle.mean_anomaly_;
-        mean_motion_ = tle.mean_motion_;
-        orbit_number_ = tle.orbit_number_;
-    }
+    static Tle FromCsv(const std::string& csvLine);
 
     /**
      * Get the satellite name
@@ -105,7 +79,7 @@ public:
      */
     std::string Name() const
     {
-        return name_;
+        return mName;
     }
 
     /**
@@ -114,7 +88,7 @@ public:
      */
     std::string Line1() const
     {
-        return line_one_;
+        return mLineOne;
     }
 
     /**
@@ -123,16 +97,21 @@ public:
      */
     std::string Line2() const
     {
-        return line_two_;
+        return mLineTwo;
     }
 
     /**
      * Get the norad number
-     * @returns the norad number
+     *
+     * Object numbers from 100000 upwards are written in the tle using the Alpha-5 format, which
+     * replaces the leading digit with a letter, so the returned number is always the full object
+     * number and never the truncated remainder. The letters I and O are not valid prefixes.
+     *
+     * @returns the norad number, in the range 0 to 339999
      */
     unsigned int NoradNumber() const
     {
-        return norad_number_;
+        return mNoradNumber;
     }
 
     /**
@@ -141,7 +120,7 @@ public:
      */
     std::string IntDesignator() const
     {
-        return int_designator_;
+        return mIntDesignator;
     }
 
     /**
@@ -150,7 +129,7 @@ public:
      */
     DateTime Epoch() const
     {
-        return epoch_;
+        return mEpoch;
     }
 
     /**
@@ -159,7 +138,7 @@ public:
      */
     double MeanMotionDt2() const
     {
-        return mean_motion_dt2_;
+        return mMeanMotionDt2;
     }
 
     /**
@@ -168,7 +147,7 @@ public:
      */
     double MeanMotionDdt6() const
     {
-        return mean_motion_ddt6_;
+        return mMeanMotionDdt6;
     }
 
     /**
@@ -177,40 +156,40 @@ public:
      */
     double BStar() const
     {
-        return bstar_;
+        return mBstar;
     }
 
     /**
      * Get the inclination
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the inclination
      */
-    double Inclination(bool in_degrees) const
+    double Inclination(bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return inclination_;
+            return mInclination;
         }
         else
         {
-            return Util::DegreesToRadians(inclination_);
+            return Util::DegreesToRadians(mInclination);
         }
     }
 
     /**
      * Get the right ascension of the ascending node
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the right ascension of the ascending node
      */
-    double RightAscendingNode(const bool in_degrees) const
+    double RightAscendingNode(bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return right_ascending_node_;
+            return mRightAscendingNode;
         }
         else
         {
-            return Util::DegreesToRadians(right_ascending_node_);
+            return Util::DegreesToRadians(mRightAscendingNode);
         }
     }
 
@@ -220,40 +199,40 @@ public:
      */
     double Eccentricity() const
     {
-        return eccentricity_;
+        return mEccentricity;
     }
 
     /**
      * Get the argument of perigee
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the argument of perigee
      */
-    double ArgumentPerigee(const bool in_degrees) const
+    double ArgumentPerigee(bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return argument_perigee_;
+            return mArgumentPerigee;
         }
         else
         {
-            return Util::DegreesToRadians(argument_perigee_);
+            return Util::DegreesToRadians(mArgumentPerigee);
         }
     }
 
     /**
      * Get the mean anomaly
-     * @param in_degrees Whether to return the value in degrees or radians
+     * @param inDegrees Whether to return the value in degrees or radians
      * @returns the mean anomaly
      */
-    double MeanAnomaly(const bool in_degrees) const
+    double MeanAnomaly(bool inDegrees) const
     {
-        if (in_degrees)
+        if (inDegrees)
         {
-            return mean_anomaly_;
+            return mMeanAnomaly;
         }
         else
         {
-            return Util::DegreesToRadians(mean_anomaly_);
+            return Util::DegreesToRadians(mMeanAnomaly);
         }
     }
 
@@ -263,7 +242,7 @@ public:
      */
     double MeanMotion() const
     {
-        return mean_motion_;
+        return mMeanMotion;
     }
 
     /**
@@ -272,7 +251,7 @@ public:
      */
     unsigned int OrbitNumber() const
     {
-        return orbit_number_;
+        return mOrbitNumber;
     }
 
     /**
@@ -283,7 +262,7 @@ public:
     {
         return TLE_LEN_LINE_DATA;
     }
-    
+
     /**
      * Dump this object to a string
      * @returns string
@@ -320,49 +299,48 @@ public:
 
 private:
     Tle(const std::string& name,
-        unsigned int norad_number,
-        const std::string& int_designator,
+        unsigned int noradNumber,
+        const std::string& intDesignator,
         const DateTime& epoch,
-        double mean_motion_dt2,
-        double mean_motion_ddt6,
+        double meanMotionDt2,
+        double meanMotionDdt6,
         double bstar,
         double inclination,
-        double right_ascending_node,
+        double rightAscendingNode,
         double eccentricity,
-        double argument_perigee,
-        double mean_anomaly,
-        double mean_motion,
-        unsigned int orbit_number);
+        double argumentPerigee,
+        double meanAnomaly,
+        double meanMotion,
+        unsigned int orbitNumber);
 
-    void Initialize();
+    void Initialise();
     static bool IsValidLineLength(const std::string& str);
     void ExtractInteger(const std::string& str, unsigned int& val);
-    void ExtractDouble(const std::string& str, int point_pos, double& val);
+    void ExtractDouble(const std::string& str, int pointPos, double& val);
     void ExtractExponential(const std::string& str, double& val);
 
 private:
-    std::string name_;
-    std::string line_one_;
-    std::string line_two_;
+    std::string mName;
+    std::string mLineOne;
+    std::string mLineTwo;
 
-    std::string int_designator_;
-    DateTime epoch_;
-    double mean_motion_dt2_{};
-    double mean_motion_ddt6_{};
-    double bstar_{};
-    double inclination_{};
-    double right_ascending_node_{};
-    double eccentricity_{};
-    double argument_perigee_{};
-    double mean_anomaly_{};
-    double mean_motion_{};
-    unsigned int norad_number_{};
-    unsigned int orbit_number_{};
+    std::string mIntDesignator;
+    DateTime mEpoch;
+    double mMeanMotionDt2{};
+    double mMeanMotionDdt6{};
+    double mBstar{};
+    double mInclination{};
+    double mRightAscendingNode{};
+    double mEccentricity{};
+    double mArgumentPerigee{};
+    double mMeanAnomaly{};
+    double mMeanMotion{};
+    unsigned int mNoradNumber{};
+    unsigned int mOrbitNumber{};
 
     static const unsigned int TLE_LEN_LINE_DATA = 69;
     static const unsigned int TLE_LEN_LINE_NAME = 22;
 };
-
 
 inline std::ostream& operator<<(std::ostream& strm, const Tle& t)
 {

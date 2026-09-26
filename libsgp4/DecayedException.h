@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "DateTime.h"
@@ -40,9 +39,9 @@ public:
      */
     DecayedException(const DateTime& dt, const Vector& pos, const Vector& vel)
         : runtime_error("Satellite decayed")
-        , _dt(dt)
-        , _pos(pos)
-        , _vel(vel)
+        , mDt(dt)
+        , mPos(pos)
+        , mVel(vel)
     {
     }
 
@@ -51,7 +50,7 @@ public:
      */
     DateTime Decayed() const
     {
-        return _dt;
+        return mDt;
     }
 
     /**
@@ -59,7 +58,7 @@ public:
      */
     Vector Position() const
     {
-        return _pos;
+        return mPos;
     }
 
     /**
@@ -67,13 +66,13 @@ public:
      */
     Vector Velocity() const
     {
-        return _vel;
+        return mVel;
     }
 
 private:
-    DateTime _dt;
-    Vector _pos;
-    Vector _vel;
+    DateTime mDt;
+    Vector mPos;
+    Vector mVel;
 };
 
 } // namespace libsgp4

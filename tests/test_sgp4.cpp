@@ -1,30 +1,24 @@
+#include <cmath>
 #include <gtest/gtest.h>
-#include <libsgp4/Tle.h>
-#include <libsgp4/SGP4.h>
 #include <libsgp4/DecayedException.h>
+#include <libsgp4/SGP4.h>
 #include <libsgp4/SatelliteException.h>
+#include <libsgp4/Tle.h>
+#include <limits>
 
 using namespace libsgp4;
 
-static const std::string TLE_LINE1_00005 =
-    "1 00005U 58002B   00179.78495062  .00000023  00000-0  28098-4 0  4753";
-static const std::string TLE_LINE2_00005 =
-    "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667";
+static const std::string TLE_LINE1_00005 = "1 00005U 58002B   00179.78495062  .00000023  00000-0  28098-4 0  4753";
+static const std::string TLE_LINE2_00005 = "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667";
 
-static const std::string TLE_LINE1_06251 =
-    "1 06251U 62025E   06176.82412014  .00008885  00000-0  12808-3 0  3985";
-static const std::string TLE_LINE2_06251 =
-    "2 06251  58.0579  54.0425 0030035 139.1568 221.1854 15.56387291  6774";
+static const std::string TLE_LINE1_06251 = "1 06251U 62025E   06176.82412014  .00008885  00000-0  12808-3 0  3985";
+static const std::string TLE_LINE2_06251 = "2 06251  58.0579  54.0425 0030035 139.1568 221.1854 15.56387291  6774";
 
-static const std::string TLE_LINE1_28872 =
-    "1 28872U 05037B   05333.02012661  .25992681  00000-0  24476-3 0  1534";
-static const std::string TLE_LINE2_28872 =
-    "2 28872  96.4736 157.9986 0303955 244.0492 110.6523 16.46015938 10708";
+static const std::string TLE_LINE1_28872 = "1 28872U 05037B   05333.02012661  .25992681  00000-0  24476-3 0  1534";
+static const std::string TLE_LINE2_28872 = "2 28872  96.4736 157.9986 0303955 244.0492 110.6523 16.46015938 10708";
 
-static const std::string TLE_LINE1_88888 =
-    "1 88888U          80275.98708465  .00073094  13844-3  66816-4 0    87";
-static const std::string TLE_LINE2_88888 =
-    "2 88888  72.8435 115.9689 0086731  52.6988 110.5714 16.05824518  1058";
+static const std::string TLE_LINE1_88888 = "1 88888U          80275.98708465  .00073094  13844-3  66816-4 0    87";
+static const std::string TLE_LINE2_88888 = "2 88888  72.8435 115.9689 0086731  52.6988 110.5714 16.05824518  1058";
 
 TEST(SGP4Basic, ConstructFromTle)
 {
@@ -70,21 +64,19 @@ TEST(SGP4Basic, FindPositionAtMultipleTimes)
     SGP4 model(tle);
 
     double times[] = {0.0, 360.0, 720.0, 1080.0, 1440.0};
-    double expected_pos[][3] = {
-        {7022.46529267, -1400.08296756, 0.03995155},
-        {-7154.03120202, -3783.17682504, -3536.19412294},
-        {-7134.59340120, 6531.68641334, 3260.27186483},
-        {5568.53901181, 4492.06992591, 3863.87641983},
-        {-938.55923943, -6268.18748832, -4294.02924751}
-    };
+    double expectedPos[][3] = {{7022.46529267, -1400.08296756, 0.03995155},
+                               {-7154.03120202, -3783.17682504, -3536.19412294},
+                               {-7134.59340120, 6531.68641334, 3260.27186483},
+                               {5568.53901181, 4492.06992591, 3863.87641983},
+                               {-938.55923943, -6268.18748832, -4294.02924751}};
 
     for (int i = 0; i < 5; i++)
     {
         Eci eci = model.FindPosition(times[i]);
         Vector pos = eci.Position();
-        EXPECT_NEAR(pos.x, expected_pos[i][0], 1e-3) << "at t=" << times[i];
-        EXPECT_NEAR(pos.y, expected_pos[i][1], 1e-3) << "at t=" << times[i];
-        EXPECT_NEAR(pos.z, expected_pos[i][2], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.x, expectedPos[i][0], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.y, expectedPos[i][1], 1e-3) << "at t=" << times[i];
+        EXPECT_NEAR(pos.z, expectedPos[i][2], 1e-3) << "at t=" << times[i];
     }
 }
 
@@ -227,4 +219,90 @@ TEST(SGP4VelocityMagnitude, Positive)
     double mag = vel.Magnitude();
     EXPECT_GT(mag, 0.0);
     EXPECT_LT(mag, 20.0);
+}
+
+TEST(SGP4Validation, FindPositionThrowsOnNanTsince)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    EXPECT_THROW(model.FindPosition(std::numeric_limits<double>::quiet_NaN()), SatelliteException);
+}
+
+TEST(SGP4Validation, FindPositionThrowsOnInfTsince)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    EXPECT_THROW(model.FindPosition(std::numeric_limits<double>::infinity()), SatelliteException);
+    EXPECT_THROW(model.FindPosition(-std::numeric_limits<double>::infinity()), SatelliteException);
+}
+
+TEST(SGP4Validation, FindPositionLargeTsinceFinite)
+{
+    Tle tle(TLE_LINE1_00005, TLE_LINE2_00005);
+    SGP4 model(tle);
+
+    Eci eci = model.FindPosition(1.0e9);
+    Vector pos = eci.Position();
+    Vector vel = eci.Velocity();
+
+    EXPECT_TRUE(std::isfinite(pos.x));
+    EXPECT_TRUE(std::isfinite(pos.y));
+    EXPECT_TRUE(std::isfinite(pos.z));
+    EXPECT_TRUE(std::isfinite(vel.x));
+    EXPECT_TRUE(std::isfinite(vel.y));
+    EXPECT_TRUE(std::isfinite(vel.z));
+}
+
+TEST(SGP4Validation, ZeroMeanMotionThrows)
+{
+    std::string line2 = TLE_LINE2_00005;
+    line2.replace(52, 11, "00.00000000");
+    Tle tle(TLE_LINE1_00005, line2);
+
+    EXPECT_THROW(SGP4 model(tle), SatelliteException);
+}
+
+TEST(SGP4Validation, DeepSpaceLargeTsinceFinite)
+{
+    std::string line1 = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
+    std::string line2 = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
+    Tle tle(line1, line2);
+    SGP4 model(tle);
+
+    Eci eci = model.FindPosition(1.0e6);
+    Vector pos = eci.Position();
+
+    EXPECT_TRUE(std::isfinite(pos.x));
+    EXPECT_TRUE(std::isfinite(pos.y));
+    EXPECT_TRUE(std::isfinite(pos.z));
+    EXPECT_GT(pos.Magnitude(), 1000.0);
+}
+
+TEST(SGP4Alpha5, PropagationUnaffectedBySatNum)
+{
+    const std::string alpha5Line1 = TLE_LINE1_00005.substr(0, 2) + "E8493" + TLE_LINE1_00005.substr(7);
+    const std::string alpha5Line2 = TLE_LINE2_00005.substr(0, 2) + "E8493" + TLE_LINE2_00005.substr(7);
+
+    Tle alpha5Tle(alpha5Line1, alpha5Line2);
+    ASSERT_EQ(alpha5Tle.NoradNumber(), 148493u);
+
+    SGP4 alpha5Model(alpha5Tle);
+    SGP4 numericModel(Tle(TLE_LINE1_00005, TLE_LINE2_00005));
+
+    double times[] = {0.0, 360.0, 720.0, 1440.0};
+
+    for (double tsince : times)
+    {
+        Eci alpha5Eci = alpha5Model.FindPosition(tsince);
+        Eci numericEci = numericModel.FindPosition(tsince);
+
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().x, numericEci.Position().x);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().y, numericEci.Position().y);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().z, numericEci.Position().z);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().x, numericEci.Velocity().x);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().y, numericEci.Velocity().y);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().z, numericEci.Velocity().z);
+    }
 }

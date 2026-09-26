@@ -1,0 +1,3 @@
+* text=auto
+*.TLE text eol=lf
+*.csv text eol=lf

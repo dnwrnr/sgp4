@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include "Util.h"
 
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -44,15 +43,11 @@ public:
      * @param[in] lat the latitude (degrees by default)
      * @param[in] lon the longitude (degrees by default)
      * @param[in] alt the altitude in kilometers
-     * @param[in] is_radians whether the latitude/longitude is in radians
+     * @param[in] isRadians whether the latitude/longitude is in radians
      */
-    CoordGeodetic(
-            double lat,
-            double lon,
-            double alt,
-            bool is_radians = false)
+    CoordGeodetic(double lat, double lon, double alt, bool isRadians = false)
     {
-        if (is_radians)
+        if (isRadians)
         {
             latitude = lat;
             longitude = lon;
@@ -63,32 +58,6 @@ public:
             longitude = Util::DegreesToRadians(lon);
         }
         altitude = alt;
-    }
-
-    /**
-     * Copy constructor
-     * @param[in] geo object to copy from
-     */
-    CoordGeodetic(const CoordGeodetic& geo)
-    {
-        latitude = geo.latitude;
-        longitude = geo.longitude;
-        altitude = geo.altitude;
-    }
-
-    /**
-     * Assignment operator
-     * @param[in] geo object to copy from
-     */
-    CoordGeodetic& operator=(const CoordGeodetic& geo)
-    {
-        if (this != &geo)
-        {
-            latitude = geo.latitude;
-            longitude = geo.longitude;
-            altitude = geo.altitude;
-        }
-        return *this;
     }
 
     /**

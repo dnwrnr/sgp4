@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
-#include "Util.h"
 #include "DateTime.h"
+#include "Util.h"
 
 namespace libsgp4
 {
@@ -36,9 +35,9 @@ public:
     /*
      * XMO
      */
-    double MeanAnomoly() const
+    double MeanAnomaly() const
     {
-        return mean_anomoly_;
+        return mMeanAnomaly;
     }
 
     /*
@@ -46,7 +45,7 @@ public:
      */
     double AscendingNode() const
     {
-        return ascending_node_;
+        return mAscendingNode;
     }
 
     /*
@@ -54,7 +53,7 @@ public:
      */
     double ArgumentPerigee() const
     {
-        return argument_perigee_;
+        return mArgumentPerigee;
     }
 
     /*
@@ -62,7 +61,7 @@ public:
      */
     double Eccentricity() const
     {
-        return eccentricity_;
+        return mEccentricity;
     }
 
     /*
@@ -70,7 +69,7 @@ public:
      */
     double Inclination() const
     {
-        return inclination_;
+        return mInclination;
     }
 
     /*
@@ -78,7 +77,7 @@ public:
      */
     double MeanMotion() const
     {
-        return mean_motion_;
+        return mMeanMotion;
     }
 
     /*
@@ -86,7 +85,7 @@ public:
      */
     double BStar() const
     {
-        return bstar_;
+        return mBstar;
     }
 
     /*
@@ -94,7 +93,7 @@ public:
      */
     double RecoveredSemiMajorAxis() const
     {
-        return recovered_semi_major_axis_;
+        return mRecoveredSemiMajorAxis;
     }
 
     /*
@@ -102,7 +101,7 @@ public:
      */
     double RecoveredMeanMotion() const
     {
-        return recovered_mean_motion_;
+        return mRecoveredMeanMotion;
     }
 
     /*
@@ -110,7 +109,7 @@ public:
      */
     double Perigee() const
     {
-        return perigee_;
+        return mPerigee;
     }
 
     /*
@@ -118,7 +117,7 @@ public:
      */
     double Period() const
     {
-        return period_;
+        return mPeriod;
     }
 
     /*
@@ -126,22 +125,22 @@ public:
      */
     DateTime Epoch() const
     {
-        return epoch_;
+        return mEpoch;
     }
 
 private:
-    double mean_anomoly_;
-    double ascending_node_;
-    double argument_perigee_;
-    double eccentricity_;
-    double inclination_;
-    double mean_motion_;
-    double bstar_;
-    double recovered_semi_major_axis_;
-    double recovered_mean_motion_;
-    double perigee_;
-    double period_;
-    DateTime epoch_;
+    double mMeanAnomaly;
+    double mAscendingNode;
+    double mArgumentPerigee;
+    double mEccentricity;
+    double mInclination;
+    double mMeanMotion;
+    double mBstar;
+    double mRecoveredSemiMajorAxis;
+    double mRecoveredMeanMotion;
+    double mPerigee;
+    double mPeriod;
+    DateTime mEpoch;
 };
 
 } // namespace libsgp4

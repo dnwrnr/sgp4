@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-
 #include "Observer.h"
+
 #include "CoordTopocentric.h"
+#include "SatelliteException.h"
+
+#include <cmath>
 
 namespace libsgp4
 {
@@ -24,7 +27,7 @@ namespace libsgp4
 /*
  * calculate lookangle between the observer and the passed in Eci object
  */
-CoordTopocentric Observer::GetLookAngle(const Eci &eci)
+CoordTopocentric Observer::GetLookAngle(const Eci& eci)
 {
     /*
      * update the observers Eci to match the time of the Eci passed in
@@ -35,30 +38,37 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
     /*
      * calculate differences
      */
-    Vector range_rate = eci.Velocity() - m_eci.Velocity();
-    Vector range = eci.Position() - m_eci.Position();
+    Vector rangeRate = eci.Velocity() - mEci.Velocity();
+    Vector range = eci.Position() - mEci.Position();
+
+    if (!std::isfinite(range.x) || !std::isfinite(range.y) || !std::isfinite(range.z))
+    {
+        throw SatelliteException("Error: (range not finite)");
+    }
 
     range.w = range.Magnitude();
+
+    if (!(range.w > 0.0))
+    {
+        throw SatelliteException("Error: (range zero or not finite)");
+    }
 
     /*
      * Calculate Local Mean Sidereal Time for observers longitude
      */
-    double theta = eci.GetDateTime().ToLocalMeanSiderealTime(m_geo.longitude);
+    double theta = eci.GetDateTime().ToLocalMeanSiderealTime(mGeo.longitude);
 
-    double sin_lat = sin(m_geo.latitude);
-    double cos_lat = cos(m_geo.latitude);
-    double sin_theta = sin(theta);
-    double cos_theta = cos(theta);
+    double sinLat = sin(mGeo.latitude);
+    double cosLat = cos(mGeo.latitude);
+    double sinTheta = sin(theta);
+    double cosTheta = cos(theta);
 
-    double top_s = sin_lat * cos_theta * range.x
-        + sin_lat * sin_theta * range.y - cos_lat * range.z;
-    double top_e = -sin_theta * range.x
-        + cos_theta * range.y;
-    double top_z = cos_lat * cos_theta * range.x 
-        + cos_lat * sin_theta * range.y + sin_lat * range.z;
-    double az = atan(-top_e / top_s);
+    double topS = sinLat * cosTheta * range.x + sinLat * sinTheta * range.y - cosLat * range.z;
+    double topE = -sinTheta * range.x + cosTheta * range.y;
+    double topZ = cosLat * cosTheta * range.x + cosLat * sinTheta * range.y + sinLat * range.z;
+    double az = atan(-topE / topS);
 
-    if (top_s > 0.0)
+    if (topS > 0.0)
     {
         az += kPI;
     }
@@ -68,8 +78,8 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
         az += 2.0 * kPI;
     }
 
-    double el = asin(top_z / range.w);
-    double rate = range.Dot(range_rate) / range.w;
+    double el = asin(Util::Clamp(topZ / range.w, -1.0, 1.0));
+    double rate = range.Dot(rangeRate) / range.w;
 
     /*
      * azimuth in radians
@@ -77,10 +87,7 @@ CoordTopocentric Observer::GetLookAngle(const Eci &eci)
      * range in km
      * range rate in km/s
      */
-    return CoordTopocentric(az,
-            el,
-            range.w,
-            rate);
+    return CoordTopocentric(az, el, range.w, rate);
 }
 
 } // namespace libsgp4

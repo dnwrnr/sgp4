@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-
 #pragma once
 
 #include <cmath>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 namespace libsgp4
 {
@@ -33,7 +32,6 @@ namespace libsgp4
 struct Vector
 {
 public:
-
     /**
      * Default constructor
      */
@@ -41,58 +39,30 @@ public:
 
     /**
      * Constructor
-     * @param arg_x x value
-     * @param arg_y y value
-     * @param arg_z z value
+     * @param argX x value
+     * @param argY y value
+     * @param argZ z value
      */
-    Vector(const double arg_x,
-            const double arg_y,
-            const double arg_z)
-        : x(arg_x), y(arg_y), z(arg_z)
+    Vector(double argX, double argY, double argZ)
+        : x(argX)
+        , y(argY)
+        , z(argZ)
     {
     }
 
     /**
      * Constructor
-     * @param arg_x x value
-     * @param arg_y y value
-     * @param arg_z z value
-     * @param arg_w w value
+     * @param argX x value
+     * @param argY y value
+     * @param argZ z value
+     * @param argW w value
      */
-    Vector(const double arg_x,
-            const double arg_y,
-            const double arg_z,
-            const double arg_w)
-        : x(arg_x), y(arg_y), z(arg_z), w(arg_w)
+    Vector(double argX, double argY, double argZ, double argW)
+        : x(argX)
+        , y(argY)
+        , z(argZ)
+        , w(argW)
     {
-    }
-
-    /**
-     * Copy constructor
-     * @param v value to copy from
-     */
-    Vector(const Vector& v)
-    {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-        w = v.w;
-    }
-
-    /**
-     * Assignment operator
-     * @param v value to copy from
-     */
-    Vector& operator=(const Vector& v)
-    {
-        if (this != &v)
-        {
-            x = v.x;
-            y = v.y;
-            z = v.z;
-            w = v.w;
-        }
-        return *this;
     }
 
     /**
@@ -101,10 +71,7 @@ public:
      */
     Vector operator-(const Vector& v) const
     {
-        return Vector(x - v.x,
-                y - v.y,
-                z - v.z,
-                0.0);
+        return Vector(x - v.x, y - v.y, z - v.z, 0.0);
     }
 
     /**
@@ -122,9 +89,7 @@ public:
      */
     double Dot(const Vector& vec) const
     {
-        return (x * vec.x) +
-            (y * vec.y) +
-            (z * vec.z);
+        return (x * vec.x) + (y * vec.y) + (z * vec.z);
     }
 
     /**

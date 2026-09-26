@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-
-#include <libsgp4/Tle.h>
-#include <libsgp4/SGP4.h>
-#include <libsgp4/Observer.h>
-#include <libsgp4/CoordGeodetic.h>
-#include <libsgp4/CoordTopocentric.h>
-
-#include <list>
-#include <string>
+#include <cstdlib>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
+#include <libsgp4/CoordGeodetic.h>
+#include <libsgp4/CoordTopocentric.h>
+#include <libsgp4/Observer.h>
+#include <libsgp4/SGP4.h>
+#include <libsgp4/Tle.h>
+#include <list>
+#include <string>
 #include <vector>
-#include <cstdlib>
 
 void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
 {
     double current = start;
     libsgp4::SGP4 model(tle);
     bool running = true;
-    bool first_run = true;
+    bool firstRun = true;
 
-    std::cout << std::setprecision(0) << tle.NoradNumber() << " xx"
-        << std::endl;
+    std::cout << std::setprecision(0) << tle.NoradNumber() << " xx" << std::endl;
 
     while (running)
     {
@@ -48,7 +45,7 @@ void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
 
         try
         {
-            if (first_run && current != 0.0)
+            if (firstRun && current != 0.0)
             {
                 /*
                  * make sure first run is always as zero
@@ -80,7 +77,7 @@ void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
             position = e.Position();
             velocity = e.Velocity();
 
-            if (!first_run)
+            if (!firstRun)
             {
                 error = true;
             }
@@ -108,7 +105,7 @@ void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
             std::cout << velocity.z << std::endl;
         }
 
-        if ((first_run && current == 0.0) || !first_run)
+        if ((firstRun && current == 0.0) || !firstRun)
         {
             if (current == end)
             {
@@ -123,7 +120,7 @@ void RunTle(const libsgp4::Tle& tle, double start, double end, double inc)
                 current += inc;
             }
         }
-        first_run = false;
+        firstRun = false;
     }
 }
 
@@ -134,27 +131,27 @@ void tokenize(const std::string& str, std::vector<std::string>& tokens)
     /*
      * skip delimiters at beginning
      */
-    std::string::size_type last_pos = str.find_first_not_of(delimiters, 0);
+    std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
 
     /*
      * find first non-delimiter
      */
-    std::string::size_type pos = str.find_first_of(delimiters, last_pos);
+    std::string::size_type pos = str.find_first_of(delimiters, lastPos);
 
-    while (std::string::npos != pos || std::string::npos != last_pos)
+    while (std::string::npos != pos || std::string::npos != lastPos)
     {
         /*
          * add found token to vector
          */
-        tokens.push_back(str.substr(last_pos, pos - last_pos));
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
         /*
          * skip delimiters
          */
-        last_pos = str.find_first_not_of(delimiters, pos);
+        lastPos = str.find_first_not_of(delimiters, pos);
         /*
          * find next non-delimiter
          */
-        pos = str.find_first_of(delimiters, last_pos);
+        pos = str.find_first_of(delimiters, lastPos);
     }
 }
 
@@ -170,7 +167,7 @@ void RunTest(const char* infile)
         return;
     }
 
-    bool got_first_line = false;
+    bool gotFirstLine = false;
     std::string line1;
     std::string line2;
     std::string parameters;
@@ -185,24 +182,24 @@ void RunTest(const char* infile)
          */
         if (line.length() == 0 || line[0] == '#')
         {
-            got_first_line = false;
+            gotFirstLine = false;
             continue;
         }
 
         /*
          * find first line
          */
-        if (!got_first_line)
+        if (!gotFirstLine)
         {
             try
             {
                 if (line.length() >= libsgp4::Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
+                    // Tle::IsValidLine(line.substr(0, Tle::LineLength()), 1);
                     /*
                      * store line and now read in second line
                      */
-                    got_first_line = true;
+                    gotFirstLine = true;
                     line1 = line;
                 }
             }
@@ -217,7 +214,7 @@ void RunTest(const char* infile)
             /*
              * no second chances, second line should follow the first
              */
-            got_first_line = false;
+            gotFirstLine = false;
             /*
              * split line, first 69 is the second line of the tle
              * the rest is the test parameters, if there is any
@@ -229,8 +226,7 @@ void RunTest(const char* infile)
             if (line.length() > 69)
             {
                 std::vector<std::string> tokens;
-                parameters = line.substr(libsgp4::Tle::LineLength() + 1,
-                        line.length() - libsgp4::Tle::LineLength());
+                parameters = line.substr(libsgp4::Tle::LineLength() + 1, line.length() - libsgp4::Tle::LineLength());
                 tokenize(parameters, tokens);
                 if (tokens.size() >= 3)
                 {
@@ -247,7 +243,7 @@ void RunTest(const char* infile)
             {
                 if (line.length() >= libsgp4::Tle::LineLength())
                 {
-                    //Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
+                    // Tle::IsValidLine(line.substr(0, Tle::LineLength()), 2);
                     libsgp4::Tle tle("Test", line1, line2);
                     RunTle(tle, start, end, inc);
                 }
@@ -270,9 +266,9 @@ void RunTest(const char* infile)
 
 int main()
 {
-    const char* file_name = "SGP4-VER.TLE";
+    const char* fileName = "SGP4-VER.TLE";
 
-    RunTest(file_name);
+    RunTest(fileName);
 
     return 0;
 }

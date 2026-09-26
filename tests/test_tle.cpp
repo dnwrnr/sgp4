@@ -4,10 +4,8 @@
 
 using namespace libsgp4;
 
-static const std::string VALID_LINE1 =
-    "1 00005U 58002B   00179.78495062  .00000023  00000-0  28098-4 0  4753";
-static const std::string VALID_LINE2 =
-    "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667";
+static const std::string VALID_LINE1 = "1 00005U 58002B   00179.78495062  .00000023  00000-0  28098-4 0  4753";
+static const std::string VALID_LINE2 = "2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667";
 
 TEST(TleConstruction, ValidTwoLine)
 {
@@ -24,35 +22,103 @@ TEST(TleConstruction, ValidWithName)
 
 TEST(TleConstruction, InvalidLineLengthLine1)
 {
-    std::string short_line = "1 00005";
-    EXPECT_THROW(Tle(short_line, VALID_LINE2), TleException);
+    std::string shortLine = "1 00005";
+    EXPECT_THROW(Tle(shortLine, VALID_LINE2), TleException);
 }
 
 TEST(TleConstruction, InvalidLineLengthLine2)
 {
-    std::string short_line = "2 00005";
-    EXPECT_THROW(Tle(VALID_LINE1, short_line), TleException);
+    std::string shortLine = "2 00005";
+    EXPECT_THROW(Tle(VALID_LINE1, shortLine), TleException);
 }
 
 TEST(TleConstruction, WrongLine1Prefix)
 {
-    std::string bad_line = VALID_LINE1;
-    bad_line[0] = '2';
-    EXPECT_THROW(Tle(bad_line, VALID_LINE2), TleException);
+    std::string badLine = VALID_LINE1;
+    badLine[0] = '2';
+    EXPECT_THROW(Tle(badLine, VALID_LINE2), TleException);
 }
 
 TEST(TleConstruction, WrongLine2Prefix)
 {
-    std::string bad_line = VALID_LINE2;
-    bad_line[0] = '1';
-    EXPECT_THROW(Tle(VALID_LINE1, bad_line), TleException);
+    std::string badLine = VALID_LINE2;
+    badLine[0] = '1';
+    EXPECT_THROW(Tle(VALID_LINE1, badLine), TleException);
 }
 
 TEST(TleConstruction, NORADNumberMismatch)
 {
-    std::string line2_different = VALID_LINE2;
-    line2_different[2] = '9';
-    EXPECT_THROW(Tle(VALID_LINE1, line2_different), TleException);
+    std::string line2Different = VALID_LINE2;
+    line2Different[2] = '9';
+    EXPECT_THROW(Tle(VALID_LINE1, line2Different), TleException);
+}
+
+static std::string ReplaceSatNum(const std::string& line, const std::string& satNum)
+{
+    return line.substr(0, 2) + satNum + line.substr(7);
+}
+
+static Tle MakeTleWithSatNum(const std::string& satNum)
+{
+    return Tle(ReplaceSatNum(VALID_LINE1, satNum), ReplaceSatNum(VALID_LINE2, satNum));
+}
+
+TEST(TleAlpha5, DecodesLeadingLetter)
+{
+    Tle tle = MakeTleWithSatNum("E8493");
+    EXPECT_EQ(tle.NoradNumber(), 148493u);
+}
+
+TEST(TleAlpha5, DecodesDocumentedExamples)
+{
+    const char* const satNums[] = {"A0000", "E8493", "J2931", "P4018", "W1928", "Z9999"};
+    const unsigned int numbers[] = {100000u, 148493u, 182931u, 234018u, 301928u, 339999u};
+
+    for (unsigned int i = 0; i < 6u; ++i)
+    {
+        EXPECT_EQ(MakeTleWithSatNum(satNums[i]).NoradNumber(), numbers[i]) << "satnum " << satNums[i];
+    }
+}
+
+TEST(TleAlpha5, NameFallsBackToField)
+{
+    EXPECT_EQ(MakeTleWithSatNum("E8493").Name(), "E8493");
+}
+
+TEST(TleAlpha5, RejectsOmittedLetters)
+{
+    EXPECT_THROW(MakeTleWithSatNum("I8493"), TleException);
+    EXPECT_THROW(MakeTleWithSatNum("O8493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsLowercasePrefix)
+{
+    EXPECT_THROW(MakeTleWithSatNum("e8493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsNonDigitTail)
+{
+    EXPECT_THROW(MakeTleWithSatNum("E84A3"), TleException);
+    EXPECT_THROW(MakeTleWithSatNum("E84 3"), TleException);
+}
+
+TEST(TleAlpha5, RejectsNonLeadingLetter)
+{
+    EXPECT_THROW(MakeTleWithSatNum("8E493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsMismatchedSatNums)
+{
+    std::string line1 = ReplaceSatNum(VALID_LINE1, "E8493");
+    std::string line2 = ReplaceSatNum(VALID_LINE2, "A8493");
+    EXPECT_THROW(Tle(line1, line2), TleException);
+}
+
+TEST(TleAlpha5, NumericFieldStillRejectsLetters)
+{
+    std::string line1 = VALID_LINE1;
+    line1[18] = 'X';
+    EXPECT_THROW(Tle(line1, VALID_LINE2), TleException);
 }
 
 TEST(TleEpoch, YearBefore57)
@@ -79,6 +145,32 @@ TEST(TleEpoch, DayOfYear)
     EXPECT_EQ(epoch.Day(), 27);
 }
 
+TEST(TleEpoch, YearFieldSpacePadded)
+{
+    std::string line1 = VALID_LINE1;
+    line1[18] = ' ';
+    Tle tle(line1, VALID_LINE2);
+    EXPECT_EQ(tle.Epoch().Year(), 2000);
+}
+
+TEST(TleEpoch, YearFieldRejectsTrailingSpace)
+{
+    std::string line1 = VALID_LINE1;
+    line1[19] = ' ';
+    EXPECT_THROW(Tle(line1, VALID_LINE2), TleException);
+}
+
+TEST(TleEpoch, DayFieldSpacePadded)
+{
+    // the format allows spaces in columns 21 and 22, the leading digits of the day of year
+    std::string line1 = VALID_LINE1;
+    line1[20] = ' ';
+    line1[21] = ' ';
+    Tle tle(line1, VALID_LINE2);
+    EXPECT_EQ(tle.Epoch().Month(), 1);
+    EXPECT_EQ(tle.Epoch().Day(), 9);
+}
+
 TEST(TleFields, Inclination)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
@@ -95,6 +187,15 @@ TEST(TleFields, Eccentricity)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
     EXPECT_NEAR(tle.Eccentricity(), 0.1859667, 1e-7);
+}
+
+TEST(TleFields, EccentricityRejectsSpace)
+{
+    // seven digits with a leading decimal point assumed never needs padding, so a space in
+    // the field is a malformed line rather than a blank leading digit
+    std::string line2 = VALID_LINE2;
+    line2[26] = ' ';
+    EXPECT_THROW(Tle(VALID_LINE1, line2), TleException);
 }
 
 TEST(TleFields, ArgumentPerigee)
@@ -119,6 +220,14 @@ TEST(TleFields, OrbitNumber)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
     EXPECT_EQ(tle.OrbitNumber(), 41366u);
+}
+
+TEST(TleFields, BlankOrbitNumber)
+{
+    std::string line2 = VALID_LINE2;
+    line2.replace(63, 5, "     ");
+    Tle tle(VALID_LINE1, line2);
+    EXPECT_EQ(tle.OrbitNumber(), 0u);
 }
 
 TEST(TleFields, MeanMotionDt2)
@@ -154,11 +263,11 @@ TEST(TleLineLength, Expected)
 
 TEST(TleMultipleTLEs, IndependentParsing)
 {
-    std::string line1_a = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
-    std::string line2_a = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
+    std::string line1A = "1 04632U 70093B   04031.91070959 -.00000084  00000-0  10000-3 0  9955";
+    std::string line2A = "2 04632  11.4628 273.1101 1450506 207.6000 143.9350  1.20231981 44145";
 
     Tle tle1(VALID_LINE1, VALID_LINE2);
-    Tle tle2(line1_a, line2_a);
+    Tle tle2(line1A, line2A);
 
     EXPECT_EQ(tle1.NoradNumber(), 5u);
     EXPECT_EQ(tle2.NoradNumber(), 4632u);
