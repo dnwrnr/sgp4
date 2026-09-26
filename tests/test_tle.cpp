@@ -53,6 +53,74 @@ TEST(TleConstruction, NORADNumberMismatch)
     EXPECT_THROW(Tle(VALID_LINE1, line2Different), TleException);
 }
 
+static std::string ReplaceSatNum(const std::string& line, const std::string& satNum)
+{
+    return line.substr(0, 2) + satNum + line.substr(7);
+}
+
+static Tle MakeTleWithSatNum(const std::string& satNum)
+{
+    return Tle(ReplaceSatNum(VALID_LINE1, satNum), ReplaceSatNum(VALID_LINE2, satNum));
+}
+
+TEST(TleAlpha5, DecodesLeadingLetter)
+{
+    Tle tle = MakeTleWithSatNum("E8493");
+    EXPECT_EQ(tle.NoradNumber(), 148493u);
+}
+
+TEST(TleAlpha5, DecodesDocumentedExamples)
+{
+    const char* const satNums[] = {"A0000", "E8493", "J2931", "P4018", "W1928", "Z9999"};
+    const unsigned int numbers[] = {100000u, 148493u, 182931u, 234018u, 301928u, 339999u};
+
+    for (unsigned int i = 0; i < 6u; ++i)
+    {
+        EXPECT_EQ(MakeTleWithSatNum(satNums[i]).NoradNumber(), numbers[i]) << "satnum " << satNums[i];
+    }
+}
+
+TEST(TleAlpha5, NameFallsBackToField)
+{
+    EXPECT_EQ(MakeTleWithSatNum("E8493").Name(), "E8493");
+}
+
+TEST(TleAlpha5, RejectsOmittedLetters)
+{
+    EXPECT_THROW(MakeTleWithSatNum("I8493"), TleException);
+    EXPECT_THROW(MakeTleWithSatNum("O8493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsLowercasePrefix)
+{
+    EXPECT_THROW(MakeTleWithSatNum("e8493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsNonDigitTail)
+{
+    EXPECT_THROW(MakeTleWithSatNum("E84A3"), TleException);
+    EXPECT_THROW(MakeTleWithSatNum("E84 3"), TleException);
+}
+
+TEST(TleAlpha5, RejectsNonLeadingLetter)
+{
+    EXPECT_THROW(MakeTleWithSatNum("8E493"), TleException);
+}
+
+TEST(TleAlpha5, RejectsMismatchedSatNums)
+{
+    std::string line1 = ReplaceSatNum(VALID_LINE1, "E8493");
+    std::string line2 = ReplaceSatNum(VALID_LINE2, "A8493");
+    EXPECT_THROW(Tle(line1, line2), TleException);
+}
+
+TEST(TleAlpha5, NumericFieldStillRejectsLetters)
+{
+    std::string line1 = VALID_LINE1;
+    line1[18] = 'X';
+    EXPECT_THROW(Tle(line1, VALID_LINE2), TleException);
+}
+
 TEST(TleEpoch, YearBefore57)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);

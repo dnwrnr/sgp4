@@ -102,7 +102,12 @@ public:
 
     /**
      * Get the norad number
-     * @returns the norad number
+     *
+     * Object numbers from 100000 upwards are written in the tle using the Alpha-5 format, which
+     * replaces the leading digit with a letter, so the returned number is always the full object
+     * number and never the truncated remainder. The letters I and O are not valid prefixes.
+     *
+     * @returns the norad number, in the range 0 to 339999
      */
     unsigned int NoradNumber() const
     {

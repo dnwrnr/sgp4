@@ -279,3 +279,30 @@ TEST(SGP4Validation, DeepSpaceLargeTsinceFinite)
     EXPECT_TRUE(std::isfinite(pos.z));
     EXPECT_GT(pos.Magnitude(), 1000.0);
 }
+
+TEST(SGP4Alpha5, PropagationUnaffectedBySatNum)
+{
+    const std::string alpha5Line1 = TLE_LINE1_00005.substr(0, 2) + "E8493" + TLE_LINE1_00005.substr(7);
+    const std::string alpha5Line2 = TLE_LINE2_00005.substr(0, 2) + "E8493" + TLE_LINE2_00005.substr(7);
+
+    Tle alpha5Tle(alpha5Line1, alpha5Line2);
+    ASSERT_EQ(alpha5Tle.NoradNumber(), 148493u);
+
+    SGP4 alpha5Model(alpha5Tle);
+    SGP4 numericModel(Tle(TLE_LINE1_00005, TLE_LINE2_00005));
+
+    double times[] = {0.0, 360.0, 720.0, 1440.0};
+
+    for (double tsince : times)
+    {
+        Eci alpha5Eci = alpha5Model.FindPosition(tsince);
+        Eci numericEci = numericModel.FindPosition(tsince);
+
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().x, numericEci.Position().x);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().y, numericEci.Position().y);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Position().z, numericEci.Position().z);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().x, numericEci.Velocity().x);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().y, numericEci.Velocity().y);
+        EXPECT_DOUBLE_EQ(alpha5Eci.Velocity().z, numericEci.Velocity().z);
+    }
+}

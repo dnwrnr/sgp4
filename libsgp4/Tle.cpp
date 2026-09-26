@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <locale>
 #include <sstream>
+#include <string>
 #include <vector>
 
 namespace libsgp4
@@ -65,6 +66,61 @@ namespace
     const unsigned int TLE2_LEN_MEANMOTION = 11;
     const unsigned int TLE2_COL_REVATEPOCH = 63;
     const unsigned int TLE2_LEN_REVATEPOCH = 5;
+
+    // Alpha-5 prefixes ordered by ascending value. The letters I and O are omitted to avoid
+    // confusion with the digits 1 and 0, so the first entry maps to a leading value of 10.
+    const char* const ALPHA5_PREFIXES = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const unsigned int ALPHA5_FIRST_LEADING_VALUE = 10;
+    const unsigned int ALPHA5_TAIL_SCALE = 10000;
+
+    /**
+     * Decode an Alpha-5 object number from the satellite number field of a tle.
+     *
+     * Alpha-5 replaces the leading digit of object numbers from 100000 upwards with a letter,
+     * so A0000 is 100000 and Z9999 is 339999. Object numbers below 100000 are unaffected.
+     *
+     * @param[in] field The satellite number field
+     * @param[out] val The decoded object number
+     * @returns Whether the field held an Alpha-5 object number
+     * @exception TleException on an unsupported prefix or a non digit tail
+     */
+    bool DecodeAlpha5NoradNumber(const std::string& field, unsigned int& val)
+    {
+        if (field.empty() || field[0] < 'A' || field[0] > 'Z')
+        {
+            return false;
+        }
+
+        const std::string prefixes(ALPHA5_PREFIXES);
+        const std::string::size_type index = prefixes.find(field[0]);
+
+        if (index == std::string::npos)
+        {
+            throw TleException("Unsupported Alpha-5 satellite number prefix");
+        }
+
+        if (field.length() != TLE1_LEN_NORADNUM)
+        {
+            throw TleException("Invalid length for Alpha-5 satellite number");
+        }
+
+        unsigned int tail = 0;
+
+        for (std::string::size_type i = 1; i < field.length(); ++i)
+        {
+            if (!isdigit(static_cast<unsigned char>(field[i])))
+            {
+                throw TleException("Invalid Alpha-5 satellite number");
+            }
+
+            tail = (tail * 10) + static_cast<unsigned int>(field[i] - '0');
+        }
+
+        const unsigned int leading = ALPHA5_FIRST_LEADING_VALUE + static_cast<unsigned int>(index);
+        val = (leading * ALPHA5_TAIL_SCALE) + tail;
+
+        return true;
+    }
 } // namespace
 
 /**
@@ -93,11 +149,21 @@ void Tle::Initialise()
         throw TleException("Invalid line beginning for line two");
     }
 
-    unsigned int satNumber1;
-    unsigned int satNumber2;
+    unsigned int satNumber1 = 0;
+    unsigned int satNumber2 = 0;
 
-    ExtractInteger(mLineOne.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM), satNumber1);
-    ExtractInteger(mLineTwo.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM), satNumber2);
+    const std::string satNumberField1 = mLineOne.substr(TLE1_COL_NORADNUM, TLE1_LEN_NORADNUM);
+    const std::string satNumberField2 = mLineTwo.substr(TLE2_COL_NORADNUM, TLE2_LEN_NORADNUM);
+
+    if (!DecodeAlpha5NoradNumber(satNumberField1, satNumber1))
+    {
+        ExtractInteger(satNumberField1, satNumber1);
+    }
+
+    if (!DecodeAlpha5NoradNumber(satNumberField2, satNumber2))
+    {
+        ExtractInteger(satNumberField2, satNumber2);
+    }
 
     if (satNumber1 != satNumber2)
     {
