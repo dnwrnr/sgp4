@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(SGP4
-    VERSION 2.0.0
+    VERSION 3.0.0
     DESCRIPTION "SGP4 satellite orbit propagation library"
     LANGUAGES CXX)
 
