@@ -138,6 +138,30 @@ TEST(CsvTleFromCsv, InvalidEpoch)
                  TleException);
 }
 
+TEST(CsvTleFromCsv, EpochWithTrailingGarbage)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54xyz,2.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, EpochOutOfRange)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,99999999999999999999-07-26T04:36:54,2.0,.01,54.0,213.0,302.0,"
+                              "63.0,0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
+TEST(CsvTleFromCsv, EpochWithSignAndWhitespace)
+{
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A, 2026-07-26T04:36:54,2.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+    EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,+2026-07-26T04:36:54,2.0,.01,54.0,213.0,302.0,63.0,"
+                              "0,U,26407,999,19073,0,.81E-6,0"),
+                 TleException);
+}
+
 TEST(CsvTleFromCsv, NonNumericMeanMotion)
 {
     EXPECT_THROW(Tle::FromCsv("NAME,2000-040A,2026-07-26T04:36:54,abc,.01,54.0,213.0,302.0,63.0,"

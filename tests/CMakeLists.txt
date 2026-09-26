@@ -8,7 +8,7 @@ add_executable(sgp4_tests
     test_observer.cpp
     test_csv_loader.cpp)
 
-target_link_libraries(sgp4_tests PRIVATE sgp4 gtest_main)
+target_link_libraries(sgp4_tests PRIVATE sgp4 GTest::gtest_main)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
     target_link_libraries(sgp4_tests PRIVATE stdc++fs)

@@ -145,6 +145,32 @@ TEST(TleEpoch, DayOfYear)
     EXPECT_EQ(epoch.Day(), 27);
 }
 
+TEST(TleEpoch, YearFieldSpacePadded)
+{
+    std::string line1 = VALID_LINE1;
+    line1[18] = ' ';
+    Tle tle(line1, VALID_LINE2);
+    EXPECT_EQ(tle.Epoch().Year(), 2000);
+}
+
+TEST(TleEpoch, YearFieldRejectsTrailingSpace)
+{
+    std::string line1 = VALID_LINE1;
+    line1[19] = ' ';
+    EXPECT_THROW(Tle(line1, VALID_LINE2), TleException);
+}
+
+TEST(TleEpoch, DayFieldSpacePadded)
+{
+    // the format allows spaces in columns 21 and 22, the leading digits of the day of year
+    std::string line1 = VALID_LINE1;
+    line1[20] = ' ';
+    line1[21] = ' ';
+    Tle tle(line1, VALID_LINE2);
+    EXPECT_EQ(tle.Epoch().Month(), 1);
+    EXPECT_EQ(tle.Epoch().Day(), 9);
+}
+
 TEST(TleFields, Inclination)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
@@ -161,6 +187,15 @@ TEST(TleFields, Eccentricity)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
     EXPECT_NEAR(tle.Eccentricity(), 0.1859667, 1e-7);
+}
+
+TEST(TleFields, EccentricityRejectsSpace)
+{
+    // seven digits with a leading decimal point assumed never needs padding, so a space in
+    // the field is a malformed line rather than a blank leading digit
+    std::string line2 = VALID_LINE2;
+    line2[26] = ' ';
+    EXPECT_THROW(Tle(VALID_LINE1, line2), TleException);
 }
 
 TEST(TleFields, ArgumentPerigee)
@@ -185,6 +220,14 @@ TEST(TleFields, OrbitNumber)
 {
     Tle tle(VALID_LINE1, VALID_LINE2);
     EXPECT_EQ(tle.OrbitNumber(), 41366u);
+}
+
+TEST(TleFields, BlankOrbitNumber)
+{
+    std::string line2 = VALID_LINE2;
+    line2.replace(63, 5, "     ");
+    Tle tle(VALID_LINE1, line2);
+    EXPECT_EQ(tle.OrbitNumber(), 0u);
 }
 
 TEST(TleFields, MeanMotionDt2)

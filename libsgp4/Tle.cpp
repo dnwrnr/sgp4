@@ -16,11 +16,13 @@
 
 #include "Tle.h"
 
+#include <charconv>
 #include <cmath>
-#include <cstdio>
 #include <locale>
 #include <sstream>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include <vector>
 
 namespace libsgp4
@@ -74,6 +76,29 @@ namespace
     const unsigned int ALPHA5_TAIL_SCALE = 10000;
 
     /**
+     * Convert a field of decimal digits to an unsigned integer.
+     *
+     * Unlike std::stoul this neither skips leading whitespace nor accepts a sign, and it
+     * reports an out of range field instead of wrapping around, so the caller sees exactly
+     * the digits that were in the field.
+     *
+     * @param[in] text The digits to convert
+     * @param[in] description The field name to report on failure
+     * @returns The converted value
+     * @exception TleException if the field is empty, holds a non digit or does not fit
+     */
+    unsigned int ParseDigits(std::string_view text, const char* description)
+    {
+        unsigned int value = 0;
+        const std::from_chars_result result = std::from_chars(text.data(), text.data() + text.size(), value);
+        if (result.ec != std::errc() || result.ptr != text.data() + text.size())
+        {
+            throw TleException(description);
+        }
+        return value;
+    }
+
+    /**
      * Decode an Alpha-5 object number from the satellite number field of a tle.
      *
      * Alpha-5 replaces the leading digit of object numbers from 100000 upwards with a letter,
@@ -91,10 +116,10 @@ namespace
             return false;
         }
 
-        const std::string prefixes(ALPHA5_PREFIXES);
-        const std::string::size_type index = prefixes.find(field[0]);
+        const std::string_view prefixes(ALPHA5_PREFIXES);
+        const std::string_view::size_type index = prefixes.find(field[0]);
 
-        if (index == std::string::npos)
+        if (index == std::string_view::npos)
         {
             throw TleException("Unsupported Alpha-5 satellite number prefix");
         }
@@ -104,17 +129,7 @@ namespace
             throw TleException("Invalid length for Alpha-5 satellite number");
         }
 
-        unsigned int tail = 0;
-
-        for (std::string::size_type i = 1; i < field.length(); ++i)
-        {
-            if (!isdigit(static_cast<unsigned char>(field[i])))
-            {
-                throw TleException("Invalid Alpha-5 satellite number");
-            }
-
-            tail = (tail * 10) + static_cast<unsigned int>(field[i] - '0');
-        }
+        const unsigned int tail = ParseDigits(std::string_view(field).substr(1), "Invalid Alpha-5 satellite number");
 
         const unsigned int leading = ALPHA5_FIRST_LEADING_VALUE + static_cast<unsigned int>(index);
         val = (leading * ALPHA5_TAIL_SCALE) + tail;
@@ -219,45 +234,31 @@ void Tle::Initialise()
  */
 bool Tle::IsValidLineLength(const std::string& str)
 {
-    return str.length() == LineLength() ? true : false;
+    return str.size() == LineLength();
 }
 
 /**
  * Convert a string containing an integer
+ *
+ * The field is either blank, in which case it is zero, or space padded digits. A space after
+ * the first digit is a misplaced field rather than padding, so it is rejected.
+ *
  * @param[in] str The string to convert
  * @param[out] val The result
  * @exception TleException on conversion error
  */
 void Tle::ExtractInteger(const std::string& str, unsigned int& val)
 {
-    bool foundDigit = false;
-    unsigned int temp = 0;
+    const std::string_view field(str);
+    const std::string_view::size_type firstDigit = field.find_first_not_of(' ');
 
-    for (auto& i : str)
-    {
-        if (isdigit(static_cast<unsigned char>(i)))
-        {
-            foundDigit = true;
-            temp = (temp * 10) + static_cast<unsigned int>(i - '0');
-        }
-        else if (foundDigit)
-        {
-            throw TleException("Unexpected non digit");
-        }
-        else if (i != ' ')
-        {
-            throw TleException("Invalid character");
-        }
-    }
-
-    if (!foundDigit)
+    if (firstDigit == std::string_view::npos)
     {
         val = 0;
+        return;
     }
-    else
-    {
-        val = temp;
-    }
+
+    val = ParseDigits(field.substr(firstDigit), "Unexpected non digit");
 }
 
 /**
@@ -344,6 +345,11 @@ void Tle::ExtractDouble(const std::string& str, int pointPos, double& val)
             {
                 /*
                  * no decimal point expected, add 0. beginning
+                 *
+                 * this is the eccentricity field of line 2, seven digits with a leading
+                 * decimal point assumed. an eccentricity always fits in seven digits, so the
+                 * field carries no padding and a space here is a malformed line rather than
+                 * a blank leading digit.
                  */
                 temp += '0';
                 temp += '.';
@@ -352,7 +358,7 @@ void Tle::ExtractDouble(const std::string& str, int pointPos, double& val)
             /*
              * should be a digit
              */
-            if (isdigit(*i))
+            if (isdigit(static_cast<unsigned char>(*i)))
             {
                 temp += *i;
             }
@@ -411,7 +417,7 @@ void Tle::ExtractExponential(const std::string& str, double& val)
         }
         else
         {
-            if (isdigit(*i))
+            if (isdigit(static_cast<unsigned char>(*i)))
             {
                 temp += *i;
             }
@@ -503,6 +509,49 @@ namespace
             digits += '0';
         }
         return std::stoi(digits.substr(0, 6));
+    }
+
+    bool ParseUnsigned(const std::string& s, std::string::size_type& pos, unsigned int& value)
+    {
+        const char* const begin = s.data() + pos;
+        const char* const end = s.data() + s.size();
+        const std::from_chars_result result = std::from_chars(begin, end, value);
+        if (result.ec != std::errc() || result.ptr == begin)
+        {
+            return false;
+        }
+        pos = static_cast<std::string::size_type>(result.ptr - s.data());
+        return true;
+    }
+
+    bool ParseIsoDateTime(const std::string& s,
+                          unsigned int& year,
+                          unsigned int& month,
+                          unsigned int& day,
+                          unsigned int& hour,
+                          unsigned int& minute,
+                          unsigned int& second)
+    {
+        static const char DELIMITERS[] = {'-', '-', 'T', ':', ':'};
+        unsigned int* const fields[] = {&year, &month, &day, &hour, &minute, &second};
+
+        std::string::size_type pos = 0;
+        for (size_t i = 0; i < 6; ++i)
+        {
+            if (!ParseUnsigned(s, pos, *fields[i]))
+            {
+                return false;
+            }
+            if (i + 1 < 6)
+            {
+                if (pos >= s.size() || s[pos] != DELIMITERS[i])
+                {
+                    return false;
+                }
+                ++pos;
+            }
+        }
+        return pos == s.size();
     }
 
     double ParseCsvDouble(const std::string& field, const char* description)
@@ -601,15 +650,23 @@ Tle Tle::FromCsv(const std::string& csvLine)
         throw TleException("Invalid CSV drag coefficient");
     }
 
-    int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-    if (std::sscanf(epochStr.c_str(), "%d-%d-%dT%d:%d:%d", &year, &month, &day, &hour, &minute, &second) != 6)
+    std::string::size_type dotPos = epochStr.rfind('.');
+    const std::string dateTimeStr = dotPos == std::string::npos ? epochStr : epochStr.substr(0, dotPos);
+
+    unsigned int year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
+    if (!ParseIsoDateTime(dateTimeStr, year, month, day, hour, minute, second))
     {
         throw TleException("Invalid epoch format");
     }
-    std::string::size_type dotPos = epochStr.rfind('.');
     int microsecond = dotPos == std::string::npos ? 0 : ParseIsoMicrosecond(epochStr.substr(dotPos + 1));
 
-    DateTime epoch(year, month, day, hour, minute, second, microsecond);
+    DateTime epoch(static_cast<int>(year),
+                   static_cast<int>(month),
+                   static_cast<int>(day),
+                   static_cast<int>(hour),
+                   static_cast<int>(minute),
+                   static_cast<int>(second),
+                   microsecond);
 
     return Tle(name,
                noradNumber,

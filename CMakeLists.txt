@@ -26,6 +26,9 @@ option(BUILD_TESTS "Build unit tests" ON)
 
 include(FetchContent)
 set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest" FORCE)
+# GoogleTest rewrites /MD to /MT in its own flags unless this is set, which would
+# link the static CRT into the tests and clash with the project's shared CRT.
+set(gtest_force_shared_crt ON CACHE BOOL "Build GoogleTest against the shared CRT" FORCE)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
